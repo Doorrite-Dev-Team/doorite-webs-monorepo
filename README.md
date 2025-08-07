@@ -1,135 +1,224 @@
-# Turborepo starter
+# 🧑‍💻 Doorrite Frontend Dev Guide
 
-This Turborepo starter is maintained by the Turborepo core team.
+Welcome to the frontend monorepo! This guide will get you set up and contributing to our apps.
 
-## Using this example
+Think of this monorepo as a big toolbox that holds all our related projects (like the `user-ui`, `vendor-ui`, and `rider-ui` apps) in one place. This setup makes it easy to share components, styling, and tools across all projects.
 
-Run the following command:
+For example, our shared UI library in `packages/ui` has **ShadCN** and **Tailwind CSS** pre-configured, so all apps maintain a consistent look and feel without duplicating styles. We use **Turborepo** to coordinate all of this efficiently.
 
-```sh
-npx create-turbo@latest
+---
+
+## 📦 Monorepo Overview
+
+| Tool            | Details                   |
+| --------------- | ------------------------- |
+| Monorepo Tool   | Turborepo                 |
+| Package Manager | pnpm                      |
+| Framework       | Next.js                   |
+| Styling         | Tailwind CSS              |
+| UI Kit          | ShadCN (in `packages/ui`) |
+
+---
+
+## 📂 Folder Structure
+
+```bash
+doorrite-monorepo/
+├─ apps/
+│  ├─ user-ui/        # Main app for end-users (your focus)
+│  ├─ vendor-ui/      # App for vendors
+│  └─ rider-ui/       # App for delivery riders
+│
+├─ packages/
+│  ├─ ui/             # Shared UI components (Buttons, Inputs, etc.)
+│  ├─ typescript-config/  # Shared tsconfig
+│  └─ eslint-config/      # Shared lint rules
+│
+├─ .vscode/           # VSCode settings (optional)
+├─ package.json
+├─ turbo.json
+└─ pnpm-workspace.yaml
 ```
 
-## What's inside?
+### Inside `packages/ui`
 
-This Turborepo includes the following packages/apps:
+This is where our shared design system lives:
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+```bash
+packages/ui/
+├─ src/
+│  ├─ components/     # Custom, shared components (e.g., Logo.tsx)
+│  ├─ lib/            # Utilities, helpers, configs
+│  └─ styles/         # Global CSS styles (globals.css)
+├─ postcss.config.mjs # Tailwind CSS config
+├─ components.json    # ShadCN config
+└─ package.json       # Dependencies
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+---
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+## 🚀 Getting Started
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+### 1. Install Dependencies (One-Time Setup)
+
+```bash
+pnpm install
 ```
 
-### Develop
+### 2. Run an App
 
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+```bash
+pnpm run dev         # Default = user-ui app
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+Or to run a specific app:
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+```bash
+pnpm turbo run dev --filter vendor-ui
+pnpm turbo run dev --filter rider-ui
 ```
 
-### Remote Caching
+---
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+## 🧪 Shared UI Components
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+All reusable components live in:
 
 ```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+packages/ui/
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+To use a component in an app:
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+```tsx
+import { Button } from '@repo/ui';
 ```
 
-## Useful Links
+To add a new ShadCN component:
 
-Learn more about the power of Turborepo:
+```bash
+cd packages/ui
+pnpm dlx shadcn@canary add [component-name]
+```
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+---
+
+## 🔐 Environment Variables
+
+Each app can have its own `.env.local` file. For example:
+
+```env
+# apps/user-ui/.env.local
+NEXT_PUBLIC_API_URL=http://localhost:4000/api
+```
+
+> Never commit `.env*` files to Git!
+
+---
+
+## 📄 Available Scripts
+
+| Script        | Description                           |
+| ------------- | ------------------------------------- |
+| `dev`         | Run user-ui in dev                    |
+| `build`       | Build all apps/packages               |
+| `format`      | Run Prettier on supported files       |
+| `lint`        | Run ESLint across apps/packages       |
+| `check-types` | Run TypeScript checks on all packages |
+
+---
+
+## 📉 Workflow & Pull Requests
+
+### 1. Create a Feature Branch
+
+```bash
+git checkout -b feature/user-profile-page
+```
+
+### 2. Push and Create a PR to `main`
+
+* Name branches using:
+
+  ```
+  feature/<scope>/<short-description>
+  ```
+* Examples:
+
+  ```
+  feature/user-ui/add-profile-section
+  bugfix/ui/fix-button-hover
+  ```
+
+---
+
+## ✍️ Git Commit Style
+
+Use this format:
+
+```
+type(scope): short description
+```
+
+### Examples:
+
+* `feat(user-ui): add mobile nav`
+* `fix(ui): align button text`
+* `docs(readme): update setup instructions`
+* `chore: bump dependencies`
+
+### Allowed Types:
+
+| Type     | Purpose                                 |
+| -------- | --------------------------------------- |
+| feat     | New feature                             |
+| fix      | Bug fix                                 |
+| chore    | Tooling or dependencies                 |
+| refactor | Code improvements (not feature or fix)  |
+| docs     | Documentation                           |
+| style    | Formatting-only changes (no code logic) |
+
+---
+
+## 🧼 Formatting & Linting
+
+### Format with Prettier
+
+```bash
+pnpm run format
+```
+
+### Lint with ESLint
+
+```bash
+pnpm run lint
+```
+
+---
+
+## ✅ Before You Push
+
+Run these locally:
+
+```bash
+pnpm run format
+pnpm run lint
+```
+
+---
+
+## ❗ Good Practices
+
+* Keep PRs small and focused
+* Write meaningful commit messages
+* Ensure components in `packages/ui` are reusable and documented
+
+---
+
+## 🙋 Need Help?
+
+Ask **@AbuAbdirrahman** or your team lead in Slack or GitHub.
+
+---
+
+*This guide is maintained by Abu Abdirrahman. Last updated: August 2025.*
