@@ -1,31 +1,37 @@
-# 🧑‍💻 DoorRite Frontend Dev Guide
+# 🧑‍💻 Doorrite Frontend Dev Guide
 
-Welcome to the frontend dev team! This guide will walk you through getting up and running with the `doorrite-monorepo` — including how to work on and contribute to the apps like `user-ui`, `vendor-ui`, and `rider-ui`.
+Welcome to the frontend monorepo! This guide will get you set up and contributing to our apps.
+
+Think of this monorepo as a big toolbox that holds all our related projects (like the `user-ui`, `vendor-ui`, and `rider-ui` apps) in one place. This setup makes it easy to share components, styling, and tools across all projects.
+
+For example, our shared UI library in `packages/ui` has **ShadCN** and **Tailwind CSS** pre-configured, so all apps maintain a consistent look and feel without duplicating styles. We use **Turborepo** to coordinate all of this efficiently.
 
 ---
 
 ## 📦 Monorepo Overview
 
-* **Tooling:** Turborepo + pnpm
-* **Package Manager:** `pnpm`
-* **Framework:** Next.js
-* **Styling:** Tailwind CSS
-* **UI Kit:** ShadCN (installed in `packages/ui`)
+| Tool            | Details                   |
+| --------------- | ------------------------- |
+| Monorepo Tool   | Turborepo                 |
+| Package Manager | pnpm                      |
+| Framework       | Next.js                   |
+| Styling         | Tailwind CSS              |
+| UI Kit          | ShadCN (in `packages/ui`) |
 
 ---
 
 ## 📂 Folder Structure
 
-```
+```bash
 doorrite-monorepo/
 ├─ apps/
-│  ├─ user-ui/        # Default app most devs work on
-│  ├─ vendor-ui/      # Vendor-facing app
-│  └─ rider-ui/       # Rider-facing app
+│  ├─ user-ui/        # Main app for end-users (your focus)
+│  ├─ vendor-ui/      # App for vendors
+│  └─ rider-ui/       # App for delivery riders
 │
 ├─ packages/
-│  ├─ ui/             # Shared UI components (ShadCN + Tailwind)
-│  ├─ typescript-config/  # Base tsconfig
+│  ├─ ui/             # Shared UI components (Buttons, Inputs, etc.)
+│  ├─ typescript-config/  # Shared tsconfig
 │  └─ eslint-config/      # Shared lint rules
 │
 ├─ .vscode/           # VSCode settings (optional)
@@ -34,23 +40,38 @@ doorrite-monorepo/
 └─ pnpm-workspace.yaml
 ```
 
+### Inside `packages/ui`
+
+This is where our shared design system lives:
+
+```bash
+packages/ui/
+├─ src/
+│  ├─ components/     # Custom, shared components (e.g., Logo.tsx)
+│  ├─ lib/            # Utilities, helpers, configs
+│  └─ styles/         # Global CSS styles (globals.css)
+├─ postcss.config.mjs # Tailwind CSS config
+├─ components.json    # ShadCN config
+└─ package.json       # Dependencies
+```
+
 ---
 
 ## 🚀 Getting Started
 
-### 1. **Install dependencies**
+### 1. Install Dependencies (One-Time Setup)
 
 ```bash
 pnpm install
 ```
 
-### 2. **Run frontend app in dev**
+### 2. Run an App
 
 ```bash
-pnpm run dev         # Runs default user-ui app
+pnpm run dev         # Default = user-ui app
 ```
 
-> You can also run a specific app using Turborepo filters:
+Or to run a specific app:
 
 ```bash
 pnpm turbo run dev --filter vendor-ui
@@ -59,9 +80,43 @@ pnpm turbo run dev --filter rider-ui
 
 ---
 
-## 🧪 Available Scripts
+## 🧪 Shared UI Components
 
-In root `package.json`:
+All reusable components live in:
+
+```
+packages/ui/
+```
+
+To use a component in an app:
+
+```tsx
+import { Button } from '@repo/ui';
+```
+
+To add a new ShadCN component:
+
+```bash
+cd packages/ui
+pnpm dlx shadcn@canary add [component-name]
+```
+
+---
+
+## 🔐 Environment Variables
+
+Each app can have its own `.env.local` file. For example:
+
+```env
+# apps/user-ui/.env.local
+NEXT_PUBLIC_API_URL=http://localhost:4000/api
+```
+
+> Never commit `.env*` files to Git!
+
+---
+
+## 📄 Available Scripts
 
 | Script        | Description                           |
 | ------------- | ------------------------------------- |
@@ -73,91 +128,67 @@ In root `package.json`:
 
 ---
 
-## 🧠 Shared Components (ShadCN + Tailwind)
+## 📉 Workflow & Pull Requests
 
-All design system components are located in:
-
-```
-packages/ui/
-```
-
-These are imported into each app like this:
-
-```tsx
-import { Button } from '@repo/ui';
-```
-
-To add new components:
+### 1. Create a Feature Branch
 
 ```bash
-cd packages/ui
-pnpm dlx shadcn@canary add [component-name]
+git checkout -b feature/user-profile-page
 ```
 
-> This uses the ShadCN CLI to add prebuilt, customizable components with Tailwind CSS.
+### 2. Push and Create a PR to `main`
 
----
-
-## 🔐 Environment Variables
-
-Each app can have its own `.env` file. Create one inside `apps/user-ui/.env.local`:
-
-```
-NEXT_PUBLIC_API_URL=http://localhost:4000/api
-```
-
-> Never commit `.env*` files to git!
-
----
-
-## 📄 Workflow & PRs
-
-* Work on a **feature branch**:
+* Name branches using:
 
   ```
-  git checkout -b feature/user-ui-navbar
+  feature/<scope>/<short-description>
   ```
+* Examples:
 
-* Push changes and create a PR to `main`.
-
-* All devs work under `feature/<your-feature>` naming convention.
+  ```
+  feature/user-ui/add-profile-section
+  bugfix/ui/fix-button-hover
+  ```
 
 ---
 
 ## ✍️ Git Commit Style
 
-Follow this commit style for consistency:
+Use this format:
 
 ```
 type(scope): short description
 ```
 
-**Examples:**
+### Examples:
 
-* `feat(user-ui): add mobile navbar`
-* `fix(ui): correct padding on Button`
-* `chore: update dependencies`
+* `feat(user-ui): add mobile nav`
+* `fix(ui): align button text`
+* `docs(readme): update setup instructions`
+* `chore: bump dependencies`
 
-**Types to use:**
+### Allowed Types:
 
-* `feat` – New feature
-* `fix` – Bug fix
-* `chore` – Tooling or deps
-* `refactor` – Code improvement (no feature/fix)
-* `docs` – Documentation changes
-* `style` – Formatting, missing semicolons, etc
+| Type     | Purpose                                 |
+| -------- | --------------------------------------- |
+| feat     | New feature                             |
+| fix      | Bug fix                                 |
+| chore    | Tooling or dependencies                 |
+| refactor | Code improvements (not feature or fix)  |
+| docs     | Documentation                           |
+| style    | Formatting-only changes (no code logic) |
 
 ---
 
 ## 🧼 Formatting & Linting
 
-### Prettier (Formatting)
+### Format with Prettier
 
 ```bash
 pnpm run format
 ```
 
-### ESLint (Code Linting)
+### Lint with ESLint
 
 ```bash
 pnpm run lint
@@ -165,11 +196,22 @@ pnpm run lint
 
 ---
 
-## ✅ Good Practices
+## ✅ Before You Push
 
-* Keep PRs small and focused.
-* Use clear and meaningful commit messages.
-* Follow component standards when adding to `packages/ui`.
+Run these locally:
+
+```bash
+pnpm run format
+pnpm run lint
+```
+
+---
+
+## ❗ Good Practices
+
+* Keep PRs small and focused
+* Write meaningful commit messages
+* Ensure components in `packages/ui` are reusable and documented
 
 ---
 
