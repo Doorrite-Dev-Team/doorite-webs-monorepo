@@ -32,9 +32,6 @@ importers:
       '@repo/ui':
         specifier: workspace:^
         version: link:../../packages/ui
-      '@tailwindcss/postcss':
-        specifier: ^4.1.11
-        version: 4.1.11
       lucide-react:
         specifier: ^0.536.0
         version: 0.536.0(react@19.1.0)
@@ -54,6 +51,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:^
         version: link:../../packages/typescript-config
+      '@tailwindcss/postcss':
+        specifier: ^4.1.11
+        version: 4.1.11
       '@types/node':
         specifier: ^20
         version: 20.19.9
