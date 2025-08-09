@@ -1,5 +1,6 @@
 {
   "css.lint.unknownAtRules": "ignore",
+  "editor.fontLigatures": true,
   "eslint.workingDirectories": [
     {
       "mode": "auto"
