@@ -1,10 +1,10 @@
 import "@repo/ui/globals.css";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plus_Jakarta_Sans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta-sans",
   subsets: ["latin"],
 });
 
@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Doorite User UI",
   description: "User interface for Doorite",
+  icons: {
+    icon: "/icon.jpg",
+  },
 };
 
 export default function RootLayout({
@@ -25,7 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body
+        className={`${plus_Jakarta_Sans.variable} ${geistMono.variable} max-w-4xl mx-auto`}
+      >
         {children}
       </body>
     </html>

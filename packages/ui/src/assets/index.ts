@@ -1,0 +1,81 @@
+// index.ts
+export { default as arrivalTime } from "./arrival-time.png";
+export { default as customerEarning } from "./customer-earning.png";
+export { default as customerImage } from "./customer-image.png";
+export { default as doorriteImage } from "./doorrite-image.png";
+
+export { default as iconAccount } from "./icon-account.png";
+export { default as iconAdd } from "./icon-add.png";
+export { default as iconArrow } from "./icon-arrow.png";
+export { default as iconBack } from "./icon-back.png";
+export { default as iconCard } from "./icon-card.png";
+export { default as iconClose } from "./icon-close.png";
+export { default as iconConfirmed } from "./icon-confirmed.png";
+export { default as iconDelivery } from "./icon-delivery.png";
+export { default as iconEarning } from "./icon-earning.png";
+export { default as iconFacebook } from "./icon-facebook.png";
+export { default as iconFocusAccount } from "./icon-focus-account.png";
+export { default as iconFocusDelivery } from "./icon-focus-delivery.png";
+export { default as iconFocusEarning } from "./icon-focus-earning.png";
+export { default as iconFocusHome } from "./icon-focus-home.png";
+export { default as iconFocusMenu } from "./icon-focus-menu.png";
+export { default as iconFocusOrder } from "./icon-focus-order.png";
+export { default as iconFocusSearch } from "./icon-focus-search.png";
+export { default as iconHelp } from "./icon-help.png";
+export { default as iconHome } from "./icon-home.png";
+export { default as iconInstagram } from "./icon-instagram.png";
+export { default as iconLocation } from "./icon-location.png";
+export { default as iconMail } from "./icon-mail.png";
+export { default as iconMenu } from "./icon-menu.png";
+export { default as iconMotocycle } from "./icon-motocycle.png";
+export { default as iconNext } from "./icon-next.png";
+export { default as iconNotification } from "./icon-notification.png";
+export { default as iconOrder } from "./icon-order.png";
+export { default as iconPackage } from "./icon-package.png";
+export { default as iconPassword } from "./icon-password.png";
+export { default as iconPhone } from "./icon-phone.png";
+export { default as iconReport } from "./icon-report.png";
+export { default as iconSearch } from "./icon-search.png";
+export { default as iconSetting } from "./icon-setting.png";
+export { default as iconTheme } from "./icon-theme.png";
+export { default as iconTick } from "./icon-tick.png";
+export { default as iconToggleMenu } from "./icon-toggle-menu.png";
+export { default as iconTwitter } from "./icon-twitter.png";
+export { default as iconWeb } from "./icon-web.png";
+
+export { default as imageBurger } from "./image-burger.png";
+export { default as imageCampusEatery } from "./image-campus-eatery.png";
+export { default as imageChart } from "./image-chart.png";
+export { default as imageCheeseburger } from "./image-cheeseburger.png";
+export { default as imageChickenSandwich } from "./image-chicken-sandwich.png";
+export { default as imageCookie } from "./image-cookie.png";
+export { default as imageCustomer } from "./image-customer.png";
+export { default as imageDelivery } from "./image-delivery.png";
+export { default as imageFlavors } from "./image-flavors.png";
+export { default as imageFries } from "./image-fries.png";
+export { default as imageHamburger } from "./image-hamburger.png";
+export { default as imageLibrary } from "./image-library.png";
+export { default as imageMilkshake } from "./image-milkshake.png";
+export { default as imageMoney } from "./image-money.png";
+export { default as imageMuffins } from "./image-muffins.png";
+export { default as imagePie } from "./image-pie.png";
+export { default as imagePizza } from "./image-pizza.png";
+export { default as imageQuadDrill } from "./image-quad-drill.png";
+export { default as imageQuickBites } from "./image-quick-bites.png";
+export { default as imageRider } from "./image-rider.png";
+export { default as imageStatus } from "./image-status.png";
+export { default as imageStudentDiner } from "./image-student-diner.png";
+export { default as imageStudyCafe } from "./image-study-cafe.png";
+export { default as imageSubs } from "./image-subs.png";
+export { default as imageVendor } from "./image-vendor.png";
+
+export { default as logoFull } from "./logo-full.jpg";
+export { default as logo } from "./logo.jpg";
+
+export { default as profileCustomer } from "./profile-customer.png";
+export { default as profileRider } from "./profile-rider.png";
+export { default as profileVendor } from "./profile-vendor.png";
+
+export { default as sarahResidence } from "./sarah-residence.png";
+export { default as theDailyGrind } from "./the-daily-grind.png";
+
