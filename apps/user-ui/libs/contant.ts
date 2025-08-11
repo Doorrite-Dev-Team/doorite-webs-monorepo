@@ -1,7 +1,45 @@
+import {
+  imageCampusEatery,
+  imageLibrary,
+  imageQuadDrill,
+  imageStudentDiner,
+  imageStudyCafe,
+} from "@repo/ui/assets";
+import { StaticImageData } from "next/image";
+import { status } from "./helper";
+
 // constants.ts
 export type Review = {
   name: string;
   review: string;
+};
+
+export type vendor = {
+  id: number;
+  name: string;
+  image: StaticImageData;
+  avrgPreparationTime?: string;
+  description?: string;
+};
+
+export type order = {
+  id: string;
+  status: status;
+  items: string[];
+  total: number;
+  orderTime: string;
+  estimatedDelivery: string;
+  deliveryAddress: string;
+  tracking: {
+    step: string;
+    time: string;
+    completed: boolean;
+  }[];
+  orderDetails: {
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
 };
 
 export const REVIEWS: Review[] = [
@@ -103,5 +141,179 @@ export const REVIEWS: Review[] = [
   {
     name: "Sarah M.",
     review: "Doorrite is simply the most reliable delivery service I’ve used.",
+  },
+];
+
+export const foodTags = [
+  "authentic",
+  "breakfast",
+  "bulk",
+  "cheap-eats",
+  "comfort",
+  "drink",
+  "family",
+  "fast-food",
+  "grill",
+  "healthy",
+  "handheld",
+  "halal",
+  "hearty",
+  "low-cal",
+  "morning",
+  "noodles",
+  "party",
+  "premium",
+  "popular",
+  "protein",
+  "regional",
+  "refreshing",
+  "soup",
+  "spicy",
+  "street-food",
+  "staple",
+  "sweet",
+  "takeaway",
+  "treats",
+  "snack",
+];
+
+export const VENDORS = [
+  {
+    id: 1,
+    name: "The campus Eatery",
+    image: imageCampusEatery,
+    avrgPreparationTime: "15-20 mins",
+    description:
+      "A vibrant spot offering a variety of meals and snacks for students.",
+  },
+  {
+    id: 2,
+    name: "The Study Cafe",
+    image: imageStudyCafe,
+    avrgPreparationTime: "10-15 mins",
+    description:
+      "A cozy cafe perfect for studying, serving coffee and light bites.",
+  },
+  {
+    id: 3,
+    name: "The Student Diner",
+    image: imageStudentDiner,
+    avrgPreparationTime: "20-25 mins",
+    description:
+      "A classic diner with a diverse menu, ideal for students on the go.",
+  },
+  {
+    id: 4,
+    name: "The Library Cafe",
+    image: imageLibrary,
+    avrgPreparationTime: "5-10 mins",
+    description:
+      "A quiet cafe located in the library, offering quick snacks and drinks.",
+  },
+  {
+    id: 5,
+    name: "The Quad Grill",
+    image: imageQuadDrill,
+    avrgPreparationTime: "15-20 mins",
+    description:
+      "An outdoor grill serving fresh, grilled meals in a relaxed setting.",
+  },
+];
+
+export const orders: order[] = [
+  {
+    id: "ORD-001",
+    status: "delivered",
+    items: ["Spicy Chicken Sandwich", "Fries", "Coke"],
+    total: 19.01,
+    orderTime: "2025-08-11T09:30:00",
+    estimatedDelivery: "2025-08-11T10:45:00",
+    deliveryAddress: "123 University Ave, Apt 4B, Campus Town, CA 90210",
+    tracking: [
+      { step: "Order Placed", time: "9:30 AM", completed: true },
+      { step: "Preparing", time: "9:45 AM", completed: true },
+      { step: "Out for Delivery", time: "10:15 AM", completed: true },
+      { step: "Delivered", time: "10:30 AM", completed: true },
+    ],
+    orderDetails: [
+      { name: "Chicken Sandwich", quantity: 1, price: 8.99 },
+      { name: "Fries", quantity: 2, price: 3.98 },
+      { name: "Coke", quantity: 1, price: 2.49 },
+    ],
+  },
+  {
+    id: "ORD-002",
+    status: "out-for-delivery",
+    items: ["Breakfast Bagel", "Coffee"],
+    total: 8.49,
+    orderTime: "2025-08-11T08:15:00",
+    estimatedDelivery: "2025-08-11T09:00:00",
+    deliveryAddress: "Dormitory B, Room 305, Campus Town, CA 90210",
+    tracking: [
+      { step: "Order Placed", time: "8:15 AM", completed: true },
+      { step: "Preparing", time: "8:25 AM", completed: true },
+      { step: "Out for Delivery", time: "8:45 AM", completed: true },
+      { step: "Delivered", time: "9:00 AM", completed: false },
+    ],
+    orderDetails: [
+      { name: "Breakfast Bagel", quantity: 1, price: 5.49 },
+      { name: "Coffee", quantity: 1, price: 3.0 },
+    ],
+  },
+  {
+    id: "ORD-003",
+    status: "preparing",
+    items: ["Veggie Wrap", "Smoothie"],
+    total: 11.99,
+    orderTime: "2025-08-11T11:30:00",
+    estimatedDelivery: "2025-08-11T12:15:00",
+    deliveryAddress: "456 College St, Apt 2A, Campus Town, CA 90210",
+    tracking: [
+      { step: "Order Placed", time: "11:30 AM", completed: true },
+      { step: "Preparing", time: "11:35 AM", completed: true },
+      { step: "Out for Delivery", time: "Pending", completed: false },
+      { step: "Delivered", time: "Pending", completed: false },
+    ],
+    orderDetails: [
+      { name: "Veggie Wrap", quantity: 1, price: 8.49 },
+      { name: "Smoothie", quantity: 1, price: 3.5 },
+    ],
+  },
+  {
+    id: "ORD-004",
+    status: "cancelled",
+    items: ["Pizza", "Soda"],
+    total: 15.99,
+    orderTime: "2025-08-10T19:20:00",
+    estimatedDelivery: "2025-08-10T20:30:00",
+    deliveryAddress: "789 Student Ave, Room 101, Campus Town, CA 90210",
+    tracking: [
+      { step: "Order Placed", time: "7:20 PM", completed: true },
+      { step: "Cancelled", time: "7:25 PM", completed: true },
+    ],
+    orderDetails: [
+      { name: "Pizza", quantity: 1, price: 12.99 },
+      { name: "Soda", quantity: 1, price: 3.0 },
+    ],
+  },
+  {
+    id: "ORD-005",
+    status: "incoming",
+    items: ["Burger", "Fries", "Shake"],
+    total: 16.47,
+    orderTime: "2025-08-11T12:00:00",
+    estimatedDelivery: "2025-08-11T12:45:00",
+    deliveryAddress: "321 Academic Blvd, Suite 5C, Campus Town, CA 90210",
+    tracking: [
+      { step: "Order Placed", time: "12:00 PM", completed: true },
+      { step: "Preparing", time: "Pending", completed: false },
+      { step: "Out for Delivery", time: "Pending", completed: false },
+      { step: "Delivered", time: "Pending", completed: false },
+    ],
+    orderDetails: [
+      { name: "Burger", quantity: 1, price: 9.99 },
+      { name: "Fries", quantity: 1, price: 3.99 },
+      { name: "Shake", quantity: 1, price: 2.49 },
+    ],
   },
 ];
