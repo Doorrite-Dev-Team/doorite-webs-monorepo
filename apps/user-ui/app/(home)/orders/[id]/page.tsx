@@ -1,18 +1,15 @@
 import { Button } from "@repo/ui/components/button";
-import {
-  MessageCircle,
-  Phone,
-} from "lucide-react";
-import { order, orders } from "../../../../libs/contant";
-import { formatTime } from '../../../../libs/helper';
+import { MessageCircle, Phone } from "lucide-react";
+import { orders } from "../../../../libs/contant";
+import { formatTime } from "../../../../libs/helper";
 
-interface OrderPageProps extends PageProps {
-    params: Promise<{ id: string; }>;  // Change here if a promise is needed
-}
-
-const OrderPage = async ({ params }: OrderPageProps) => {
-  const id = await params.id;
-  const selectedOrder: order | undefined = orders.find((order) => order.id === id);
+export default async function OrderPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const selectedOrder = orders.find((o) => o.id === id);
 
   if (!selectedOrder) {
     return <div>Order not found</div>;
@@ -112,6 +109,4 @@ const OrderPage = async ({ params }: OrderPageProps) => {
       </div>
     </div>
   );
-};
-
-export default OrderPage
+}
