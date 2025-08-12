@@ -66,7 +66,7 @@ const Home = () => {
               asChild
               className="bg-primary/15 text-black hover:bg-primary/25"
             >
-              <Link href="/signup">Get Started</Link>
+              <Link href="/(auth)/signup">Get Started</Link>
             </Button>
           </div>
         </section>
@@ -150,7 +150,7 @@ const Home = () => {
               ))}
             </div>
           </div>
-          <div>
+          <div className="p-4">
             <h2 className="font-bold text-2xl mb-5">How it works</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {[
