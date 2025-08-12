@@ -6,12 +6,12 @@ import {
 import { order, orders } from "../../../../libs/contant";
 import { formatTime } from '../../../../libs/helper';
 
-interface OrderPageProps {
-  params: { id: string };
+interface OrderPageProps extends PageProps {
+    params: Promise<{ id: string; }>;  // Change here if a promise is needed
 }
 
-const OrderPage = ({ params }: OrderPageProps) => {
-  const id = params.id;
+const OrderPage = async ({ params }: OrderPageProps) => {
+  const id = await params.id;
   const selectedOrder: order | undefined = orders.find((order) => order.id === id);
 
   if (!selectedOrder) {
