@@ -8,10 +8,10 @@ export function middleware(req: NextRequest) {
   if (req.nextUrl.pathname === "/") {
     if (token) {
       // Redirect to internal home
-      return NextResponse.redirect(new URL("/home", req.url));
+      return NextResponse.rewrite(new URL("/home", req.url));
     } else {
-      // Redirect to landing page
-      return NextResponse.redirect(new URL("/", req.url));
+      // rewrite to landing page
+      return NextResponse.rewrite(new URL("/landing", req.url));
     }
   }
 

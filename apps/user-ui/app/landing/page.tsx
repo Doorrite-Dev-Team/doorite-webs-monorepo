@@ -26,7 +26,7 @@ import Autoplay from "embla-carousel-autoplay";
 import { Bike, Globe, Package, ShoppingBag, Store, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { REVIEWS } from "../libs/contant";
+import { REVIEWS } from "../../libs/contant";
 
 const Home = () => {
   return (
