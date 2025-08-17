@@ -23,15 +23,16 @@ import {
   CarouselItem,
 } from "@repo/ui/components/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import { Bike, Globe, Package, ShoppingBag, Store, User } from "lucide-react";
+import { Bike, Package, ShoppingBag, Store, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import Header from "../../components/tabHeader";
 import { REVIEWS } from "../../libs/contant";
 
 const Home = () => {
   return (
     <>
-      <header className="w-full">
+      {/* <header className="w-full">
         <nav className="flex items-center justify-between p-6">
           <Link href="/" className="">
             <Image src="/icon.jpg" alt="Logo" width={24} height={24} />
@@ -39,8 +40,9 @@ const Home = () => {
           <p className="font-bold text-xl">Doorrite</p>
           <Globe size={24} className="text-xl font-bold" />
         </nav>
-      </header>
-      <main className="my-3">
+      </header> */}
+      <Header />
+      <main className="my-20 space-y-10">
         <section className=" p-4 flex flex-col gap-5">
           <div className="flex items-center justify-center">
             <Image
@@ -59,14 +61,15 @@ const Home = () => {
             more.
           </p>
           <div className="flex items-center gap-5">
-            <Button asChild>
+            <Button size="lg" asChild>
               <Link href="/continue">Explore Platform</Link>
             </Button>
             <Button
+              size="lg"
               asChild
               className="bg-primary/15 text-black hover:bg-primary/25"
             >
-              <Link href="/signup">Get Started</Link>
+              <Link href="/sign-up">Get Started</Link>
             </Button>
           </div>
         </section>

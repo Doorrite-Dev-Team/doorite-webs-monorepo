@@ -11,11 +11,20 @@ const Home = () => {
   return (
     <div className="flex h-full w-full items-center justify-center mt-4">
       <div className="w-full flex flex-col items-center gap-4">
-        <div className="flex w-full mx-4 items-center gap-2 rounded-lg border bg-primary/10 p-2 shadow-sm">
-          <Image src={iconSearch} alt="Search Icon" width={20} height={20} />
+        <div className="w-full mx-4">
           <Input
+            variant="ghost"
+            size="lg"
+            leftIcon={
+              <Image
+                src={iconSearch}
+                alt="Search Icon"
+                width={20}
+                height={20}
+              />
+            }
             placeholder="Search for food or Vendor"
-            className="flex-1 text-primary text-lg bg-transparent border-0 shadow-none appearance-none focus:appearance-none ring-0 focus:outline-none focus:ring-0 focus:border-0 focus:shadow-none focus-visible:ring-0 placeholder:text-muted-foreground "
+            className="text-primary text-lg placeholder:text-muted-foreground bg-primary/10 border border-primary/20 rounded-lg shadow-sm"
           />
         </div>
         <ScrollArea className="w-full whitespace-nowrap my-2">
@@ -32,28 +41,34 @@ const Home = () => {
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
         <div className="w-full my-4 space-y-4">
-          <h2 className="width-full text-2xl font-bold text-primary mt-4">Popular Foods</h2>
+          <h2 className="width-full text-2xl font-bold text-primary mt-4">
+            Popular Foods
+          </h2>
           <VendorsCarousel />
         </div>
         <div className="w-full my-4 space-y-4">
-          <h2 className="width-full text-2xl font-bold text-primary mt-4">All Vendors</h2>
-          {
-            VENDORS.map((vendor) => (
-              <div key={vendor.id} className="flex items-center gap-4 p-4">
-                <Image
-                  src={vendor.image}
-                  alt={vendor.name}
-                  width={80}
-                  height={80}
-                  className="w-24 h-24 object-cover rounded-lg"
-                />
-                <div className="flex flex-col">
-                  <h3 className="text-lg font-semibold text-gray-800">{vendor.name}</h3>
-                  <p className="text-sm text-primary/50">{vendor.avrgPreparationTime}</p>
-                </div>
+          <h2 className="width-full text-2xl font-bold text-primary mt-4">
+            All Vendors
+          </h2>
+          {VENDORS.map((vendor) => (
+            <div key={vendor.id} className="flex items-center gap-4 p-4">
+              <Image
+                src={vendor.image}
+                alt={vendor.name}
+                width={80}
+                height={80}
+                className="w-24 h-24 object-cover rounded-lg"
+              />
+              <div className="flex flex-col">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {vendor.name}
+                </h3>
+                <p className="text-sm text-primary/50">
+                  {vendor.avrgPreparationTime}
+                </p>
               </div>
-            ))
-          }
+            </div>
+          ))}
         </div>
       </div>
     </div>

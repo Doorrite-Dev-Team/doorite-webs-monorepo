@@ -25,21 +25,32 @@ const SearchPage = (): React.ReactNode => {
     <div className="flex h-full w-full items-center justify-center mt-4">
       <div className="w-full flex flex-col items-center gap-4">
         {/* Search bar */}
-        <div className="flex w-full mx-4 items-center gap-2 rounded-lg border bg-primary/10 p-2 shadow-sm">
-          <Image src={iconSearch} alt="Search Icon" width={25} height={25} />
+        <div className="w-full mx-4">
           <Input
-            placeholder="Search for food or Vendor"
-            className="flex-1 text-primary text-lg bg-transparent border-0 shadow-none appearance-none focus-visible:ring-0 focus:border-0 focus:shadow-none placeholder:text-muted-foreground focus-visible:appearance-none "
+            variant="ghost"
+            size="lg"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            leftIcon={
+              <Image
+                src={iconSearch}
+                alt="Search Icon"
+                width={20}
+                height={20}
+              />
+            }
+            rightIcon={
+              search && (
+                <CircleX
+                  className="text-primary cursor-pointer"
+                  size={25}
+                  onClick={() => setSearch("")}
+                />
+              )
+            }
+            placeholder="Search for food or Vendor"
+            className="text-primary text-lg placeholder:text-muted-foreground bg-primary/10 border border-primary/20 rounded-lg shadow-sm"
           />
-          {search && (
-            <CircleX
-              className="text-primary cursor-pointer"
-              size={25}
-              onClick={() => setSearch("")}
-            />
-          )}
         </div>
 
         {/* Results */}
