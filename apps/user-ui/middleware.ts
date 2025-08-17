@@ -2,11 +2,13 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export function middleware(req: NextRequest) {
-  const token = req.cookies.get("ACCESS_TOKEN")?.value;
+  const access_token = req.cookies.get("access_token")?.value;
+  const request_token = req.cookies.get("request_token")?.value;
+
 
   // Visiting root `/`
   if (req.nextUrl.pathname === "/") {
-    if (token) {
+    if (access_token || request_token) {
       // Redirect to internal home
       return NextResponse.rewrite(new URL("/home", req.url));
     } else {

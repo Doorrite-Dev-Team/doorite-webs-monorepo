@@ -13,32 +13,33 @@ export default function Header() {
 
   // consider / and /home top-level pages
   const isTopLevel =
-    pathname === '/' ||
-    pathname === '' ||
-    pathname === '/home' ||
-    pathname === '/landing-page';
+    pathname === "/" ||
+    pathname === "" ||
+    pathname === "/home" ||
+    pathname === "/landing";
 
-  const isTabRoute = pathname === "/home"
-    || pathname === '/search'
-    || pathname === '/orders'
-    || pathname === '/account';
+  const isTabRoute =
+    pathname === "/home" ||
+    pathname === "/search" ||
+    pathname === "/orders" ||
+    pathname === "/account";
 
-  const title = isTopLevel ? 'Doorrite' : humanizePath(pathname);
+  const title = isTopLevel ? "Doorrite" : humanizePath(pathname);
 
   const handleBack = useCallback(() => {
     // try to go back, otherwise push to /home
-    if (typeof window !== 'undefined' && window.history.length > 1) {
+    if (typeof window !== "undefined" && window.history.length > 1) {
       router.back();
     } else {
-      router.push('/home');
+      router.push("/home");
     }
   }, [router]);
 
   return (
-    <header className="bg-white shadow-md fixed top-0 left-0 right-0 z-50 w-full ">
+    <header className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50 w-full ">
       <nav className="flex items-center justify-between p-6">
         <div className="flex items-center gap-3">
-          {isTabRoute ? (
+          {isTabRoute || isTopLevel ? (
             <Link href="/" className="flex items-center gap-3">
               <Image
                 src="/icon.jpg"
@@ -53,9 +54,9 @@ export default function Header() {
             <button
               aria-label="Go back"
               onClick={handleBack}
-              className="p-2 rounded-md hover:bg-gray-100"
+              className="p-3 rounded-md hover:bg-gray-100"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={24} />
             </button>
           )}
 
@@ -65,17 +66,20 @@ export default function Header() {
           </div> */}
         </div>
         <p className="font-bold text-xl">{title}</p>
-        <div className='flex items-center justify-center gap-10'>
+        <div className="flex items-center justify-center gap-4">
           <button
             aria-label="Change language"
-            className=""
+            className="hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 p-3"
             title="Change language"
           >
-            <Globe size={30} />
+            <Globe size={24} />
           </button>
-            <Link href="/cart">
-              <ShoppingCart size={30} />
-            </Link>
+          <Link
+            className="hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 p-3"
+            href="/cart"
+          >
+            <ShoppingCart size={24} />
+          </Link>
         </div>
       </nav>
     </header>

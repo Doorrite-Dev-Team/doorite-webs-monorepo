@@ -1,9 +1,12 @@
 import {
   imageCampusEatery,
+  imageCustomer,
   imageLibrary,
   imageQuadDrill,
+  imageRider,
   imageStudentDiner,
   imageStudyCafe,
+  imageVendor,
 } from "@repo/ui/assets";
 import { StaticImageData } from "next/image";
 import { status } from "./helper";
@@ -40,6 +43,14 @@ export type order = {
     quantity: number;
     price: number;
   }[];
+};
+
+type Service = "Customer" | "Vendor" | "Rider";
+export type ServiceInfo = {
+  name: Service;
+  url: string;
+  description: string;
+  imgSrc: StaticImageData;
 };
 
 export const REVIEWS: Review[] = [
@@ -315,5 +326,26 @@ export const orders: order[] = [
       { name: "Fries", quantity: 1, price: 3.99 },
       { name: "Shake", quantity: 1, price: 2.49 },
     ],
+  },
+];
+
+export const ServicesInfo: ServiceInfo[] = [
+  {
+    name: "Customer",
+    url: "/sign-up",
+    description: "Order food and groceries.",
+    imgSrc: imageCustomer,
+  },
+  {
+    name: "Vendor",
+    url: "vendor.doorrite.app/sign-up",
+    description: "Order food and groceries.",
+    imgSrc: imageVendor,
+  },
+  {
+    name: "Rider",
+    url: "rider.doorrite.app/sign-up",
+    description: "Order food and groceries.",
+    imgSrc: imageRider,
   },
 ];
