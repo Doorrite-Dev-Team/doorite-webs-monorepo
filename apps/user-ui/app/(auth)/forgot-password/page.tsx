@@ -22,7 +22,13 @@ type PasswordFormData = {
   confirmPassword: string;
 };
 
-export type Page = "email" | "otp" | "Change Password" | "success";
+export type Page =
+  | "email"
+  | "otp"
+  | "Change Password"
+  | "success"
+  | true
+  | false;
 
 export default function ForgotPassword() {
   const [userEmail, setUserEmail] = useState("");

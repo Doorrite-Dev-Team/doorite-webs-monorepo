@@ -12,6 +12,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import VerifyOTP from "../../../components/verify-otp";
 import Axios from "../../../libs/Axios";
+import { Page } from "../forgot-password/page";
 
 type FormData = {
   fullName: string;
@@ -24,7 +25,7 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [userEmail, setuserEmail] = useState("")
         const [errorMessage, setErrorMessage] = useState<string>()
-  const [showOTP, setShowOtp] = useState<boolean>(false)
+  const [showOTP, setShowOtp] = useState<Page>(false);
   const router = useRouter()
 
   const {

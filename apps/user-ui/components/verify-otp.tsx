@@ -298,11 +298,13 @@ export default function VerifyOTP({
       <div className="text-center">
         <Button
           variant="link"
-          onClick={() => setToSignUp("email")}
+          onClick={() =>
+            purpose === "verify" ? setToSignUp("email") : setToSignUp(true)
+          }
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Sign Up
+          {purpose === "verify" ? "Confirm Your Email" : "Back to Sign Up"}
         </Button>
       </div>
     </div>
