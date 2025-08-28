@@ -1,4 +1,6 @@
 "use client";
+import Header from "@/components/tab-header";
+import { REVIEWS } from "@/libs/contant";
 import {
   doorriteImage,
   iconAccount,
@@ -26,8 +28,6 @@ import Autoplay from "embla-carousel-autoplay";
 import { Bike, Package, ShoppingBag, Store, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import Header from "../../components/tabHeader";
-import { REVIEWS } from "../../libs/contant";
 
 const Home = () => {
   return (

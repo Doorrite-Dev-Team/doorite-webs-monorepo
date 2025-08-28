@@ -1,7 +1,7 @@
 // app/(home)/layout.tsx or wherever your HomeLayout sits
+import Header from "@/components/tab-header";
+import TabNavication from "@/components/tab-navication";
 import React from "react";
-import Header from "../../components/tabHeader";
-import TabNavication from "../../components/tabNavication";
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -9,7 +9,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
       <Header />
 
       {/* Give main enough top padding so content doesn't hide under fixed header */}
-      <main className="pt-24 pb-24 max-w-5xl mx-auto px-4">{children}</main>
+      <main className="py-4 max-w-5xl mx-auto px-4">{children}</main>
 
       {/* Tab nav (assumes it's fixed to bottom) */}
       <TabNavication />

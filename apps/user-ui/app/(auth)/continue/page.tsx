@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { ServicesInfo } from "../../../libs/contant";
+import { ServicesInfo } from "@/libs/contant";
 
 export default function ContinuePage() {
   return (

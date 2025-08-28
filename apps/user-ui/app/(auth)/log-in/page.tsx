@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import Axios from "../../../libs/Axios";
+import Axios from "@/libs/Axios";
 
 type FormData = {
   email: string;

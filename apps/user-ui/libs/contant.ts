@@ -20,9 +20,16 @@ export type Review = {
 export type vendor = {
   id: number;
   name: string;
-  image: StaticImageData;
-  avrgPreparationTime?: string;
-  description?: string;
+  image: StaticImageData | string;
+  avrgPreparationTime: string;
+  description: string;
+  category: string;
+  subcategory: string;
+  rating: number;
+  distance: number;
+  isOpen: boolean;
+  priceRange: string;
+  tags: string[];
 };
 
 export type order = {
@@ -188,14 +195,21 @@ export const foodTags = [
   "snack",
 ];
 
-export const VENDORS = [
+export const VENDORS: vendor[] = [
   {
     id: 1,
-    name: "The campus Eatery",
+    name: "The Campus Eatery",
     image: imageCampusEatery,
     avrgPreparationTime: "15-20 mins",
     description:
       "A vibrant spot offering a variety of meals and snacks for students.",
+    category: "food",
+    subcategory: "restaurant",
+    rating: 4.5,
+    distance: 0.3,
+    isOpen: true,
+    priceRange: "$$",
+    tags: ["popular", "student-favorite", "variety"],
   },
   {
     id: 2,
@@ -204,6 +218,13 @@ export const VENDORS = [
     avrgPreparationTime: "10-15 mins",
     description:
       "A cozy cafe perfect for studying, serving coffee and light bites.",
+    category: "food",
+    subcategory: "cafe",
+    rating: 4.7,
+    distance: 0.1,
+    isOpen: true,
+    priceRange: "$",
+    tags: ["quiet", "coffee", "study-friendly"],
   },
   {
     id: 3,
@@ -212,6 +233,13 @@ export const VENDORS = [
     avrgPreparationTime: "20-25 mins",
     description:
       "A classic diner with a diverse menu, ideal for students on the go.",
+    category: "food",
+    subcategory: "diner",
+    rating: 4.3,
+    distance: 0.5,
+    isOpen: true,
+    priceRange: "$$",
+    tags: ["classic", "diverse-menu", "comfort-food"],
   },
   {
     id: 4,
@@ -220,6 +248,13 @@ export const VENDORS = [
     avrgPreparationTime: "5-10 mins",
     description:
       "A quiet cafe located in the library, offering quick snacks and drinks.",
+    category: "food",
+    subcategory: "cafe",
+    rating: 4.1,
+    distance: 0.2,
+    isOpen: true,
+    priceRange: "$",
+    tags: ["quick", "library", "snacks"],
   },
   {
     id: 5,
@@ -228,6 +263,55 @@ export const VENDORS = [
     avrgPreparationTime: "15-20 mins",
     description:
       "An outdoor grill serving fresh, grilled meals in a relaxed setting.",
+    category: "food",
+    subcategory: "grill",
+    rating: 4.6,
+    distance: 0.4,
+    isOpen: false, // Closed for variety
+    priceRange: "$$",
+    tags: ["outdoor", "grilled", "fresh"],
+  },
+  {
+    id: 6,
+    name: "Campus Grocery",
+    image: "🛒",
+    avrgPreparationTime: "5 mins",
+    description: "Essential groceries and daily items for campus life.",
+    category: "grocery",
+    subcategory: "convenience",
+    rating: 4.2,
+    distance: 0.3,
+    isOpen: true,
+    priceRange: "$",
+    tags: ["essentials", "convenient", "daily-needs"],
+  },
+  {
+    id: 7,
+    name: "Fresh Market",
+    image: "🥬",
+    avrgPreparationTime: "10 mins",
+    description: "Fresh produce and healthy options for conscious students.",
+    category: "grocery",
+    subcategory: "fresh-produce",
+    rating: 4.4,
+    distance: 0.6,
+    isOpen: true,
+    priceRange: "$$",
+    tags: ["fresh", "healthy", "organic"],
+  },
+  {
+    id: 8,
+    name: "Campus Pharmacy",
+    image: "💊",
+    avrgPreparationTime: "2-5 mins",
+    description: "Health essentials, medications, and wellness products.",
+    category: "pharmacy",
+    subcategory: "health",
+    rating: 4.8,
+    distance: 0.2,
+    isOpen: true,
+    priceRange: "$$",
+    tags: ["health", "medications", "wellness"],
   },
 ];
 

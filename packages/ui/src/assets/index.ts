@@ -3,6 +3,7 @@ export { default as arrivalTime } from "./arrival-time.png";
 export { default as customerEarning } from "./customer-earning.png";
 export { default as customerImage } from "./customer-image.png";
 export { default as doorriteImage } from "./doorrite-image.png";
+export { default as dooriteLogo } from "./icon.png";
 
 export { default as iconAccount } from "./icon-account.png";
 export { default as iconAdd } from "./icon-add.png";

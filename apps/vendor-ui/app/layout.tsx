@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Doorite User UI",
-  description: "User interface for Doorite",
+  title: "Doorite Vendor UI",
+  description: "Vendor interface for Doorite",
   icons: {
     icon: "/icon.ico",
   },
