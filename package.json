@@ -11,13 +11,15 @@
     "node": ">=18"
   },
   "name": "doorite-webs-monorepo",
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@10.15.0",
   "private": true,
   "scripts": {
     "all": "turbo run dev",
     "build": "turbo run build",
     "check-types": "turbo run check-types",
-    "dev": "turbo run dev --filter user-ui",
+    "dev:rider": "turbo run dev --filter rider-ui",
+    "dev:user": "turbo run dev --filter user-ui",
+    "dev:vendor": "turbo run dev --filter vendor-ui",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint"
   }

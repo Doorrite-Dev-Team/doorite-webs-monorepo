@@ -1,5 +1,7 @@
 "use client";
 
+import VerifyOTP from "@/components/verify-otp";
+import Axios from "@/ios";
 import { logoFull } from "@repo/ui/assets";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
@@ -10,8 +12,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import VerifyOTP from "../../../components/verify-otp";
-import Axios from "../../../libs/Axios";
 import { Page } from "../forgot-password/page";
 
 type FormData = {

@@ -1,6 +1,6 @@
 // app/(home)/layout.tsx or wherever your HomeLayout sits
+import Header from "@/components/tab-header";
 import React from "react";
-import Header from "../../components/tabHeader";
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   return (
