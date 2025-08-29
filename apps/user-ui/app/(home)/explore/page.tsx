@@ -77,6 +77,8 @@ const PRICE_FILTERS = [
   { value: "$$$", label: "Premium ($$$)" }
 ];
 
+export const dynamic = "force-dynamic";
+
 export default function ExplorePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
