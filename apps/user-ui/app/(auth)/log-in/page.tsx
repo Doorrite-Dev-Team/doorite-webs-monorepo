@@ -29,7 +29,7 @@ export default function Login() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      const res = await loginUser(data);
+      const res = await loginUser(data.email, data.password);
 
       if (!res || !res.ok) {
         // use server-provided message if present
