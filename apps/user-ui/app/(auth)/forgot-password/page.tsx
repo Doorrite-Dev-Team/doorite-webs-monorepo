@@ -54,7 +54,7 @@ export default function ForgotPassword() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      const res = await forgotPassword(email);
+      const res = await forgotPassword(data.email);
 
       if (!res?.ok) {
         setErrorMessage(res?.message ?? "Sign up failed. Please try again.");
