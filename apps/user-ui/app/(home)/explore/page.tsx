@@ -30,78 +30,84 @@ import {
   SlidersHorizontal,
   Star,
   UtensilsCrossed,
-  X
+  X,
 } from "lucide-react";
 
 import { VENDORS, vendor } from "@/libs/contant";
 
-// Simple category configuration
+/* --- Configs --- */
 const CATEGORIES = [
   {
     id: "all",
     name: "All",
     icon: Search,
-    color: "bg-gray-50 text-gray-600 border-gray-200"
+    color: "bg-gray-50 text-gray-600 border-gray-200",
   },
   {
-    id: "food", 
+    id: "food",
     name: "Food & Dining",
     icon: UtensilsCrossed,
-    color: "bg-blue-50 text-blue-600 border-blue-200"
+    color: "bg-blue-50 text-blue-600 border-blue-200",
   },
   {
     id: "grocery",
-    name: "Groceries", 
+    name: "Groceries",
     icon: ShoppingCart,
-    color: "bg-green-50 text-green-600 border-green-200"
+    color: "bg-green-50 text-green-600 border-green-200",
   },
   {
     id: "pharmacy",
     name: "Pharmacy",
     icon: Cross,
-    color: "bg-red-50 text-red-600 border-red-200"
-  }
+    color: "bg-red-50 text-red-600 border-red-200",
+  },
 ];
 
 const SORT_OPTIONS = [
   { value: "popular", label: "Most Popular" },
   { value: "distance", label: "Nearest First" },
   { value: "rating", label: "Highest Rated" },
-  { value: "fastest", label: "Fastest Delivery" }
+  { value: "fastest", label: "Fastest Delivery" },
 ];
 
 const PRICE_FILTERS = [
   { value: "all", label: "Any Price" },
   { value: "$", label: "Budget ($)" },
   { value: "$$", label: "Moderate ($$)" },
-  { value: "$$$", label: "Premium ($$$)" }
+  { value: "$$$", label: "Premium ($$$)" },
 ];
 
-export const dynamic = "force-dynamic";
-
+/* --- Component --- */
 export default function ExplorePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
-  const [search, setSearch] = useState(searchParams.get('q') || "");
-  const [category, setCategory] = useState(searchParams.get('category') || "all");
-  const [sortBy, setSortBy] = useState(searchParams.get('sort') || "popular");
-  const [priceFilter, setPriceFilter] = useState(searchParams.get('price') || "all");
-  const [showOpenOnly, setShowOpenOnly] = useState(searchParams.get('open') === 'true');
+
+  // Initialize states from URL params (safe - client only)
+  const [search, setSearch] = useState(searchParams.get("q") || "");
+  const [category, setCategory] = useState(
+    searchParams.get("category") || "all"
+  );
+  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "popular");
+  const [priceFilter, setPriceFilter] = useState(
+    searchParams.get("price") || "all"
+  );
+  const [showOpenOnly, setShowOpenOnly] = useState(
+    searchParams.get("open") === "true"
+  );
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const [debouncedSearch] = useDebounceValue(search, 300);
 
-  // Update URL with all filters
+  /* Update URL with all filters (push state without scroll) */
   const updateURL = useCallback(() => {
     const params = new URLSearchParams();
-    if (search) params.set('q', search);
-    if (category !== "all") params.set('category', category);
-    if (sortBy !== "popular") params.set('sort', sortBy);
-    if (priceFilter !== "all") params.set('price', priceFilter);
-    if (showOpenOnly) params.set('open', 'true');
-    
-    const newURL = params.toString() ? `?${params.toString()}` : '';
+    if (search) params.set("q", search);
+    if (category !== "all") params.set("category", category);
+    if (sortBy !== "popular") params.set("sort", sortBy);
+    if (priceFilter !== "all") params.set("price", priceFilter);
+    if (showOpenOnly) params.set("open", "true");
+
+    const newURL = params.toString() ? `?${params.toString()}` : "";
     router.replace(`/explore${newURL}`, { scroll: false });
   }, [router, search, category, sortBy, priceFilter, showOpenOnly]);
 
@@ -109,7 +115,7 @@ export default function ExplorePage() {
     updateURL();
   }, [updateURL]);
 
-  // Clear all filters
+  /* Clear filters */
   const clearFilters = () => {
     setSearch("");
     setCategory("all");
@@ -118,39 +124,40 @@ export default function ExplorePage() {
     setShowOpenOnly(false);
   };
 
-  // Filter and sort logic
+  /* -------- PURE computation: filtered & sorted items (no side-effects) -------- */
   const filteredAndSortedItems = useMemo(() => {
-    setIsLoading(true);
-    
-    let items = [...VENDORS] as vendor[];
-    
-    // Apply category filter
+    // Defensive: ensure VENDORS is array
+    const vendorsArray = Array.isArray(VENDORS) ? VENDORS : [];
+    let items = [...vendorsArray] as vendor[];
+
+    // Category
     if (category !== "all") {
-      items = items.filter(vendor => vendor.category === category);
+      items = items.filter((v) => v.category === category);
     }
-    
-    // Apply search filter
+
+    // Search (debounced)
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
-      items = items.filter(vendor => 
-        vendor.name.toLowerCase().includes(q) || 
-        vendor.description?.toLowerCase().includes(q) ||
-        vendor.subcategory?.toLowerCase().includes(q) ||
-        vendor.tags?.some(tag => tag.toLowerCase().includes(q))
+      items = items.filter(
+        (v) =>
+          (v.name || "").toLowerCase().includes(q) ||
+          (v.description || "").toLowerCase().includes(q) ||
+          (v.subcategory || "").toLowerCase().includes(q) ||
+          (v.tags || []).some((tag) => (tag || "").toLowerCase().includes(q))
       );
     }
-    
-    // Apply price filter
+
+    // Price
     if (priceFilter !== "all") {
-      items = items.filter(vendor => vendor.priceRange === priceFilter);
+      items = items.filter((v) => v.priceRange === priceFilter);
     }
-    
-    // Apply open only filter
+
+    // Open only
     if (showOpenOnly) {
-      items = items.filter(vendor => vendor.isOpen);
+      items = items.filter((v) => v.isOpen);
     }
-    
-    // Apply sorting
+
+    // Sorting
     items.sort((a, b) => {
       switch (sortBy) {
         case "distance":
@@ -158,19 +165,38 @@ export default function ExplorePage() {
         case "rating":
           return (b.rating || 0) - (a.rating || 0);
         case "fastest":
-          return parseInt(a.avrgPreparationTime) - parseInt(b.avrgPreparationTime);
+          // safe parseInt with fallback
+          return (
+            (parseInt(a.avrgPreparationTime || "0", 10) || 0) -
+            (parseInt(b.avrgPreparationTime || "0", 10) || 0)
+          );
         case "popular":
         default:
-          return (b.rating || 0) * (5 - (a.distance || 0)) - (a.rating || 0) * (5 - (b.distance || 0));
+          // simple popularity heuristic
+          return (
+            (b.rating || 0) * (5 - (a.distance || 0)) -
+            (a.rating || 0) * (5 - (b.distance || 0))
+          );
       }
     });
-    
-    setTimeout(() => setIsLoading(false), 200);
+
     return items;
   }, [category, debouncedSearch, sortBy, priceFilter, showOpenOnly]);
 
-  const hasActiveFilters = category !== "all" || priceFilter !== "all" || showOpenOnly || debouncedSearch;
+  /* -------- Side-effect: manage loading AFTER render (safe for SSR/prerender) -------- */
+  useEffect(() => {
+    setIsLoading(true);
+    const t = setTimeout(() => setIsLoading(false), 200);
+    return () => clearTimeout(t);
+  }, [category, debouncedSearch, sortBy, priceFilter, showOpenOnly]);
 
+  const hasActiveFilters =
+    category !== "all" ||
+    priceFilter !== "all" ||
+    showOpenOnly ||
+    !!debouncedSearch;
+
+  /* -------- UI helpers -------- */
   const LoadingSkeleton = () => (
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
@@ -218,7 +244,7 @@ export default function ExplorePage() {
             />
             <Input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => setSearch((e.target as HTMLInputElement).value)}
               placeholder="Search for food, vendors, or items..."
               className="w-full h-12 pl-12 pr-12 text-base bg-white border-2 border-gray-200 rounded-lg focus:border-primary transition-colors"
             />
@@ -235,23 +261,18 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        {/* Category Filters - Simple horizontal scroll */}
+        {/* Category Filters */}
         <div className="mb-6">
           <div className="flex gap-3 overflow-x-auto pb-2">
             {CATEGORIES.map((cat) => {
               const isActive = category === cat.id;
               const Icon = cat.icon;
-
               return (
                 <Button
                   key={cat.id}
                   variant={isActive ? "default" : "outline"}
                   onClick={() => setCategory(cat.id)}
-                  className={`flex items-center gap-2 whitespace-nowrap h-10 ${
-                    isActive
-                      ? "bg-primary text-white"
-                      : "bg-white hover:bg-gray-50"
-                  }`}
+                  className={`flex items-center gap-2 whitespace-nowrap h-10 ${isActive ? "bg-primary text-white" : "bg-white hover:bg-gray-50"}`}
                 >
                   <Icon size={16} />
                   {cat.name}
@@ -264,39 +285,39 @@ export default function ExplorePage() {
         {/* Filters Row */}
         <div className="flex items-center justify-between mb-6 gap-4">
           <div className="flex items-center gap-3 flex-1">
-            {/* Sort */}
-            <Select value={sortBy} onValueChange={setSortBy}>
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v)}>
               <SelectTrigger className="w-[180px] h-9 bg-white">
                 <SlidersHorizontal size={16} className="mr-2" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SORT_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                {SORT_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            {/* Price Filter */}
-            <Select value={priceFilter} onValueChange={setPriceFilter}>
+            <Select
+              value={priceFilter}
+              onValueChange={(v) => setPriceFilter(v)}
+            >
               <SelectTrigger className="w-[140px] h-9 bg-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {PRICE_FILTERS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                {PRICE_FILTERS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            {/* Open Only Toggle */}
             <Button
               variant={showOpenOnly ? "default" : "outline"}
-              onClick={() => setShowOpenOnly(!showOpenOnly)}
+              onClick={() => setShowOpenOnly((s) => !s)}
               className="h-9 bg-white hover:bg-gray-50"
             >
               {showOpenOnly ? (
@@ -308,7 +329,6 @@ export default function ExplorePage() {
             </Button>
           </div>
 
-          {/* Clear Filters */}
           {hasActiveFilters && (
             <Button
               variant="ghost"
@@ -378,8 +398,10 @@ export default function ExplorePage() {
   );
 }
 
+/* -------- Vendor Card & Empty State (unchanged semantics) -------- */
 function VendorCard({ vendor }: { vendor: vendor }) {
-  const isStringImage = typeof vendor.image === "string" && 
+  const isStringImage =
+    typeof vendor.image === "string" &&
     (vendor.image.startsWith("http") || vendor.image.startsWith("/"));
 
   return (
@@ -387,7 +409,6 @@ function VendorCard({ vendor }: { vendor: vendor }) {
       <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-all duration-200 group-hover:scale-[1.01]">
         <CardContent className="p-4">
           <div className="flex gap-4">
-            {/* Vendor Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
@@ -400,8 +421,13 @@ function VendorCard({ vendor }: { vendor: vendor }) {
                 </div>
                 <div className="text-right">
                   <div className="flex items-center space-x-1">
-                    <Star size={14} className="fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium">{vendor.rating}</span>
+                    <Star
+                      size={14}
+                      className="fill-yellow-400 text-yellow-400"
+                    />
+                    <span className="text-sm font-medium">
+                      {vendor.rating ?? "-"}
+                    </span>
                   </div>
                   <p className="text-xs text-gray-500">{vendor.priceRange}</p>
                 </div>
@@ -411,36 +437,30 @@ function VendorCard({ vendor }: { vendor: vendor }) {
                 {vendor.description}
               </p>
 
-              {/* Status & Info */}
               <div className="flex items-center gap-3 text-xs">
-                <Badge 
-                  variant={vendor.isOpen ? "default" : "secondary"} 
-                  className={`text-xs ${
-                    vendor.isOpen 
-                      ? 'bg-green-100 text-green-700 border-green-200' 
-                      : 'bg-gray-100 text-gray-600'
-                  }`}
+                <Badge
+                  variant={vendor.isOpen ? "default" : "secondary"}
+                  className={`text-xs ${vendor.isOpen ? "bg-green-100 text-green-700 border-green-200" : "bg-gray-100 text-gray-600"}`}
                 >
-                  {vendor.isOpen ? 'Open' : 'Closed'}
+                  {vendor.isOpen ? "Open" : "Closed"}
                 </Badge>
-                
+
                 <div className="flex items-center space-x-1 text-gray-500">
                   <MapPin size={12} />
-                  <span>{vendor.distance} km</span>
+                  <span>{vendor.distance ?? "-"} km</span>
                 </div>
 
                 <div className="flex items-center space-x-1 text-gray-500">
                   <Clock size={12} />
-                  <span>{vendor.avrgPreparationTime}</span>
+                  <span>{vendor.avrgPreparationTime ?? "-"}</span>
                 </div>
               </div>
             </div>
 
-            {/* Vendor Image */}
             <div className="w-20 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
               {isStringImage ? (
                 <Image
-                  src={vendor.image}
+                  src={vendor.image as string}
                   alt={vendor.name}
                   width={80}
                   height={64}
@@ -449,12 +469,12 @@ function VendorCard({ vendor }: { vendor: vendor }) {
               ) : typeof vendor.image === "string" ? (
                 <div className="text-2xl">{vendor.image}</div>
               ) : (
-                <Image 
-                  src={vendor.image} 
-                  alt={vendor.name} 
-                  width={80} 
-                  height={64} 
-                  className="object-cover w-full h-full" 
+                <Image
+                  src={vendor.image}
+                  alt={vendor.name}
+                  width={80}
+                  height={64}
+                  className="object-cover w-full h-full"
                 />
               )}
             </div>
@@ -465,10 +485,14 @@ function VendorCard({ vendor }: { vendor: vendor }) {
   );
 }
 
-function EmptyState({ hasSearch, searchTerm, onClear }: { 
-  hasSearch: boolean; 
-  searchTerm: string; 
-  onClear: () => void; 
+function EmptyState({
+  hasSearch,
+  searchTerm,
+  onClear,
+}: {
+  hasSearch: boolean;
+  searchTerm: string;
+  onClear: () => void;
 }) {
   return (
     <Card className="border-0 bg-white">
@@ -477,16 +501,15 @@ function EmptyState({ hasSearch, searchTerm, onClear }: {
           <Search className="w-8 h-8 text-gray-400" />
         </div>
         <h3 className="text-xl font-semibold text-gray-700 mb-3">
-          {hasSearch ? 'No results found' : 'No vendors available'}
+          {hasSearch ? "No results found" : "No vendors available"}
         </h3>
         <p className="text-gray-500 mb-6 max-w-sm mx-auto">
-          {hasSearch 
+          {hasSearch
             ? `We couldn't find anything matching "${searchTerm}". Try different keywords or clear your filters.`
-            : 'Try adjusting your filters or search for something specific.'
-          }
+            : "Try adjusting your filters or search for something specific."}
         </p>
         <Button onClick={onClear} className="bg-primary hover:bg-primary/90">
-          {hasSearch ? 'Clear search & filters' : 'Reset filters'}
+          {hasSearch ? "Clear search & filters" : "Reset filters"}
         </Button>
       </CardContent>
     </Card>
