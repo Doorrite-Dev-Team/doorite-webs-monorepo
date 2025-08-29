@@ -1,11 +1,10 @@
 "use client";
 
+import { signUpUser } from "@/actions/auth";
 import VerifyOTP from "@/components/verify-otp";
-import Axios from "@/ios";
 import { logoFull } from "@repo/ui/assets";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
-import axios from "axios";
 import { Eye, EyeOff, Mail, Phone, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,10 +22,10 @@ type FormData = {
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
-  const [userEmail, setuserEmail] = useState("")
-        const [errorMessage, setErrorMessage] = useState<string>()
+  const [userEmail, setuserEmail] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string>();
   const [showOTP, setShowOtp] = useState<Page>(false);
-  const router = useRouter()
+  const router = useRouter();
 
   const {
     register,
@@ -36,49 +35,33 @@ export default function SignUp() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      const res = await Axios.post("/auth/create-user", data);
+      const res = await signUpUser(data);
 
-      // Manual "ok" check for API's success flag
-      // if (!res.data?.ok) {
-      //   throw new Error(res.data?.message || "Server returned an error.");
-      // }
-
-      setuserEmail(data.email)
-      setShowOtp(true)
-      return res;
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        if (err.response) {
-          console.error(err)
-          setErrorMessage(
-            err.response.data?.message || "SignUp failed. Please try again."
-          );
-        } else if (err.request) {
-          console.error(err);
-          setErrorMessage(
-            "Unable to connect to the server. Please check your internet or try again later."
-          );
-        } else {
-          setErrorMessage(err.message);
-        }
-      } else if (err instanceof Error) {
-        // This is for our manual throw above
-        setErrorMessage(err.message);
-      } else {
-        setErrorMessage("An unexpected error occurred.");
+      if (!res || !res.ok) {
+        // use server-provided message if present
+        setErrorMessage(res?.message ?? "Sign up failed. Please try again.");
+        return;
       }
+      setuserEmail(data.email);
+      setShowOtp(true);
+    } catch (err) {
+      setErrorMessage(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (err as any)?.message || "An error occurred. Please try again."
+      );
     }
   });
-  if(showOTP) return (
-    <VerifyOTP
-      email={userEmail}
-      verificationType="email"
-      onVerifySuccess={() => {
-        router.push("/");
-      }}
-      setToSignUp={setShowOtp}
-    />
-  ); 
+  if (showOTP)
+    return (
+      <VerifyOTP
+        email={userEmail}
+        verificationType="email"
+        onVerifySuccess={() => {
+          router.push("/");
+        }}
+        setToSignUp={setShowOtp}
+      />
+    );
   return (
     <div className="w-full max-w-md mx-auto p-6 mt-10 space-y-6">
       {/* Header Section */}
@@ -189,7 +172,7 @@ export default function SignUp() {
       {errorMessage && (
         <p className="my-4 text-red-500 font-medium">{errorMessage}</p>
       )}
-      
+
       {/* Footer Links */}
       <div className="flex items-center justify-between text-sm">
         <div>
