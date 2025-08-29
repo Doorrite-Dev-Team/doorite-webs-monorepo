@@ -1,11 +1,10 @@
 "use client";
 
+import { forgotPassword, resetPassword } from "@/actions/auth";
 import VerifyOTP from "@/components/verify-otp"; // Adjust path as per your project structure
-import Axios from "@/ios";
 import { logoFull } from "@repo/ui/assets";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
-import axios from "axios";
 import { ArrowLeft, CheckCircle, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,63 +54,36 @@ export default function ForgotPassword() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      const res = await Axios.post("/auth/forget-password", data);
+      const res = await forgotPassword(email);
 
+      if (!res?.ok) {
+        setErrorMessage(res?.message ?? "Sign up failed. Please try again.");
+        return;
+      }
       setUserEmail(data.email);
       setPage("otp"); // Show the OTP verification component
       setErrorMessage("");
       return res;
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        console.error(err);
-        if (err.response) {
-          setErrorMessage(
-            err.response.data?.message || "Failed to send verification code. Please try again."
-          );
-        } else if (err.request) {
-          setErrorMessage(
-            "Unable to connect to the server. Please check your internet or try again later."
-          );
-        } else {
-          setErrorMessage(err.message);
-        }
-      } else if (err instanceof Error) {
-        setErrorMessage(err.message);
-      } else {
-        setErrorMessage("An unexpected error occurred.");
-      }
+      setErrorMessage(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (err as any)?.message || "An error occurred. Please try again."
+      );
     }
   });
 
   const onPasswordSubmit = handlePasswordSubmit(async (data) => {
     try {
-      const res = await Axios.post("/auth/reset-password", {
-        email: userEmail,
-        ...data
-      });
+      const res = await resetPassword({ email: userEmail, ...data });
 
       setPage("success");
       setErrorMessage("");
       return res;
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        console.error(err);
-        if (err.response) {
-          setErrorMessage(
-            err.response.data?.message || "Failed to reset password. Please try again."
-          );
-        } else if (err.request) {
-          setErrorMessage(
-            "Unable to connect to the server. Please check your internet or try again later."
-          );
-        } else {
-          setErrorMessage(err.message);
-        }
-      } else if (err instanceof Error) {
-        setErrorMessage(err.message);
-      } else {
-        setErrorMessage("An unexpected error occurred.");
-      }
+      setErrorMessage(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (err as any)?.message || "An error occurred. Please try again."
+      );
     }
   });
 
@@ -159,8 +131,9 @@ export default function ForgotPassword() {
               },
               pattern: {
                 value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                message: "Password must contain uppercase, lowercase, and number"
-              }
+                message:
+                  "Password must contain uppercase, lowercase, and number",
+              },
             })}
             error={passwordErrors.password?.message}
             type={showPassword ? "text" : "password"}
@@ -187,7 +160,7 @@ export default function ForgotPassword() {
             {...registerPassword("confirmPassword", {
               required: "Please confirm your password",
               validate: (value) =>
-                value === watchPassword || "Passwords do not match"
+                value === watchPassword || "Passwords do not match",
             })}
             error={passwordErrors.confirmPassword?.message}
             type={showConfirmPassword ? "text" : "password"}
@@ -197,7 +170,9 @@ export default function ForgotPassword() {
                 type="button"
                 className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                aria-label={
+                  showConfirmPassword ? "Hide password" : "Show password"
+                }
               >
                 {showConfirmPassword ? (
                   <EyeOff className="w-4 h-4 text-muted-foreground" />
@@ -249,7 +224,7 @@ export default function ForgotPassword() {
             <div className="w-2 h-2 bg-primary rounded-full" />
             <h1 className="font-bold text-2xl">Password Updated!</h1>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-center">
               <CheckCircle className="w-16 h-16 text-green-500" />
@@ -272,7 +247,7 @@ export default function ForgotPassword() {
           >
             Continue to Log In
           </Button>
-          
+
           <div className="text-center">
             <Link
               href="/"

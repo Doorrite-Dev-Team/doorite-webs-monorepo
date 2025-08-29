@@ -1,5 +1,6 @@
 "use client";
 
+import { createOtp, verifyOtp } from "@/actions/auth";
 import { logoFull } from "@repo/ui/assets";
 import { Button } from "@repo/ui/components/button";
 import {
@@ -7,7 +8,6 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@repo/ui/components/input-otp";
-import axios from "axios";
 import { ArrowLeft, Mail, MessageSquare, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import {
@@ -18,7 +18,6 @@ import {
   useState,
 } from "react";
 import { Page } from "../app/(auth)/forgot-password/page";
-import Axios from "../libs/Axios";
 
 // --- Configuration Constants ---
 // Best practice: Define configurable constants at the top for easy maintenance.
@@ -84,55 +83,51 @@ export default function VerifyOTP({
     return () => clearTimeout(timer);
   }, [countdown]);
 
-    const handleResendOTP = async()=>  {
-      const newAttemptCount = resendAttempts + 1;
-      setResendAttempts(newAttemptCount);
+/**
+ * Returns true when resend request succeeded (or queued). Returns false on failure or when locked out.
+ */
+  const handleResendOTP = async (): Promise<boolean> => {
+    // set busy indicator first
+    setIsResending(true);
 
-      // If max attempts are reached, start a long lockout. Otherwise, start a normal countdown.
-      if (newAttemptCount > MAX_RESEND_ATTEMPTS) {
-        setCountdown(LOCKOUT_DURATION);
-        setError(
-          `Too many requests. Please try again in ${formatTime(countdown)}.`
-        );
-      } else {
-        setCountdown(INITIAL_COUNTDOWN);
-      }
+    // increment attempt counter
+    const newAttemptCount = resendAttempts + 1;
+    setResendAttempts(newAttemptCount);
 
-      setOtp(""); // Clear previous OTP input
-      try {
-        const res = await Axios.post("/auth/create-otp", { email: email });
-
-        // Manual "ok" check for API's success flag
-        // if (!res.data?.ok) {
-        //   throw new Error(res.data?.message || "Server returned an error.");
-        // }
-        console.log(res)
-      } catch (err) {
-        if (axios.isAxiosError(err)) {
-          console.error(err)
-          if (err.response) {
-            setError(
-              err.response.data?.message ||
-                "Failed to resend code. Please try again later."
-            );
-          } else if (err.request) {
-            setError(
-              "Unable to connect to the server. Please check your internet or try again later."
-            );
-          } else {
-            setError(err.message);
-          }
-        } else if (err instanceof Error) {
-          // This is for our manual throw above
-          setError(err.message);
-        } else {
-          setError("Failed to resend code. Please try again later.");
-        }
-      } finally {
-        setIsResending(false);
-      }
+    // Lockout logic
+    if (newAttemptCount > MAX_RESEND_ATTEMPTS) {
+      setCountdown(LOCKOUT_DURATION);
+      setError(
+        `Too many requests. Please try again in ${formatTime(LOCKOUT_DURATION)}.`
+      );
+      setOtp("");
+      setIsResending(false);
+      return false; // early return — do not spam server while locked out
     }
-  
+
+    // Normal countdown path
+    setCountdown(INITIAL_COUNTDOWN);
+    setOtp(""); // clear previous OTP input
+
+    try {
+      const res = await createOtp(email);
+
+      // Server expected shape: { ok: boolean, message?: string, ... }
+      if (!res?.ok) {
+        const msg = "Failed to resend code. Please try again later.";
+        setError(msg)
+        return false;
+      }
+      
+      setError("");
+      return true;
+    } catch (err: any) {
+      setError(err?.message || "An unexpected error occurred. Please try again.");
+      return false;
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   // --- Event Handlers ---
   const handleOTPChange = useCallback((value: string) => {
@@ -149,40 +144,24 @@ export default function VerifyOTP({
     setIsVerifying(true);
     setError("");
 
-     try {
-       const res = await Axios.post("/auth/verify-otp", { email, otp, purpose });
+  try {
+    const res = await verifyOtp({email, otp, purpose: "verify"})
 
-       // Manual "ok" check for API's success flag
-      //  if (!res.data?.ok) {
-      //    throw new Error(res.data?.message || "Server returned an error.");
-      //  }
-      console.log(res);
-      
-       onVerifySuccess?.()
-     } catch (err) {
-       if (axios.isAxiosError(err)) {
-        console.error(err)
-         if (err.response) {
-           setError(
-             err.response.data?.message ||
-               "Verification failed. An unexpected error occurred."
-           );
-         } else if (err.request) {
-           setError(
-             "Unable to connect to the server. Please check your internet or try again later."
-           );
-         } else {
-           setError(err.message);
-         }
-       } else if (err instanceof Error) {
-         // This is for our manual throw above
-         setError(err.message);
-       } else {
-         setError("Verification failed. An unexpected error occurred.");
-       }
-     } finally {
-       setIsVerifying(false);
-     }
+    // Server expected shape: { ok: boolean, message?: string, ... }
+    if (!res?.ok) {
+      const msg = "Failed to resend code. Please try again later.";
+      setError(msg)
+      return false;
+    }
+    onVerifySuccess?.()
+    setError("");
+    return true;
+  } catch (err: any) {
+    setError(err?.message || "An unexpected error occurred. Please try again.");
+    return false;
+  } finally {
+    setIsResending(false);
+  }
   }
 
   const isLockedOut = resendAttempts >= MAX_RESEND_ATTEMPTS;

@@ -1,3 +1,4 @@
+import { Toaster } from "@repo/ui/components/sonner";
 import "@repo/ui/globals.css";
 import type { Metadata } from "next";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
@@ -32,6 +33,7 @@ export default function RootLayout({
         className={`${plus_Jakarta_Sans.variable} ${geistMono.variable} max-w-4xl mx-auto`}
       >
         {children}
+        <Toaster />
       </body>
     </html>
   );

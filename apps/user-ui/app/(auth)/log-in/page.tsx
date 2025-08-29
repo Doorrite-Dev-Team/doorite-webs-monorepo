@@ -1,16 +1,15 @@
 "use client"
 
+import { loginUser } from "@/actions/auth";
 import { logoFull } from "@repo/ui/assets";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
-import axios from "axios";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import Axios from "@/libs/Axios";
 
 type FormData = {
   email: string;
@@ -19,45 +18,33 @@ type FormData = {
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-      const router = useRouter();
-      const [errorMessage, setErrorMessage] = useState<string>()
-  
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>();
+  const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState<string>();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>();
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      const res = await Axios.post("/auth/login-user", data);
+      const res = await loginUser(data);
 
-      // Manual "ok" check for API's success flag
-      // if (!res.data?.ok) {
-      //   throw new Error(res.data?.message || "Server returned an error.");
-      // }
+      if (!res || !res.ok) {
+        // use server-provided message if present
+        setErrorMessage(res?.message ?? "Sign up failed. Please try again.");
+        return;
+      }
 
       router.push("/");
-      return res;
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        console.error(err)
-        if (err.response) {
-          setErrorMessage(
-            err.response.data?.message || "Login failed. Please try again."
-          );
-        } else if (err.request) {
-          setErrorMessage(
-            "Unable to connect to the server. Please check your internet or try again later."
-          );
-        } else {
-          setErrorMessage(err.message);
-        }
-      } else if (err instanceof Error) {
-        // This is for our manual throw above
-        setErrorMessage(err.message);
-      } else {
-        setErrorMessage("An unexpected error occurred.");
-      }
+      setErrorMessage(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (err as any)?.message || "An error occurred. Please try again."
+      );
     }
   });
-
 
   return (
     <div className="w-full max-w-md mx-auto p-6 mt-10 space-y-6">
