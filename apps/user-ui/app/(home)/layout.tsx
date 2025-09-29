@@ -1,18 +1,29 @@
-// app/(home)/layout.tsx or wherever your HomeLayout sits
+"use client";
+
 import Header from "@/components/tab-header";
-import TabNavication from "@/components/tab-navication";
+import TabNavigation from "@/components/tab-navication";
 import React from "react";
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="min-h-screen w-full">
-      <Header />
+    <div className="min-h-screen w-full flex">
+      {/* Sidebar for desktop */}
+      <aside className="hidden md:block fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 border-r bg-white z-40">
+        <TabNavigation />
+      </aside>
 
-      {/* Give main enough top padding so content doesn't hide under fixed header */}
-      <main className="py-4 max-w-5xl mx-auto px-4">{children}</main>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* ✅ No toggleSidebar prop anymore */}
+        <Header />
 
-      {/* Tab nav (assumes it's fixed to bottom) */}
-      <TabNavication />
+        {/* Spacer for fixed header */}
+        <div className="h-16" />
+
+        <main className="py-4 px-4 md:ml-64 max-w-5xl w-full mx-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 };
