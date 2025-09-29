@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${plus_Jakarta_Sans.variable} ${geistMono.variable} max-w-4xl mx-auto`}
+        className={`${plus_Jakarta_Sans.variable} ${geistMono.variable} max-w-full mx-auto`}
       >
         {children}
         <Toaster />

@@ -1,5 +1,6 @@
 // app/(home)/explore/page.tsx
-import ExploreClient from "@/components/explore";
+
+import ExplorePage from "@/components/explore/ExplorePage";
 import { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -16,7 +17,7 @@ export default function Page() {
         </div>
       }
     >
-      <ExploreClient />
+      <ExplorePage />
     </Suspense>
   );
 }
