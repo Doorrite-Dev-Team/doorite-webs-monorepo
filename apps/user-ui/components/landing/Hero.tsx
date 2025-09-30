@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@repo/ui/components/button";
 import { doorriteImage } from "@repo/ui/assets";
 
 export default function Hero() {

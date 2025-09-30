@@ -422,13 +422,13 @@ export const ServicesInfo: ServiceInfo[] = [
   },
   {
     name: "Vendor",
-    url: "vendor.doorrite.app/sign-up",
+    url: "https://doorrite-vendor-ui.netlify.app/signup",
     description: "Order food and groceries.",
     imgSrc: imageVendor,
   },
   {
     name: "Rider",
-    url: "rider.doorrite.app/sign-up",
+    url: "https://doorrite-rider-ui.netlify.app/signup",
     description: "Order food and groceries.",
     imgSrc: imageRider,
   },

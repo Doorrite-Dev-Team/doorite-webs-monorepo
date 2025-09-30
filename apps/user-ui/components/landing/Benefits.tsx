@@ -23,7 +23,7 @@ export default function Benefits() {
       description:
         "Expand your reach and grow your business with our reliable delivery network and marketing support.",
       icon: iconPackage,
-      renderIcon: <Store size={24} className="mb-2" />,
+      renderIcon: <Store size={24} className="mx-auto mb-2" />,
     },
     {
       name: "Riders",
