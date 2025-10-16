@@ -22,7 +22,7 @@ type FormData = {
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
-  const [userEmail, setuserEmail] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState<string>();
   const [showOTP, setShowOtp] = useState<Page>(false);
   const router = useRouter();
@@ -33,35 +33,43 @@ export default function SignUp() {
     formState: { errors, isSubmitting },
   } = useForm<FormData>();
 
+  /**
+   * Handles registration with your global signUpUser() action
+   * Automatically uses Axios baseURL and toast system
+   */
   const onSubmit = handleSubmit(async (data) => {
+    setErrorMessage(undefined); // clear previous error
+
     try {
       const res = await signUpUser(data);
 
       if (!res || !res.ok) {
-        // use server-provided message if present
         setErrorMessage(res?.message ?? "Sign up failed. Please try again.");
         return;
       }
-      setuserEmail(data.email);
+
+      // Show OTP verification component after successful signup
+      setUserEmail(data.email);
       setShowOtp(true);
     } catch (err) {
+      // fallback if server error occurs
       setErrorMessage(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (err as any)?.message || "An error occurred. Please try again."
       );
     }
   });
+
+  // After registration, show Verify OTP screen
   if (showOTP)
     return (
       <VerifyOTP
         email={userEmail}
         verificationType="email"
-        onVerifySuccess={() => {
-          router.push("/");
-        }}
+        onVerifySuccess={() => router.push("/")}
         setToSignUp={setShowOtp}
       />
     );
+
   return (
     <div className="w-full max-w-md mx-auto p-6 mt-10 space-y-6">
       {/* Header Section */}
@@ -78,6 +86,7 @@ export default function SignUp() {
 
       {/* Form Section */}
       <form onSubmit={onSubmit} className="space-y-5">
+        {/* Full Name */}
         <Input
           label="Full Name"
           leftIcon={<User className="w-4 h-4" />}
@@ -92,6 +101,7 @@ export default function SignUp() {
           placeholder="John Doe"
         />
 
+        {/* Email */}
         <Input
           label="Email Address"
           leftIcon={<Mail className="w-4 h-4" />}
@@ -107,6 +117,7 @@ export default function SignUp() {
           type="email"
         />
 
+        {/* Password */}
         <Input
           label="Password"
           {...register("password", {
@@ -122,7 +133,7 @@ export default function SignUp() {
             pattern: {
               value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
               message:
-                "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+                "Password must contain at least one uppercase, one lowercase, and one number",
             },
           })}
           error={errors.password?.message}
@@ -144,6 +155,7 @@ export default function SignUp() {
           }
         />
 
+        {/* Phone Number */}
         <Input
           label="Phone Number"
           leftIcon={<Phone className="w-4 h-4" />}
@@ -158,7 +170,8 @@ export default function SignUp() {
           error={errors.phoneNumber?.message}
           placeholder="09011122233"
         />
-        {/* errorMessage */}
+
+        {/* Submit */}
         <Button
           type="submit"
           size="lg"
@@ -169,6 +182,7 @@ export default function SignUp() {
         </Button>
       </form>
 
+      {/* Error Message */}
       {errorMessage && (
         <p className="my-4 text-red-500 font-medium">{errorMessage}</p>
       )}

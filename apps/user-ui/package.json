@@ -2,6 +2,7 @@
   "dependencies": {
     "@repo/ui": "workspace:^",
     "axios": "^1.11.0",
+    "cookie": "^1.0.2",
     "embla-carousel-autoplay": "^8.6.0",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.536.0",
@@ -16,6 +17,7 @@
     "@repo/eslint-config": "workspace:^",
     "@repo/typescript-config": "workspace:^",
     "@tailwindcss/postcss": "^4.1.11",
+    "@types/cookie": "^1.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
