@@ -37,7 +37,7 @@ export default function Login() {
         return;
       }
 
-      router.push("/");
+      router.push("/home");
     } catch (err) {
       setErrorMessage(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/actions/auth.ts
-"use server";
+"use client";
 
 import Axios from "@/libs/Axios";
 import { toast } from "@repo/ui/components/sonner";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
-// Generic API response shape used by client actions
+// Generic API response shape
 export type ApiResponse<T = unknown> = {
   ok: boolean;
   message: string;
@@ -22,7 +22,7 @@ export type SignUpFormData = {
 };
 
 export type LoginPayload = {
-  identifier: string; // email | phone
+  identifier: string;
   password: string;
 };
 
@@ -38,10 +38,6 @@ export type ResetPasswordPayload = {
   confirmPassword: string;
 };
 
-/**
- * Safe extractor that supports server currently returning either
- * { message } or { error } on failure. Returns undefined if nothing.
- */
 function getMessageFromPayload(payload: unknown): string | undefined {
   if (!payload || typeof payload !== "object") return undefined;
   const r = payload as Record<string, unknown>;
@@ -51,128 +47,109 @@ function getMessageFromPayload(payload: unknown): string | undefined {
   return undefined;
 }
 
-/** Normalize success responses from AxiosResponse */
-function handleSuccess<T = unknown>(
-  res: AxiosResponse<unknown>
-): ApiResponse<T> {
-  const payload = res.data as unknown;
-  const maybeMessage = getMessageFromPayload(payload);
-  // try to detect ok flag (server should include it)
-  const okFlag =
-    (payload && typeof payload === "object" && (payload as any).ok) === true;
-  // prefer server-provided data field, otherwise payload
-  const data =
-    (payload && typeof payload === "object" && (payload as any).data) ??
-    payload;
+function handleSuccess<T = unknown>(res: AxiosResponse<unknown>): ApiResponse<T> {
+  const payload = res.data as any;
+  const okFlag = payload?.ok ?? true;
+  const message = getMessageFromPayload(payload) ?? "Success";
+  const data = payload?.data ?? payload;
 
-   if (Boolean(okFlag) && maybeMessage) {
-     toast.success((res.data as any).message);
-   }
-  return {
-    ok: Boolean(okFlag),
-    message: maybeMessage ?? (okFlag ? "Success" : "Request failed"),
-    data: data as T,
-  };
+  return { ok: Boolean(okFlag), message, data };
 }
 
-/** Normalize errors caught from Axios (or thrown) */
 function handleError(err: unknown): ApiResponse {
-  // AxiosError path
   if (axios.isAxiosError(err)) {
-    const axiosErr = err as AxiosError;
-    const payload = axiosErr.response?.data;
+    const payload = err.response?.data;
     const message =
-      getMessageFromPayload(payload) ?? axiosErr.message ?? "Request failed";
+      getMessageFromPayload(payload) ?? err.message ?? "Request failed";
     return { ok: false, message };
   }
-
-  // Plain Error
-  if (err instanceof Error) {
-    return { ok: false, message: err.message };
-  }
-
-  // Unknown
+  if (err instanceof Error) return { ok: false, message: err.message };
   return { ok: false, message: "An unexpected error occurred" };
 }
 
-/* ========== Auth actions ========== */
+/* ========== Auth Actions ========== */
 
-/** Create (register) user */
-export async function signUpUser(
-  payload: SignUpFormData
-): Promise<ApiResponse> {
+export async function signUpUser(payload: SignUpFormData): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/create-user", payload);
+    toast.success((res.data as any)?.message ?? "Account created successfully");
     return handleSuccess(res);
   } catch (err: unknown) {
     console.error("signUpUser error:", err);
-    return handleError(err);
+    const message = handleError(err).message;
+    toast.error(message);
+    return { ok: false, message };
   }
 }
 
-/** Login user (identifier: email | phone) */
-export async function loginUser(
-  identifier: string,
-  password: string
-): Promise<ApiResponse> {
+// /api/v1/auth/verify-otp
+// /api/v1/auth/login-user
+
+export async function loginUser(identifier: string, password: string): Promise<ApiResponse> {
   try {
-    const res = await Axios.post("/auth/login", { identifier, password });
+    const res = await Axios.post("/auth/login-user", { identifier, password });
+    toast.success((res.data as any)?.message ?? "Login successful");
     return handleSuccess(res);
   } catch (err: unknown) {
     console.error("loginUser error:", err);
-    return handleError(err);
+    const message = handleError(err).message;
+    toast.error(message);
+    return { ok: false, message };
   }
 }
 
-/** Create (send) OTP to email */
 export async function createOtp(email: string): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/create-otp", { email });
+    toast.success((res.data as any)?.message ?? "OTP sent");
     return handleSuccess(res);
   } catch (err: unknown) {
     console.error("createOtp error:", err);
-    return handleError(err);
+    const message = handleError(err).message;
+    toast.error(message);
+    return { ok: false, message };
   }
 }
 
-/** Verify OTP (purpose: "verify" or "reset") */
-export async function verifyOtp(
-  payload: VerifyOtpPayload
-): Promise<ApiResponse> {
+export async function verifyOtp(payload: VerifyOtpPayload): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/verify-otp", payload);
+    toast.success((res.data as any)?.message ?? "OTP verified successfully");
     return handleSuccess(res);
   } catch (err: unknown) {
     console.error("verifyOtp error:", err);
-    return handleError(err);
+    const message = handleError(err).message;
+    toast.error(message);
+    return { ok: false, message };
   }
 }
 
-/** Send forgot-password OTP */
 export async function forgotPassword(email: string): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/forgot-password", { email });
+    toast.success((res.data as any)?.message ?? "Reset OTP sent");
     return handleSuccess(res);
   } catch (err: unknown) {
     console.error("forgotPassword error:", err);
-    return handleError(err);
+    const message = handleError(err).message;
+    toast.error(message);
+    return { ok: false, message };
   }
 }
 
-/** Reset password using previously-verified reset flow */
-export async function resetPassword(
-  payload: ResetPasswordPayload
-): Promise<ApiResponse> {
+export async function resetPassword(payload: ResetPasswordPayload): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/reset-password", payload);
+    toast.success((res.data as any)?.message ?? "Password reset successful");
     return handleSuccess(res);
   } catch (err: unknown) {
     console.error("resetPassword error:", err);
-    return handleError(err);
+    const message = handleError(err).message;
+    toast.error(message);
+    return { ok: false, message };
   }
 }
 
-/** Refresh token (server will set cookies) */
 export async function refreshToken(): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/refresh-token");
@@ -183,13 +160,15 @@ export async function refreshToken(): Promise<ApiResponse> {
   }
 }
 
-/** Logout (clears cookies server-side) */
 export async function logout(): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/logout");
+    toast.success("Logged out successfully");
     return handleSuccess(res);
   } catch (err: unknown) {
     console.error("logout error:", err);
-    return handleError(err);
+    const message = handleError(err).message;
+    toast.error(message);
+    return { ok: false, message };
   }
 }

@@ -1,26 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// lib/axios.ts
+// libs/Axios.ts
 import { toast } from "@repo/ui/components/sonner";
 import axios, { AxiosError, AxiosResponse } from "axios";
 
+/**
+ * Axios instance configuration
+ * Uses Doorrite API in production, falls back to localhost in development.
+ */
 const Axios = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URI
-    ? `${process.env.NEXT_PUBLIC_API_URI}/api/v1`
-    : "http://localhost:4000/api/v1",
+  baseURL:
+    process.env.NEXT_PUBLIC_API_URI ??
+    "https://doorrite-api.onrender.com/api/v1/",
   withCredentials: true,
-  timeout: 5 * 60 * 1000,
+  timeout: 5 * 60 * 1000, // 5 minutes
 });
 
 /**
- * Helper to extract a message from various server payload shapes.
- * Server may return { message } OR { error } — handle both.
+ * Helper to extract readable message from server response.
+ * Handles multiple possible response formats gracefully.
  */
 function extractMessageFromResponse(res?: AxiosResponse<unknown>) {
   if (!res) return undefined;
   const payload = res.data as unknown;
   if (payload && typeof payload === "object") {
     const record = payload as Record<string, unknown>;
-    // prefer message, fallback to error
     if (typeof record.message === "string") return record.message;
     if (typeof record.error === "string") return record.error;
     if (typeof record.msg === "string") return record.msg;
@@ -29,64 +32,66 @@ function extractMessageFromResponse(res?: AxiosResponse<unknown>) {
 }
 
 /**
- * Success interceptor:
- * - show toast when server returns { ok: true, message: "..." }
- * - tolerant to `message` OR `error` fields
+ * ✅ Response interceptor
+ * - Displays success toasts for responses with { ok: true, message: "..." }
+ * - Handles error states and normalizes error messages for easy debugging
  */
 Axios.interceptors.response.use(
   (res) => {
-    // show toast only for explicit server-provided success messages
     try {
-      const ok = (res.data as any)?.ok; // just to detect the flag — transient cast only
+      const ok = (res.data as any)?.ok;
       const message = extractMessageFromResponse(res);
       if (ok && message) {
         toast.success(message);
       }
     } catch {
-      // swallow issues in the interceptor
+      // Do nothing if toast fails
     }
     return res;
   },
   (err: unknown) => {
-    // Normalize errors into { status?, message, details? } and reject
     if (axios.isAxiosError(err)) {
       const axiosErr = err as AxiosError;
       const status = axiosErr.response?.status;
       const message =
-        // prefer server payload message/error
         (axiosErr.response && extractMessageFromResponse(axiosErr.response)) ??
-        // fallback to axios error message
         axiosErr.message ??
         "Request failed";
-
       const details = (axiosErr.response?.data as any)?.details;
 
-      // Special-case read-only / maintenance / forbidden statuses to make UX clearer
+      // 🔒 Special error handling for clarity
       if (status === 405 || status === 403) {
+        toast.error(message || "Action not allowed (read-only).");
         return Promise.reject({
           status,
           message: message || "Action not allowed (read-only).",
           details,
         });
       }
+
       if (status === 503) {
+        toast.error("Service unavailable. Please try again later.");
         return Promise.reject({
           status,
-          message: message || "Service unavailable. Please try again later.",
+          message: "Service unavailable. Please try again later.",
           details,
         });
       }
 
       if (axiosErr.request && !axiosErr.response) {
+        toast.error("No response from server. Check your connection.");
         return Promise.reject({
           message: "No response from server. Check your connection.",
         });
       }
 
+      // Default error toast
+      toast.error(message || "Something went wrong");
       return Promise.reject({ status, message, details });
     }
 
-    // non-Axios unknown error
+    // Fallback for non-Axios errors
+    toast.error((err as Error)?.message ?? "Unexpected error");
     return Promise.reject({
       message: (err as Error)?.message ?? "Unexpected error",
     });
