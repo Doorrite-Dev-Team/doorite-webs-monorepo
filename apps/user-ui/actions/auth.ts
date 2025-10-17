@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/actions/auth.ts
-"use client";
 
-import Axios from "@/libs/Axios";
+import Axios, { extractMessageFromResponse } from "@/libs/Axios";
 import { toast } from "@repo/ui/components/sonner";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 
 // Generic API response shape
 export type ApiResponse<T = unknown> = {
@@ -47,7 +46,9 @@ function getMessageFromPayload(payload: unknown): string | undefined {
   return undefined;
 }
 
-function handleSuccess<T = unknown>(res: AxiosResponse<unknown>): ApiResponse<T> {
+function handleSuccess<T = unknown>(
+  res: AxiosResponse<unknown>
+): ApiResponse<T> {
   const payload = res.data as any;
   const okFlag = payload?.ok ?? true;
   const message = getMessageFromPayload(payload) ?? "Success";
@@ -69,7 +70,9 @@ function handleError(err: unknown): ApiResponse {
 
 /* ========== Auth Actions ========== */
 
-export async function signUpUser(payload: SignUpFormData): Promise<ApiResponse> {
+export async function signUpUser(
+  payload: SignUpFormData
+): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/create-user", payload);
     toast.success((res.data as any)?.message ?? "Account created successfully");
@@ -82,15 +85,25 @@ export async function signUpUser(payload: SignUpFormData): Promise<ApiResponse> 
   }
 }
 
-// /api/v1/auth/verify-otp
-// /api/v1/auth/login-user
-
-export async function loginUser(identifier: string, password: string): Promise<ApiResponse> {
+export async function loginUser(identifier: string, password: string) {
   try {
-    const res = await Axios.post("/auth/login-user", { identifier, password });
-    toast.success((res.data as any)?.message ?? "Login successful");
+    const res = await axios.post(
+      "/api/auth/log-in",
+      {
+        identifier,
+        password,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+    const ok = (res.data as any)?.ok;
+    const message = extractMessageFromResponse(res);
+    if (ok && message) {
+      toast.success("successfully Logged In: " + message);
+    }
     return handleSuccess(res);
-  } catch (err: unknown) {
+  } catch (err) {
     console.error("loginUser error:", err);
     const message = handleError(err).message;
     toast.error(message);
@@ -111,7 +124,9 @@ export async function createOtp(email: string): Promise<ApiResponse> {
   }
 }
 
-export async function verifyOtp(payload: VerifyOtpPayload): Promise<ApiResponse> {
+export async function verifyOtp(
+  payload: VerifyOtpPayload
+): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/verify-otp", payload);
     toast.success((res.data as any)?.message ?? "OTP verified successfully");
@@ -137,7 +152,9 @@ export async function forgotPassword(email: string): Promise<ApiResponse> {
   }
 }
 
-export async function resetPassword(payload: ResetPasswordPayload): Promise<ApiResponse> {
+export async function resetPassword(
+  payload: ResetPasswordPayload
+): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/reset-password", payload);
     toast.success((res.data as any)?.message ?? "Password reset successful");

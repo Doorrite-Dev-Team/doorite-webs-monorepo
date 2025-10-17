@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { loginUser } from "@/actions/auth";
 import { logoFull } from "@repo/ui/assets";

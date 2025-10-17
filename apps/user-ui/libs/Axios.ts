@@ -19,7 +19,7 @@ const Axios = axios.create({
  * Helper to extract readable message from server response.
  * Handles multiple possible response formats gracefully.
  */
-function extractMessageFromResponse(res?: AxiosResponse<unknown>) {
+export function extractMessageFromResponse(res?: AxiosResponse<unknown>) {
   if (!res) return undefined;
   const payload = res.data as unknown;
   if (payload && typeof payload === "object") {

@@ -46,7 +46,7 @@ const formatTime = (totalSeconds: number): string => {
   if (minutes > 0) {
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
       2,
-      "0",
+      "0"
     )}`;
   }
   return `${seconds}s`;
@@ -83,9 +83,9 @@ export default function VerifyOTP({
     return () => clearTimeout(timer);
   }, [countdown]);
 
-/**
- * Returns true when resend request succeeded (or queued). Returns false on failure or when locked out.
- */
+  /**
+   * Returns true when resend request succeeded (or queued). Returns false on failure or when locked out.
+   */
   const handleResendOTP = async (): Promise<boolean> => {
     // set busy indicator first
     setIsResending(true);
@@ -115,14 +115,17 @@ export default function VerifyOTP({
       // Server expected shape: { ok: boolean, message?: string, ... }
       if (!res?.ok) {
         const msg = "Failed to resend code. Please try again later.";
-        setError(msg)
+        setError(msg);
         return false;
       }
-      
+
       setError("");
       return true;
-    } catch (err: any) {
-      setError(err?.message || "An unexpected error occurred. Please try again.");
+    } catch (err) {
+      setError(
+        (err as Error)?.message ||
+          "An unexpected error occurred. Please try again."
+      );
       return false;
     } finally {
       setIsResending(false);
@@ -130,10 +133,13 @@ export default function VerifyOTP({
   };
 
   // --- Event Handlers ---
-  const handleOTPChange = useCallback((value: string) => {
-    setOtp(value);
-    if (error) setError(""); // Clear error on new input
-  }, [error]);
+  const handleOTPChange = useCallback(
+    (value: string) => {
+      setOtp(value);
+      if (error) setError(""); // Clear error on new input
+    },
+    [error]
+  );
 
   const handleVerifyOTP = async () => {
     if (otp.length !== OTP_LENGTH) {
@@ -144,25 +150,28 @@ export default function VerifyOTP({
     setIsVerifying(true);
     setError("");
 
-  try {
-    const res = await verifyOtp({email, otp, purpose: "verify"})
+    try {
+      const res = await verifyOtp({ email, otp, purpose: "verify" });
 
-    // Server expected shape: { ok: boolean, message?: string, ... }
-    if (!res?.ok) {
-      const msg = "Failed to resend code. Please try again later.";
-      setError(msg)
+      // Server expected shape: { ok: boolean, message?: string, ... }
+      if (!res?.ok) {
+        const msg = "Failed to resend code. Please try again later.";
+        setError(msg);
+        return false;
+      }
+      onVerifySuccess?.();
+      setError("");
+      return true;
+    } catch (err) {
+      setError(
+        (err as Error)?.message ||
+          "An unexpected error occurred. Please try again."
+      );
       return false;
+    } finally {
+      setIsResending(false);
     }
-    onVerifySuccess?.()
-    setError("");
-    return true;
-  } catch (err: any) {
-    setError(err?.message || "An unexpected error occurred. Please try again.");
-    return false;
-  } finally {
-    setIsResending(false);
-  }
-  }
+  };
 
   const isLockedOut = resendAttempts >= MAX_RESEND_ATTEMPTS;
   const resendEnabled = countdown === 0 && !isLockedOut;

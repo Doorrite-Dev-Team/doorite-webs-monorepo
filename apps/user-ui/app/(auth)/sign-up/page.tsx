@@ -54,7 +54,7 @@ export default function SignUp() {
     } catch (err) {
       // fallback if server error occurs
       setErrorMessage(
-        (err as any)?.message || "An error occurred. Please try again."
+        (err as Error)?.message || "An error occurred. Please try again."
       );
     }
   });
@@ -65,7 +65,7 @@ export default function SignUp() {
       <VerifyOTP
         email={userEmail}
         verificationType="email"
-        onVerifySuccess={() => router.push("/")}
+        onVerifySuccess={() => router.push("/log-in")}
         setToSignUp={setShowOtp}
       />
     );
