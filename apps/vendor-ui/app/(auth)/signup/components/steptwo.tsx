@@ -1,3 +1,7 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { Control, UseFormGetValues, UseFormSetValue } from "react-hook-form";
 import { FileUploader } from "@repo/ui/components/file-upload";
 import {
   FormControl,
@@ -14,10 +18,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/ui/components/select";
-import React from "react";
-import { Control, UseFormGetValues, UseFormSetValue } from "react-hook-form";
+import { toast } from "@repo/ui/components/sonner";
 import { LocationSelector } from "./select-location";
 import { FormValues } from "./stepOne";
+import Axios from "@/libs/Axios";
+
+// Add a simple multi-select checkbox group component
+const MultiSelect = ({
+  options,
+  selected,
+  onChange,
+}: {
+  options: string[];
+  selected: string[];
+  onChange: (value: string[]) => void;
+}) => {
+  const toggleOption = (opt: string) => {
+    if (selected.includes(opt)) {
+      onChange(selected.filter((s) => s !== opt));
+    } else {
+      onChange([...selected, opt]);
+    }
+  };
+
+  return (
+    <div className="space-y-2 border rounded-md p-3">
+      {options.map((opt) => (
+        <label key={opt} className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={selected.includes(opt)}
+            onChange={() => toggleOption(opt)}
+            className="accent-blue-500"
+          />
+          <span>{opt}</span>
+        </label>
+      ))}
+    </div>
+  );
+};
 
 interface StepTwoProps {
   control: Control<FormValues>;
@@ -31,24 +70,6 @@ interface StepTwoProps {
   setFiles: (files: File[] | null) => void;
 }
 
-const BUSINESS_CATEGORIES = [
-  { value: "technology", label: "Technology" },
-  { value: "retail", label: "Retail" },
-  { value: "healthcare", label: "Healthcare" },
-  { value: "education", label: "Education" },
-  { value: "finance", label: "Finance" },
-  { value: "food-beverage", label: "Food & Beverage" },
-  { value: "manufacturing", label: "Manufacturing" },
-  { value: "consulting", label: "Consulting" },
-  { value: "real-estate", label: "Real Estate" },
-  { value: "automotive", label: "Automotive" },
-  { value: "construction", label: "Construction" },
-  { value: "entertainment", label: "Entertainment" },
-  { value: "travel", label: "Travel & Tourism" },
-  { value: "non-profit", label: "Non-Profit" },
-  { value: "other", label: "Other" },
-];
-
 export const StepTwo: React.FC<StepTwoProps> = ({
   control,
   setValue,
@@ -60,8 +81,65 @@ export const StepTwo: React.FC<StepTwoProps> = ({
   files,
   setFiles,
 }) => {
+  const [categories, setCategories] = useState<any>({});
+  const [loading, setLoading] = useState(false);
+  const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
+  const [subOptions, setSubOptions] = useState<string[]>([]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
+    []
+  );
+
+  // ✅ Fetch categories from backend
+  const getVendorCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await Axios.get("/auth/vendor-categories");
+
+      if (response.status !== 200 || !response.data.ok) {
+        toast.error("Failed to fetch business categories");
+        return;
+      }
+
+      setCategories(response.data.categories || {});
+    } catch (error: any) {
+      console.error("❌ Error fetching vendor categories:", error);
+      toast.error("Unable to load categories");
+      setCategories({});
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getVendorCategories();
+  }, []);
+
+  // 🧩 Update subcategory options when main category changes
+  useEffect(() => {
+    if (selectedMainCategory && categories[selectedMainCategory]) {
+      const subKeys = Object.keys(categories[selectedMainCategory]).map(
+        (key) => `${selectedMainCategory}.${key}`
+      );
+      setSubOptions(subKeys);
+      setSelectedSubcategories([]); // reset subcategories
+    } else {
+      setSubOptions([]);
+    }
+  }, [selectedMainCategory]);
+
+  // 🧠 Update the final array in form values whenever selections change
+  useEffect(() => {
+    if (selectedMainCategory) {
+      const allSelected = [selectedMainCategory, ...selectedSubcategories];
+      setValue("category", allSelected);
+    } else {
+      setValue("category", []);
+    }
+  }, [selectedMainCategory, selectedSubcategories, setValue]);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {/* 🏙️ Business Location */}
       <FormField
         control={control}
         name="address"
@@ -75,7 +153,6 @@ export const StepTwo: React.FC<StepTwoProps> = ({
                 onCountryChange={(country) => {
                   const newCountryName = country?.name || "";
                   setCountryName(newCountryName);
-                  // Reset state when country changes
                   setStateName("");
                   setValue(field.name, [newCountryName, ""]);
                 }}
@@ -97,34 +174,62 @@ export const StepTwo: React.FC<StepTwoProps> = ({
         )}
       />
 
-      <FormField
-        control={control}
-        name="category"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Business Category</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your business industry/category" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {BUSINESS_CATEGORIES.map((category) => (
-                  <SelectItem key={category.value} value={category.value}>
-                    {category.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormDescription>
-              Choose the category that best describes your business
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {/* 🏢 Business Category */}
+      <FormItem>
+        <FormLabel>Main Business Category</FormLabel>
+        <Select
+          onValueChange={(value) => {
+            setSelectedMainCategory(value);
+          }}
+          value={selectedMainCategory}
+          disabled={loading}
+        >
+          <FormControl>
+            <SelectTrigger>
+              <SelectValue
+                placeholder={
+                  loading
+                    ? "Loading categories..."
+                    : "Select your main category"
+                }
+              />
+            </SelectTrigger>
+          </FormControl>
+          <SelectContent>
+            {Object.keys(categories).length > 0 ? (
+              Object.keys(categories).map((key) => (
+                <SelectItem key={key} value={key}>
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                </SelectItem>
+              ))
+            ) : (
+              <div className="px-3 py-2 text-sm text-gray-500">
+                {loading ? "Loading..." : "No categories found"}
+              </div>
+            )}
+          </SelectContent>
+        </Select>
+        <FormDescription>
+          Choose the category that best describes your business
+        </FormDescription>
+      </FormItem>
 
+      {/* 🍽️ Subcategory Multi-select */}
+      {subOptions.length > 0 && (
+        <FormItem>
+          <FormLabel>Subcategories</FormLabel>
+          <MultiSelect
+            options={subOptions}
+            selected={selectedSubcategories}
+            onChange={setSelectedSubcategories}
+          />
+          <FormDescription>
+            Select all applicable subcategories
+          </FormDescription>
+        </FormItem>
+      )}
+
+      {/* 🖼️ Business Logo Upload */}
       <FormField
         control={control}
         name="logo"

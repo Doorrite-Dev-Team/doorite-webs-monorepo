@@ -12,6 +12,7 @@ import { NavigationButtons } from "./components/NavigationButtons";
 import { ProgressSteps } from "./components/progressSteps";
 import { FormValues, StepOne } from "./components/stepOne";
 import { StepTwo } from "./components/steptwo";
+import BusinessSetupForm from "./components/BusinessSetupForm";
 
 const formSchema = z
   .object({
@@ -27,13 +28,14 @@ const formSchema = z
       z.string().min(1, "Country is required"),
       z.string().optional(),
     ]),
-    category: z.string().min(1, "Please select a business category"),
+    category: z.array(z.string()).min(1, "Please select at least one business category"), // ✅ fixed
     logo: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
   });
+
 
 const steps = [
   {
@@ -55,25 +57,32 @@ export default function MultistepSignupForm() {
   const [files, setFiles] = useState<File[] | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    mode: "onChange",
-    defaultValues: {
-      businessName: "",
-      phoneNumber: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      address: ["", ""],
-      category: "",
-      logo: "",
-    },
-  });
+ const form = useForm<FormValues>({
+  resolver: zodResolver(formSchema),
+  mode: "onChange",
+  defaultValues: {
+    businessName: "",
+    phoneNumber: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    address: ["", ""],
+    category: [], // ✅ fixed
+    logo: "",
+  },
+});
+
 
   const getFieldsToValidate = (step: number): (keyof FormValues)[] => {
     switch (step) {
       case 1:
-        return ["businessName", "phoneNumber", "email", "password", "confirmPassword"];
+        return [
+          "businessName",
+          "phoneNumber",
+          "email",
+          "password",
+          "confirmPassword",
+        ];
       case 2:
         return ["address", "category"];
       default:
@@ -128,32 +137,16 @@ export default function MultistepSignupForm() {
       <ProgressSteps steps={steps} currentStep={currentStep} />
 
       <Form {...form}>
-        <div className="w-full max-w-4xl p-6 bg-white rounded-lg shadow space-y-6">
-          {currentStep === 1 && <StepOne control={form.control} />}
-
-          {currentStep === 2 && (
-            <StepTwo
-              control={form.control}
-              setValue={form.setValue}
-              getValues={form.getValues}
-              countryName={countryName}
-              setCountryName={setCountryName}
-              stateName={stateName}
-              setStateName={setStateName}
-              files={files}
-              setFiles={setFiles}
-            />
-          )}
-
-          <NavigationButtons
-            currentStep={currentStep}
-            totalSteps={steps.length}
-            onPrevious={prevStep}
-            onNext={nextStep}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-          />
-        </div>
+        <BusinessSetupForm />
+        
+        <NavigationButtons
+          currentStep={currentStep}
+          totalSteps={steps.length}
+          onPrevious={prevStep}
+          onNext={nextStep}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+        />
       </Form>
       <div className="mt-10">
         <span className="text-sm font-light text-center flex items-center justify-center gap-3">

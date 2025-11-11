@@ -1,24 +1,80 @@
 "use client";
 
-import { FC } from "react";
-import { Bell, Settings } from "lucide-react";
+import { FC, useEffect, useState } from "react";
+import { Bell } from "lucide-react";
 import Image from "next/image";
+import Axios from "@/libs/Axios";
 
 const Dashboard: FC = () => {
+  const [vendorName, setVendorName] = useState<string>("Loading...");
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchVendor = async () => {
+      try {
+        const stored = localStorage.getItem("user");
+        console.log("🧩 LocalStorage user:", stored);
+
+        if (!stored) {
+          console.warn("⚠️ No user found in localStorage");
+          setVendorName("Guest Vendor");
+          setLoading(false);
+          return;
+        }
+
+        const parsed = JSON.parse(stored);
+        console.log("🔍 Parsed user object:", parsed);
+
+        // ✅ Correctly get vendor from localStorage shape
+        const vendor =
+          parsed?.vendor ||
+          parsed?.user ||
+          parsed?.data?.vendor ||
+          parsed?.data?.user ||
+          parsed?.data ||
+          parsed;
+
+        const vendorId = vendor?.id || vendor?._id;
+        console.log("🆔 Extracted vendorId:", vendorId);
+
+        if (!vendorId) {
+          console.warn("⚠️ No vendor ID found in stored data");
+          setVendorName("Guest Vendor");
+          setLoading(false);
+          return;
+        }
+
+        console.log("🌐 Fetching vendor details from:", `vendors/${vendorId}`);
+        const res = await Axios.get(`vendors/${vendorId}`);
+
+        console.log("✅ Vendor response:", res.data);
+
+        const name =
+          res.data?.data?.businessName ??
+          vendor?.businessName ??
+          vendor?.name ??
+          "Guest Vendor";
+
+        setVendorName(name);
+      } catch (err: any) {
+        console.error("❌ Failed to fetch vendor:", err.message || err);
+        setVendorName("Guest Vendor");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVendor();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Topbar */}
-      {/* <header className="flex items-center justify-between px-6 py-4 bg-white shadow-sm">
-        <h1 className="text-lg font-semibold">Dashboard</h1>
-        <button className="p-2 rounded-full hover:bg-gray-100">
-          <Settings className="w-5 h-5 text-gray-700" />
-        </button>
-      </header> */}
-
-      {/* Main Content */}
       <main className="flex-1 p-6">
         <div className="mb-6">
-          <h2 className="text-xl font-bold">Hi, Mama Put</h2>
+          <h2 className="text-xl font-bold">
+            Hi, {loading ? "Loading..." : vendorName}
+          </h2>
+
           <div className="flex items-center mt-2 p-3 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 w-fit">
             <Bell className="w-5 h-5 text-green-600 mr-2" />
             <p className="text-gray-700">You have a new order</p>

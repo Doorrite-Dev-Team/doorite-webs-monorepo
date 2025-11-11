@@ -5,6 +5,7 @@ import VerifyOTP from "@/components/verify-otp";
 import { logoFull } from "@repo/ui/assets";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
+import { toast } from "@repo/ui/components/sonner";
 import { Eye, EyeOff, Mail, Phone, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -42,19 +43,37 @@ export default function SignUp() {
 
     try {
       const res = await signUpUser(data);
+      console.log("🔵 Signup response:", res);
+
+      // ✅ Always show the backend response via toast
+      toast(res?.ok ? "✅ Success" : "❌ Error", {
+        description: res?.message || "No response message from server.",
+      });
 
       if (!res || !res.ok) {
         setErrorMessage(res?.message ?? "Sign up failed. Please try again.");
         return;
       }
 
-      // Show OTP verification component after successful signup
+      // ✅ Show OTP verification component after successful signup
       setUserEmail(data.email);
       setShowOtp(true);
-    } catch (err) {
-      // fallback if server error occurs
+    } catch (err: any) {
+      console.error("❌ Signup failed:", err);
+
+      // ✅ Show exact backend or network error via toast
+      toast("⚠️ Error", {
+        description:
+          err?.response?.data?.message ||
+          err.message ||
+          "An unexpected error occurred.",
+      });
+
+      // fallback for UI text
       setErrorMessage(
-        (err as Error)?.message || "An error occurred. Please try again."
+        err?.response?.data?.message ||
+          err.message ||
+          "An error occurred. Please try again."
       );
     }
   });

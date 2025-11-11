@@ -17,7 +17,7 @@ export interface FormValues {
   password: string;
   confirmPassword: string;
   address: [string, string?];
-  category: string;
+  category: string[];
   logo?: string;
 }
 
