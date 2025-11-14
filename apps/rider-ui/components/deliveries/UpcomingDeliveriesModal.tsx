@@ -77,10 +77,12 @@ export default function UpcomingDeliveriesModal({
   show,
   onClose,
 }: UpcomingDeliveriesModalProps) {
-  const [selectedDelivery, setSelectedDelivery] = useState<any | null>(null);
+  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(
+    null
+  );
   const [showDetails, setShowDetails] = useState(false);
 
-  const handleOpenDetails = (delivery: any) => {
+  const handleOpenDetails = (delivery: Delivery) => {
     setSelectedDelivery(delivery);
     onClose(); // close UpcomingDeliveriesModal
     setTimeout(() => setShowDetails(true), 200); // wait for transition

@@ -1,5 +1,4 @@
 
-
 export function humanizePath(pathname: string) {
 
   // fallback: derive from last segment
@@ -10,11 +9,10 @@ export function humanizePath(pathname: string) {
   const words = last?.replace(/[-_]/g, ' ').replace(/([a-z0-9])([A-Z])/g, '$1 $2');
 
   return words?.replace(/\b\w/g, (c) => c.toUpperCase());
-  
+
 }
 
 export type status = "delivered" | "preparing" | "cancelled" | "incoming" | 'out-for-delivery';
-
 
 export const getStatusColor = (status: status) => {
     const colors = {
@@ -25,26 +23,26 @@ export const getStatusColor = (status: status) => {
       incoming: 'bg-purple-100 text-purple-800 border-purple-200'
     };
     return colors[status] || 'bg-gray-100 text-gray-800 border-gray-200';
-  };
+};
 
 export const getStatusText = (status: status) => {
-    const statusTexts = {
-      delivered: 'Delivered',
-      'out-for-delivery': 'Out for Delivery',
-      preparing: 'Preparing',
-      cancelled: 'Cancelled',
-      incoming: 'Incoming'
-    };
-    return statusTexts[status] || status;
+  const statusTexts = {
+    delivered: 'Delivered',
+    'out-for-delivery': 'Out for Delivery',
+    preparing: 'Preparing',
+    cancelled: 'Cancelled',
+    incoming: 'Incoming'
   };
+  return statusTexts[status] || status;
+};
 
 export const formatTime = (timeString: string) => {
-    return new Date(timeString).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
+  return new Date(timeString).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+};
 
 export const formatDate = (timeString: string) => {
     return new Date(timeString).toLocaleDateString('en-US', {
@@ -52,4 +50,4 @@ export const formatDate = (timeString: string) => {
       day: 'numeric',
       year: 'numeric'
     });
-  };
+};

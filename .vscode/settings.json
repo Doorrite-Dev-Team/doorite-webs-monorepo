@@ -1,5 +1,5 @@
 {
-  "CodeGPT.apiKey": "Gemini CLI",
+  // "CodeGPT.apiKey": "Gemini CLI",
   "css.lint.unknownAtRules": "ignore",
   "editor.fontLigatures": true,
   "eslint.workingDirectories": [
@@ -11,5 +11,6 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.preferences.importModuleSpecifier": "shortest",
   "typescript.tsdk": "node_modules/typescript/lib",
-  "terminal.integrated.fontFamily": "FiraCode Nerd Font Mono"
+  "editor.inlayHints.enabled": "off"
+  // "terminal.integrated.fontFamily": "FiraCode Nerd Font Mono"
 }

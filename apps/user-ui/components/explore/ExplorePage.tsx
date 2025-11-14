@@ -81,7 +81,7 @@ export default function ExplorePage() {
     if (showOpenOnly) items = items.filter((v) => v.isOpen);
     // sort
     return items;
-  }, [category, debouncedSearch, sortBy, priceFilter, showOpenOnly]);
+  }, [category, debouncedSearch, priceFilter, showOpenOnly]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -103,7 +103,7 @@ export default function ExplorePage() {
         <CategoryFilters
           categories={CATEGORIES}
           category={category}
-          setCategory={setCategory}
+          setCategoryAction={setCategory}
         />
         <FilterControls
           sortBy={sortBy}
