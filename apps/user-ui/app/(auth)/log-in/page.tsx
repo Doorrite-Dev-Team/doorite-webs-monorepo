@@ -10,10 +10,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { showToast } from "@/components/Toast"; // ✅ Import toast
 
 type FormData = {
   email: string;
   password: string;
+};
+
+type LoginResponse = {
+  ok: boolean;
+  message?: string;
+  data?: {
+    id: string;
+    _id?: string;
+    name: string;
+    email: string;
+    token?: string;
+  };
 };
 
 export default function Login() {
@@ -28,21 +41,71 @@ export default function Login() {
   } = useForm<FormData>();
 
   const onSubmit = handleSubmit(async (data) => {
+    console.log("🟢 Attempting login with:", data);
+
     try {
-      const res = await loginUser(data.email, data.password);
+      const res = (await loginUser(data.email, data.password)) as LoginResponse;
+      console.log("🔵 Login response:", res);
 
       if (!res || !res.ok) {
-        // use server-provided message if present
-        setErrorMessage(res?.message ?? "Sign up failed. Please try again.");
+        const backendError =
+          (res as any)?.error ||
+          (res as any)?.message ||
+          "Login failed. Please try again.";
+
+        setErrorMessage(backendError);
+
+        showToast({
+          message: "Login Failed",
+          subtext: backendError,
+          type: "error",
+        });
+
         return;
       }
 
+      const user = res.data;
+      if (!user) {
+        const msg = "Invalid response from server.";
+        setErrorMessage(msg);
+
+        showToast({
+          message: "Login Failed",
+          subtext: msg,
+          type: "error",
+        });
+        return;
+      }
+
+      // ✅ Save user data
+      localStorage.setItem("user", JSON.stringify(user));
+      console.log("💾 Saved user:", user);
+
+      // ✅ Success toast
+      showToast({
+        message: "Login Successful!",
+        subtext: `Welcome back, ${user.email}`,
+        type: "success",
+      });
+
+      // ✅ Redirect
       router.push("/home");
-    } catch (err) {
-      setErrorMessage(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.message || "An error occurred. Please try again."
-      );
+    } catch (error: any) {
+      console.error("❌ Login request failed:", error);
+
+      const backendError =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "An unexpected error occurred.";
+
+      setErrorMessage(backendError);
+
+      showToast({
+        message: "Login Failed",
+        subtext: backendError,
+        type: "error",
+      });
     }
   });
 

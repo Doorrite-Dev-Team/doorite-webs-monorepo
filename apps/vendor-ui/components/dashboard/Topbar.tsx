@@ -1,24 +1,55 @@
 "use client";
 
 import { Bell, Menu } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface TopbarProps {
   toggleSidebar: () => void;
   title?: string;
 }
 
+interface Vendor {
+  businessName?: string;
+  email?: string;
+}
+
 export default function Topbar({
   toggleSidebar,
   title = "Dashboard",
 }: TopbarProps) {
+  const [vendor, setVendor] = useState<Vendor | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("user"); // ✅ use "user" instead of "vendorData"
+      console.log("🧩 LocalStorage user:", stored);
+
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const vendorInfo = parsed?.vendor || null;
+
+        if (vendorInfo) {
+          setVendor(vendorInfo);
+          console.log("✅ Vendor loaded:", vendorInfo);
+        } else {
+          console.warn("⚠️ No vendor info found inside 'user'");
+        }
+      } else {
+        console.warn("⚠️ No user data in localStorage");
+      }
+    } catch (error) {
+      console.error("❌ Failed to parse localStorage user:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return (
     <header className="flex justify-between items-center bg-white border-b shadow-sm px-6 py-3">
       {/* Mobile menu button */}
       <div className="md:hidden">
-        <button
-          onClick={toggleSidebar}
-          // className="p-2 bg-green-600 text-white rounded-md"
-        >
+        <button onClick={toggleSidebar}>
           <Menu className="w-6 h-6 text-gray-600" />
         </button>
       </div>
@@ -33,10 +64,16 @@ export default function Topbar({
 
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 flex items-center justify-center bg-green-600 text-white rounded-full font-bold">
-            OD
+            {loading
+              ? "⏳"
+              : vendor?.businessName
+              ? vendor.businessName.charAt(0).toUpperCase()
+              : "?"}
           </div>
           <span className="hidden md:block font-medium text-gray-700">
-            Olarewaju Damilare
+            {loading
+              ? "Loading..."
+              : vendor?.businessName || "No Vendor Found"}
           </span>
         </div>
       </div>

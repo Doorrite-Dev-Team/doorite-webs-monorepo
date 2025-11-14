@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@repo/ui/components/button";
 import { ChevronRight, ShoppingCart, UtensilsCrossed, Zap } from "lucide-react";
+import Axios from "@/libs/Axios";
 
 import { OrderCard } from "@/components/order";
 import { TrackYourOrder } from "@/components/track-order";
 import { orders } from "@/libs/contant";
-
 import { CategoryCard } from "@/components/home/CategoryCard";
 import { RestaurantsSkeleton } from "@/components/home/RestaurantsSkeleton";
 import { OrdersSkeleton } from "@/components/home/OrdersSkeleton";
@@ -55,7 +55,57 @@ export default function HomePage() {
   const [isOrdersLoading] = useState(false);
   const [isRestaurantsLoading] = useState(false);
   const [hasActiveOrder] = useState(true);
+  const [userName, setUserName] = useState<string>("");
 
+  // ✅ Fetch current user from localStorage
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        if (typeof window === "undefined") return;
+
+        const userData = localStorage.getItem("user");
+        console.log("Fetched raw user data:", userData);
+
+        if (!userData) {
+          setUserName("Guest");
+          return;
+        }
+
+        const parsed = JSON.parse(userData);
+        console.log("Parsed user object:", parsed);
+
+        // 👇 Extract user object correctly
+        const user = parsed?.user || parsed;
+        const userId = user?.id || user?._id;
+
+        console.log("Extracted userId:", userId);
+
+        if (!userId) {
+          console.warn("User ID not found in localStorage.");
+          setUserName("Guest");
+          return;
+        }
+
+        // 🌐 Fetch updated user details
+        const res = await Axios.get(`/user/${userId}`, {
+          withCredentials: true,
+        });
+
+        const name =
+          res.data?.data?.fullName ?? user?.fullName ?? user?.name ?? "Guest";
+
+        console.log("Fetched name from API or local:", name);
+        setUserName(name);
+      } catch (err) {
+        console.error("❌ Failed to fetch user:", err);
+        setUserName("Guest");
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  // ✅ Keep updating current time
   useEffect(() => {
     const t = setInterval(() => setCurrentTime(new Date()), 60_000);
     return () => clearInterval(t);
@@ -97,7 +147,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                Hello, Liam!
+                Hello, {userName}!
               </h1>
               <p className="text-gray-500 text-sm mt-1">
                 {currentTime.toLocaleDateString(undefined, {
@@ -118,6 +168,7 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
+
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {categories.map((c) => (
               <CategoryCard
@@ -179,7 +230,6 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Track Order */}
       {hasActiveOrder && <TrackYourOrder order={orders[1]!} />}
       <div className="h-6" />
     </div>
