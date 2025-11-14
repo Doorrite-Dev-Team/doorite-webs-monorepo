@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import { Bell } from "lucide-react";
 import Image from "next/image";
 import Axios from "@/libs/Axios";
@@ -87,7 +87,7 @@ const Dashboard: FC = () => {
           <div className="bg-white p-4 rounded-xl shadow hover:shadow-md transition flex justify-between items-center">
             <div>
               <p className="text-sm font-medium text-gray-500">
-                Today's Orders
+                Today&apos;s Orders
               </p>
               <h3 className="text-2xl font-bold mt-2">12</h3>
             </div>

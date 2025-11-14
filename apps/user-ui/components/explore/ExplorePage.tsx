@@ -98,7 +98,12 @@ export default function ExplorePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch, category, priceFilter, sortBy]);
+    if (priceFilter !== "all")
+      items = items.filter((v) => v.priceRange === priceFilter);
+    if (showOpenOnly) items = items.filter((v) => v.isOpen);
+    // sort
+    return items;
+  }, [category, debouncedSearch, priceFilter, showOpenOnly]);
 
   useEffect(() => {
     fetchProducts();
@@ -129,7 +134,7 @@ export default function ExplorePage() {
         <CategoryFilters
           categories={CATEGORIES}
           category={category}
-          setCategory={setCategory}
+          setCategoryAction={setCategory}
         />
         <FilterControls
           sortBy={sortBy}

@@ -52,8 +52,8 @@ const topRestaurants: Restaurant[] = [
 
 export default function HomePage() {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [isOrdersLoading, setIsOrdersLoading] = useState(false);
-  const [isRestaurantsLoading, setIsRestaurantsLoading] = useState(false);
+  const [isOrdersLoading] = useState(false);
+  const [isRestaurantsLoading] = useState(false);
   const [hasActiveOrder] = useState(true);
   const [userName, setUserName] = useState<string>("");
 

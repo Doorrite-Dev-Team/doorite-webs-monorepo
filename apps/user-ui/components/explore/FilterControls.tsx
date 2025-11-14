@@ -9,6 +9,7 @@ import {
 } from "@repo/ui/components/select";
 import { Button } from "@repo/ui/components/button";
 import { CheckCircle2, Circle, SlidersHorizontal } from "lucide-react";
+import { Dispatch, SetStateAction } from "react";
 
 export default function FilterControls({
   sortBy,
@@ -21,7 +22,24 @@ export default function FilterControls({
   setShowOpenOnly,
   clearFilters,
   hasActiveFilters,
-}: any) {
+}: {
+  sortBy: string;
+  setSortBy: Dispatch<SetStateAction<string>>;
+  sortOptions: {
+    value: string;
+    label: string;
+  }[];
+  priceFilter: string;
+  setPriceFilter: Dispatch<SetStateAction<string>>;
+  priceFilters: {
+    value: string;
+    label: string;
+  }[];
+  showOpenOnly: boolean;
+  setShowOpenOnly: Dispatch<SetStateAction<boolean>>;
+  clearFilters: () => void;
+  hasActiveFilters: boolean;
+}) {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
       <div className="flex flex-wrap items-center gap-3 flex-1">
@@ -31,7 +49,7 @@ export default function FilterControls({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {sortOptions.map((o: any) => (
+            {sortOptions.map((o) => (
               <SelectItem key={o.value} value={o.value}>
                 {o.label}
               </SelectItem>
@@ -44,7 +62,7 @@ export default function FilterControls({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {priceFilters.map((o: any) => (
+            {priceFilters.map((o) => (
               <SelectItem key={o.value} value={o.value}>
                 {o.label}
               </SelectItem>

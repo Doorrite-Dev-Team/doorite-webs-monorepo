@@ -15,8 +15,8 @@ import Image from "next/image";
 import AccountModal from "./AccountModal"; //
 
 export default function Account() {
-  const [theme, setTheme] = useState("Light");
-  const [language, setLanguage] = useState("English");
+  const [theme] = useState("Light");
+  const [language] = useState("English");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
