@@ -3,7 +3,6 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useDebounceValue } from "usehooks-ts";
-import Axios from "@/libs/Axios";
 
 import ExploreHeader from "@/components/explore/ExploreHeader";
 import SearchBar from "@/components/explore/SearchBar";
@@ -16,30 +15,23 @@ import LoadingSkeleton from "@/components/explore/LoadingSkeleton";
 
 // constants
 import { CATEGORIES, SORT_OPTIONS, PRICE_FILTERS } from "@/libs/explore-config";
-
-// Define the product type based on API response
-type Product = {
-  id: string;
-  name: string;
-  description: string;
-  basePrice: number;
-  isAvailable: boolean;
-  vendor: {
-    id: string;
-    businessName: string;
-    logoUrl: string | null;
-  };
-};
+import { api } from "@/libs/api";
 
 export default function ExplorePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [search, setSearch] = useState(searchParams.get("q") || "");
-  const [category, setCategory] = useState(searchParams.get("category") || "all");
+  const [category, setCategory] = useState(
+    searchParams.get("category") || "all"
+  );
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "popular");
-  const [priceFilter, setPriceFilter] = useState(searchParams.get("price") || "all");
-  const [showOpenOnly, setShowOpenOnly] = useState(searchParams.get("open") === "true");
+  const [priceFilter, setPriceFilter] = useState(
+    searchParams.get("price") || "all"
+  );
+  const [showOpenOnly, setShowOpenOnly] = useState(
+    searchParams.get("open") === "true"
+  );
 
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -54,9 +46,9 @@ export default function ExplorePage() {
     if (priceFilter !== "all") params.set("price", priceFilter);
     if (showOpenOnly) params.set("open", "true");
 
-    router.replace(`/explore${params.toString() ? `?${params.toString()}` : ""}`, {
-      scroll: false,
-    });
+    const actParams = params.toString();
+
+    router.replace(`/explore?${actParams}`);
   }, [router, search, category, sortBy, priceFilter, showOpenOnly]);
 
   useEffect(() => {
@@ -82,13 +74,10 @@ export default function ExplorePage() {
       if (priceFilter !== "all") params.price = priceFilter;
       if (sortBy !== "popular") params.sort = sortBy;
 
-      const queryString = new URLSearchParams(params).toString();
-      const url = `/product${queryString ? `?${queryString}` : ""}`;
+      const resProducts = await api.fetchProducts(params);
 
-      const res = await Axios.get(url, { withCredentials: true });
-
-      if (res.data?.ok && Array.isArray(res.data.products)) {
-        setProducts(res.data.products);
+      if (Array.isArray(resProducts)) {
+        setProducts(resProducts);
       } else {
         setProducts([]);
       }
@@ -98,12 +87,14 @@ export default function ExplorePage() {
     } finally {
       setIsLoading(false);
     }
-    if (priceFilter !== "all")
-      items = items.filter((v) => v.priceRange === priceFilter);
-    if (showOpenOnly) items = items.filter((v) => v.isOpen);
-    // sort
-    return items;
-  }, [category, debouncedSearch, priceFilter, showOpenOnly]);
+    // let items = products
+    // if (priceFilter !== "all")
+    //   items = items?.filter((v) => v.priceRange === priceFilter);
+
+    // if (showOpenOnly) items = items.filter((v) => v.isOpen);
+    // // sort
+    // return items;
+  }, [category, debouncedSearch, priceFilter, sortBy]);
 
   useEffect(() => {
     fetchProducts();
@@ -164,8 +155,7 @@ export default function ExplorePage() {
               <VendorCard
                 key={product.id}
                 vendor={{
-                  id: product.id,
-                  name: product.name,
+                  id: parseInt(product.id),
                   description: product.description,
                   priceRange: `₦${product.basePrice.toLocaleString()}`,
                   category: category,

@@ -9,13 +9,18 @@ import React, { useCallback, useState } from "react";
 import { humanizePath } from "../libs/helper";
 import CartDrawer from "./cart";
 import NotificationPanel from "./notification";
-import TabNavigation from "./tab-navication"; // 👈 your sidebar component
+import TabNavigation from "./tab-navication"; // 👈 The sidebar component
+import { Button } from "@repo/ui/components/button";
+import { useAtom } from "jotai";
+import { isLoggedInAtom } from "@/store/userAtom";
 
 // --------------------- Header ---------------------
-const Header: React.FC = () => {
+const Header = () => {
   const pathname = usePathname() ?? "/";
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false); // 👈 control sidebar
+  // const userName = useUser();
+  const [isLoggedIn] = useAtom(isLoggedInAtom);
 
   const isTopLevel = ["/", "", "/home", "/landing"].includes(pathname);
   const isTabRoute = ["/home", "/explore", "/orders", "/account"].includes(
@@ -91,12 +96,22 @@ const Header: React.FC = () => {
 
           {/* Right */}
           <div className="flex items-center justify-end gap-1">
-            {(isTabRoute || isTopLevel) && (
-              <>
-                <NotificationPanel />
-                <CartDrawer />
-              </>
-            )}
+            {(isTabRoute || isTopLevel) &&
+              (isLoggedIn ? (
+                <>
+                  <NotificationPanel />
+                  <CartDrawer />
+                </>
+              ) : (
+                <>
+                  <Button asChild>
+                    <Link href="/log-in">Log IN</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link href="/sign-up">Sign Up</Link>
+                  </Button>
+                </>
+              ))}
           </div>
         </nav>
       </header>

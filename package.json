@@ -11,7 +11,7 @@
     "node": ">=18"
   },
   "name": "doorite-webs-monorepo",
-  "packageManager": "pnpm@10.15.0",
+  "packageManager": "pnpm@10.22.0",
   "private": true,
   "scripts": {
     "all": "turbo run dev",

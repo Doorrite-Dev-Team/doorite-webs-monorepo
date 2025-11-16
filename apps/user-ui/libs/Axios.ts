@@ -36,6 +36,7 @@ export function extractMessageFromResponse(res?: AxiosResponse<unknown>) {
  * - Displays success toasts for responses with { ok: true, message: "..." }
  * - Handles error states and normalizes error messages for easy debugging
  */
+
 Axios.interceptors.response.use(
   (res) => {
     try {

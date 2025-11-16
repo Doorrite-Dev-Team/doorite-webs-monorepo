@@ -15,6 +15,7 @@ import { OrdersSkeleton } from "@/components/home/OrdersSkeleton";
 import { EmptyOrders } from "@/components/home/EmptyOrders";
 import { EmptyRestaurants } from "@/components/home/EmptyRestaurants";
 import { RestaurantCard } from "@/components/home/RestaurantCard";
+import { useUser } from "@/hooks/use-user";
 
 type Restaurant = {
   id: string;
@@ -55,55 +56,55 @@ export default function HomePage() {
   const [isOrdersLoading] = useState(false);
   const [isRestaurantsLoading] = useState(false);
   const [hasActiveOrder] = useState(true);
-  const [userName, setUserName] = useState<string>("");
 
   // ✅ Fetch current user from localStorage
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        if (typeof window === "undefined") return;
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     try {
+  //       if (typeof window === "undefined") return;
 
-        const userData = localStorage.getItem("user");
-        console.log("Fetched raw user data:", userData);
+  //       const userData = localStorage.getItem("user");
+  //       console.log("Fetched raw user data:", userData);
 
-        if (!userData) {
-          setUserName("Guest");
-          return;
-        }
+  //       if (!userData) {
+  //         setUserName("Guest");
+  //         return;
+  //       }
 
-        const parsed = JSON.parse(userData);
-        console.log("Parsed user object:", parsed);
+  //       const parsed = JSON.parse(userData);
+  //       console.log("Parsed user object:", parsed);
 
-        // 👇 Extract user object correctly
-        const user = parsed?.user || parsed;
-        const userId = user?.id || user?._id;
+  //       // 👇 Extract user object correctly
+  //       const user = parsed?.user || parsed;
+  //       const userId = user?.id || user?._id;
 
-        console.log("Extracted userId:", userId);
+  //       console.log("Extracted userId:", userId);
 
-        if (!userId) {
-          console.warn("User ID not found in localStorage.");
-          setUserName("Guest");
-          return;
-        }
+  //       if (!userId) {
+  //         console.warn("User ID not found in localStorage.");
+  //         setUserName("Guest");
+  //         return;
+  //       }
 
-        // 🌐 Fetch updated user details
-        const res = await Axios.get(`/user/${userId}`, {
-          withCredentials: true,
-        });
+  //       // 🌐 Fetch updated user details
+  //       const res = await Axios.get(`/user/${userId}`, {
+  //         withCredentials: true,
+  //       });
 
-        const name =
-          res.data?.data?.fullName ?? user?.fullName ?? user?.name ?? "Guest";
+  //       const name =
+  //         res.data?.data?.fullName ?? user?.fullName ?? user?.name ?? "Guest";
 
-        console.log("Fetched name from API or local:", name);
-        setUserName(name);
-      } catch (err) {
-        console.error("❌ Failed to fetch user:", err);
-        setUserName("Guest");
-      }
-    };
+  //       console.log("Fetched name from API or local:", name);
+  //       setUserName(name);
+  //     } catch (err) {
+  //       console.error("❌ Failed to fetch user:", err);
+  //       setUserName("Guest");
+  //     }
+  //   };
 
-    fetchUser();
-  }, []);
+  //   fetchUser();
+  // }, []);
+  const userName = useUser();
 
   // ✅ Keep updating current time
   useEffect(() => {
@@ -135,7 +136,7 @@ export default function HomePage() {
     },
   ];
 
-  const sortedOrders = [...orders].sort(
+  const sortedOrders = [...orders.slice(0, 2)].sort(
     (a, b) => new Date(b.orderTime).getTime() - new Date(a.orderTime).getTime()
   );
 

@@ -1,0 +1,62 @@
+declare type Vendor = {
+  id: number;
+  businessName: string;
+  // image: StaticImageData | string;
+  logoUrl?: string;
+  avrgPreparationTime?: string;
+  description?: string;
+  category: string;
+  subcategory?: string;
+  rating?: number;
+  distance?: number;
+  isOpen: boolean;
+  priceRange?: string;
+  tags?: string[];
+};
+
+declare type Order = {
+  id: string;
+  status: status;
+  items: string[];
+  total: number;
+  orderTime: string;
+  estimatedDelivery: string;
+  deliveryAddress: string;
+  tracking: {
+    step: string;
+    time: string;
+    completed: boolean;
+  }[];
+  orderDetails: {
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
+};
+
+declare type User = {
+  id: string;
+  _id?: string;
+  name: string;
+  email: string;
+  token?: string;
+};
+
+declare type Product = {
+  id: string;
+  name: string;
+  description: string;
+  basePrice: number;
+  isAvailable: boolean;
+  vendor: {
+    id: string;
+    businessName: string;
+    logoUrl?: string;
+  };
+};
+
+declare type ServerResponse<T> = {
+  ok: boolean;
+  data?: T;
+  error?: string;
+};

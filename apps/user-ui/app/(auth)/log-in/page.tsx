@@ -10,29 +10,31 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { showToast } from "@/components/Toast"; // ✅ Import toast
+import { showToast } from "@/components/Toast";
+
+// \U0001f680 Import the user atom
+import { useSetAtom } from "jotai";
+import { userAtom } from "@/store/userAtom"; // Adjust path as needed
 
 type FormData = {
   email: string;
   password: string;
 };
 
+// Use the imported User type for consistency
 type LoginResponse = {
   ok: boolean;
   message?: string;
-  data?: {
-    id: string;
-    _id?: string;
-    name: string;
-    email: string;
-    token?: string;
-  };
+  data?: User; // Use the Jotai User type
 };
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string>();
+
+  // \U0001f680 Get the setter function for the user atom
+  const setUser = useSetAtom(userAtom);
 
   const {
     register,
@@ -41,34 +43,33 @@ export default function Login() {
   } = useForm<FormData>();
 
   const onSubmit = handleSubmit(async (data) => {
-    console.log("🟢 Attempting login with:", data);
+    console.log("\U0001f7e2 Attempting login with:", data);
 
     try {
       const res = (await loginUser(data.email, data.password)) as LoginResponse;
-      console.log("🔵 Login response:", res);
+      console.log("\U0001f535 Login response:", res);
 
       if (!res || !res.ok) {
+        // ... (Error handling remains the same)
         const backendError =
           (res as any)?.error ||
           (res as any)?.message ||
           "Login failed. Please try again.";
 
         setErrorMessage(backendError);
-
         showToast({
           message: "Login Failed",
           subtext: backendError,
           type: "error",
         });
-
         return;
       }
 
       const user = res.data;
       if (!user) {
+        // ... (Error handling remains the same)
         const msg = "Invalid response from server.";
         setErrorMessage(msg);
-
         showToast({
           message: "Login Failed",
           subtext: msg,
@@ -77,22 +78,22 @@ export default function Login() {
         return;
       }
 
-      // ✅ Save user data
-      localStorage.setItem("user", JSON.stringify(user));
-      console.log("💾 Saved user:", user);
+      // \U0001f680 REPLACE: Use the Jotai setter instead of localStorage.setItem
+      setUser(user);
+      console.log("\U0001f4be Saved user via Jotai/localStorage:", user);
 
-      // ✅ Success toast
+      // \u2705 Success toast
       showToast({
         message: "Login Successful!",
         subtext: `Welcome back, ${user.email}`,
         type: "success",
       });
 
-      // ✅ Redirect
+      // \u2705 Redirect
       router.push("/home");
     } catch (error: any) {
-      console.error("❌ Login request failed:", error);
-
+      // ... (Catch block remains the same)
+      console.error("\u274c Login request failed:", error);
       const backendError =
         error?.response?.data?.error ||
         error?.response?.data?.message ||
@@ -100,7 +101,6 @@ export default function Login() {
         "An unexpected error occurred.";
 
       setErrorMessage(backendError);
-
       showToast({
         message: "Login Failed",
         subtext: backendError,
@@ -110,6 +110,7 @@ export default function Login() {
   });
 
   return (
+    // ... (rest of the component JSX remains the same)
     <div className="w-full max-w-md mx-auto p-6 mt-10 space-y-6">
       {/* Header Section */}
       <div className="space-y-4 text-center">

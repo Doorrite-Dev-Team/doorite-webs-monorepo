@@ -9,7 +9,7 @@ import {
   imageVendor,
 } from "@repo/ui/assets";
 import { StaticImageData } from "next/image";
-import { status } from "./helper";
+// import { status } from "./helper";
 
 // constants.ts
 export type Review = {
@@ -17,40 +17,41 @@ export type Review = {
   review: string;
 };
 
-export type vendor = {
-  id: number;
-  name: string;
-  image: StaticImageData | string;
-  avrgPreparationTime: string;
-  description: string;
-  category: string;
-  subcategory: string;
-  rating: number;
-  distance: number;
-  isOpen: boolean;
-  priceRange: string;
-  tags: string[];
-};
+// export type vendor = {
+//   id: number;
+//   name: string;
+//   image: StaticImageData | string;
+//   logoUrl?: string | null;
+//   avrgPreparationTime: string;
+//   description: string;
+//   category: string;
+//   subcategory: string;
+//   rating: number;
+//   distance: number;
+//   isOpen: boolean;
+//   priceRange: string;
+//   tags: string[];
+// };
 
-export type order = {
-  id: string;
-  status: status;
-  items: string[];
-  total: number;
-  orderTime: string;
-  estimatedDelivery: string;
-  deliveryAddress: string;
-  tracking: {
-    step: string;
-    time: string;
-    completed: boolean;
-  }[];
-  orderDetails: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
-};
+// export type order = {
+//   id: string;
+//   status: status;
+//   items: string[];
+//   total: number;
+//   orderTime: string;
+//   estimatedDelivery: string;
+//   deliveryAddress: string;
+//   tracking: {
+//     step: string;
+//     time: string;
+//     completed: boolean;
+//   }[];
+//   orderDetails: {
+//     name: string;
+//     quantity: number;
+//     price: number;
+//   }[];
+// };
 
 type Service = "Customer" | "Vendor" | "Rider";
 export type ServiceInfo = {
@@ -195,7 +196,7 @@ export const foodTags = [
   "snack",
 ];
 
-export const VENDORS: vendor[] = [
+export const VENDORS: Vendor[] = [
   {
     id: 1,
     name: "The Campus Eatery",
@@ -315,7 +316,7 @@ export const VENDORS: vendor[] = [
   },
 ];
 
-export const orders: order[] = [
+export const orders: Order[] = [
   {
     id: "ORD-001",
     status: "delivered",

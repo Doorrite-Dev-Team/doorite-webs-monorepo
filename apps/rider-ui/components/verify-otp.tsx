@@ -1,6 +1,7 @@
 "use client";
 
 import { createOtp, verifyOtp } from "@/actions/auth";
+import { Page } from "@/app/(auth)/forgot-password/page";
 import { logoFull } from "@repo/ui/assets";
 import { Button } from "@repo/ui/components/button";
 import {
@@ -10,7 +11,13 @@ import {
 } from "@repo/ui/components/input-otp";
 import { ArrowLeft, Mail, MessageSquare, RotateCcw } from "lucide-react";
 import Image from "next/image";
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
 // --- Configuration Constants ---
 const OTP_LENGTH = 6;
@@ -25,7 +32,7 @@ interface VerifyOTPProps {
   purpose?: "verify" | "reset";
   onVerifySuccess?: () => void;
   // ✅ Fixed: boolean setter instead of Page
-  setToSignUp: Dispatch<SetStateAction<boolean>>;
+  setToSignUp: Dispatch<SetStateAction<Page>>;
 }
 
 /**
@@ -47,7 +54,6 @@ export default function VerifyOTP({
   email = "john@example.com",
   phoneNumber = "+234 901 112 2233",
   verificationType = "email",
-  purpose = "verify",
   onVerifySuccess,
   setToSignUp,
 }: VerifyOTPProps) {
@@ -176,16 +182,26 @@ export default function VerifyOTP({
       {/* OTP Input Section */}
       <div className="space-y-6 w-full">
         <div className="space-y-4 flex flex-col items-center justify-center">
-          <InputOTP maxLength={OTP_LENGTH} value={otp} onChange={handleOTPChange}>
+          <InputOTP
+            maxLength={OTP_LENGTH}
+            value={otp}
+            onChange={handleOTPChange}
+          >
             <InputOTPGroup>
               {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-                <InputOTPSlot key={index} index={index} className="w-12 h-12 text-lg" />
+                <InputOTPSlot
+                  key={index}
+                  index={index}
+                  className="w-12 h-12 text-lg"
+                />
               ))}
             </InputOTPGroup>
           </InputOTP>
 
           {error && (
-            <p className="text-sm text-destructive text-center font-medium">{error}</p>
+            <p className="text-sm text-destructive text-center font-medium">
+              {error}
+            </p>
           )}
         </div>
 

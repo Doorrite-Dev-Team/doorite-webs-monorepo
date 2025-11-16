@@ -37,12 +37,13 @@ export default function OrderPage({
     );
   }
 
-  if (showQrScanner) return (
-    <DeliveryQrDisplay
-      qrValue="rider-12345-delivery-code"
-      setShowQrScannerAction={setShowQrScanner}
-    />
-  );
+  if (showQrScanner)
+    return (
+      <DeliveryQrDisplay
+        qrValue="rider-12345-delivery-code"
+        setShowQrScannerAction={setShowQrScanner}
+      />
+    );
 
   return (
     <div className="max-w-2xl mx-auto bg-white min-h-screen relative">

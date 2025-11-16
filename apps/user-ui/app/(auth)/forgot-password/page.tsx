@@ -250,7 +250,7 @@ export default function ForgotPassword() {
 
           <div className="text-center">
             <Link
-              href="/"
+              href="/landing"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Back to Home

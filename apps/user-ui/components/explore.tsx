@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -33,7 +33,7 @@ import {
   X,
 } from "lucide-react";
 
-import { VENDORS, vendor } from "@/libs/contant";
+import { VENDORS } from "@/libs/contant";
 
 /* --- Configs --- */
 const CATEGORIES = [
@@ -128,7 +128,7 @@ export default function ExplorePage() {
   const filteredAndSortedItems = useMemo(() => {
     // Defensive: ensure VENDORS is array
     const vendorsArray = Array.isArray(VENDORS) ? VENDORS : [];
-    let items = [...vendorsArray] as vendor[];
+    let items = [...vendorsArray] as Vendor[];
 
     // Category
     if (category !== "all") {
@@ -399,7 +399,7 @@ export default function ExplorePage() {
 }
 
 /* -------- Vendor Card & Empty State (unchanged semantics) -------- */
-function VendorCard({ vendor }: { vendor: vendor }) {
+function VendorCard({ vendor }: { vendor: Vendor }) {
   const isStringImage =
     typeof vendor.image === "string" &&
     (vendor.image.startsWith("http") || vendor.image.startsWith("/"));

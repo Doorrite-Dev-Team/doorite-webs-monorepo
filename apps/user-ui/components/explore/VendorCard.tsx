@@ -5,14 +5,11 @@ import Link from "next/link";
 import { Badge } from "@repo/ui/components/badge";
 import { Card, CardContent } from "@repo/ui/components/card";
 import { MapPin, Clock, Star } from "lucide-react";
-import { vendor } from "@/libs/contant";
+import { vendorImage } from "@/libs/utils";
+// import { VENDORS } from "@/libs/contant";
 
-export default function VendorCard({ vendor }: { vendor: vendor }) {
-  const isValidImage =
-    typeof vendor.image === "string" &&
-    (vendor.image.startsWith("http") || vendor.image.startsWith("/"));
-
-  const imageSrc = isValidImage ? vendor.image : "/placeholder.png"; // 👈 fallback image
+export default function VendorCard({ vendor }: { vendor: Vendor }) {
+  const vendorLogo = vendorImage(vendor.logoUrl);
 
   return (
     <Link href={`/vendor/${vendor.id}`} className="block group">
@@ -24,10 +21,10 @@ export default function VendorCard({ vendor }: { vendor: vendor }) {
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-primary transition-colors">
-                    {vendor.name}
+                    {vendor.businessName}
                   </h3>
                   <p className="text-sm text-gray-500 capitalize">
-                    {vendor.subcategory} • {vendor.avrgPreparationTime}
+                    {vendor.subcategory} • {vendor.avrgPreparationTime || 20}
                   </p>
                 </div>
                 <div className="text-right">
@@ -40,12 +37,14 @@ export default function VendorCard({ vendor }: { vendor: vendor }) {
                       {vendor.rating ?? "-"}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">{vendor.priceRange}</p>
+                  <p className="text-xs text-gray-500">
+                    {vendor.priceRange ?? "-"}
+                  </p>
                 </div>
               </div>
 
               <p className="text-sm text-gray-600 line-clamp-2 mb-3">
-                {vendor.description}
+                {vendor.description || "No description available."}
               </p>
 
               <div className="flex items-center gap-3 text-xs">
@@ -75,8 +74,8 @@ export default function VendorCard({ vendor }: { vendor: vendor }) {
             {/* Image */}
             <div className="w-20 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
               <Image
-                src={imageSrc}
-                alt={vendor.name}
+                src={vendorLogo}
+                alt={vendor.businessName}
                 width={80}
                 height={64}
                 className="object-cover w-full h-full"

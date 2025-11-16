@@ -65,7 +65,7 @@ export const OrderCard = ({ order }: { order: order }) => {
 // -----------------------------------------------------------------------
 // File: src/components/orders/OrdersList.tsx;
 
-export const OrdersList = ({ orders }: { orders: order[] }) => {
+export const OrdersList = ({ orders }: { orders: Order[] }) => {
   const sorted = [...orders].sort(
     (a, b) => new Date(b.orderTime).getTime() - new Date(a.orderTime).getTime()
   );
