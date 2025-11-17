@@ -105,13 +105,19 @@ export default function HomePage() {
 
   //   fetchUser();
   // }, []);
-  const name = await useUser();
-  setUserName(name);
 
   // ✅ Keep updating current time
   useEffect(() => {
     const t = setInterval(() => setCurrentTime(new Date()), 60_000);
     return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const S = async () => {
+      const name = await useUser();
+      setUserName(name);
+    };
+    S();
   }, []);
 
   const categories = [
