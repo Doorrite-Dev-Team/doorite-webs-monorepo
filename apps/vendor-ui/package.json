@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^5.2.1",
     "@repo/ui": "workspace:^",
     "axios": "^1.11.0",
+    "jotai": "^2.15.1",
     "lucide-react": "^0.536.0",
     "next": "15.5.0",
     "react": "19.1.0",

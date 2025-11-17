@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 
 import { VENDORS } from "@/libs/contant";
+import { vendorImage } from "@/libs/utils";
 
 /* --- Configs --- */
 const CATEGORIES = [
@@ -140,7 +141,7 @@ export default function ExplorePage() {
       const q = debouncedSearch.toLowerCase();
       items = items.filter(
         (v) =>
-          (v.name || "").toLowerCase().includes(q) ||
+          (v.businessName || "").toLowerCase().includes(q) ||
           (v.description || "").toLowerCase().includes(q) ||
           (v.subcategory || "").toLowerCase().includes(q) ||
           (v.tags || []).some((tag) => (tag || "").toLowerCase().includes(q))
@@ -400,10 +401,6 @@ export default function ExplorePage() {
 
 /* -------- Vendor Card & Empty State (unchanged semantics) -------- */
 function VendorCard({ vendor }: { vendor: Vendor }) {
-  const isStringImage =
-    typeof vendor.image === "string" &&
-    (vendor.image.startsWith("http") || vendor.image.startsWith("/"));
-
   return (
     <Link href={`/vendor/${vendor.id}`} className="block group">
       <Card className="border-0 bg-white shadow-sm hover:shadow-md transition-all duration-200 group-hover:scale-[1.01]">
@@ -413,7 +410,7 @@ function VendorCard({ vendor }: { vendor: Vendor }) {
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-primary transition-colors">
-                    {vendor.name}
+                    {vendor.businessName}
                   </h3>
                   <p className="text-sm text-gray-500 capitalize">
                     {vendor.subcategory} • {vendor.avrgPreparationTime}
@@ -458,10 +455,10 @@ function VendorCard({ vendor }: { vendor: Vendor }) {
             </div>
 
             <div className="w-20 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-              {isStringImage ? (
+              {vendor.logoUrl ? (
                 <Image
-                  src={vendor.image as string}
-                  alt={vendor.name}
+                  src={vendor.logoUrl as string}
+                  alt={vendor.businessName}
                   width={80}
                   height={64}
                   className="object-cover w-full h-full"
@@ -470,8 +467,8 @@ function VendorCard({ vendor }: { vendor: Vendor }) {
                 <div className="text-2xl">{vendor.image}</div>
               ) : (
                 <Image
-                  src={vendor.image}
-                  alt={vendor.name}
+                  src={vendorImage(vendor.image)}
+                  alt={vendor.businessName}
                   width={80}
                   height={64}
                   className="object-cover w-full h-full"
