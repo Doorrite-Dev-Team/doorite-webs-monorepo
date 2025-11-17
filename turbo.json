@@ -15,6 +15,11 @@
       "env": ["NEXT_PUBLIC_API_URI", "NODE_ENV"],
       "persistent": true
     },
+    "type-check": {
+      "cache": true,
+      "dependsOn": ["^type-check"],
+      "outputs": []
+    },
     "lint": {
       "dependsOn": ["^lint"],
       "env": ["NEXT_PUBLIC_API_URI", "NODE_ENV"]

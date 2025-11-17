@@ -199,8 +199,8 @@ export const foodTags = [
 export const VENDORS: Vendor[] = [
   {
     id: 1,
-    name: "The Campus Eatery",
-    image: imageCampusEatery,
+    businessName: "The Campus Eatery",
+    logoUrl: imageCampusEatery,
     avrgPreparationTime: "15-20 mins",
     description:
       "A vibrant spot offering a variety of meals and snacks for students.",
@@ -214,8 +214,8 @@ export const VENDORS: Vendor[] = [
   },
   {
     id: 2,
-    name: "The Study Cafe",
-    image: imageStudyCafe,
+    businessName: "The Study Cafe",
+    logoUrl: imageStudyCafe,
     avrgPreparationTime: "10-15 mins",
     description:
       "A cozy cafe perfect for studying, serving coffee and light bites.",
@@ -229,8 +229,8 @@ export const VENDORS: Vendor[] = [
   },
   {
     id: 3,
-    name: "The Student Diner",
-    image: imageStudentDiner,
+    businessName: "The Student Diner",
+    logoUrl: imageStudentDiner,
     avrgPreparationTime: "20-25 mins",
     description:
       "A classic diner with a diverse menu, ideal for students on the go.",
@@ -244,8 +244,8 @@ export const VENDORS: Vendor[] = [
   },
   {
     id: 4,
-    name: "The Library Cafe",
-    image: imageLibrary,
+    businessName: "The Library Cafe",
+    logoUrl: imageLibrary,
     avrgPreparationTime: "5-10 mins",
     description:
       "A quiet cafe located in the library, offering quick snacks and drinks.",
@@ -259,8 +259,8 @@ export const VENDORS: Vendor[] = [
   },
   {
     id: 5,
-    name: "The Quad Grill",
-    image: imageQuadDrill,
+    businessName: "The Quad Grill",
+    logoUrl: imageQuadDrill,
     avrgPreparationTime: "15-20 mins",
     description:
       "An outdoor grill serving fresh, grilled meals in a relaxed setting.",
@@ -274,8 +274,8 @@ export const VENDORS: Vendor[] = [
   },
   {
     id: 6,
-    name: "Campus Grocery",
-    image: "🛒",
+    businessName: "Campus Grocery",
+    logoUrl: "🛒",
     avrgPreparationTime: "5 mins",
     description: "Essential groceries and daily items for campus life.",
     category: "grocery",
@@ -288,8 +288,8 @@ export const VENDORS: Vendor[] = [
   },
   {
     id: 7,
-    name: "Fresh Market",
-    image: "🥬",
+    businessName: "Fresh Market",
+    logoUrl: "🥬",
     avrgPreparationTime: "10 mins",
     description: "Fresh produce and healthy options for conscious students.",
     category: "grocery",
@@ -302,8 +302,8 @@ export const VENDORS: Vendor[] = [
   },
   {
     id: 8,
-    name: "Campus Pharmacy",
-    image: "💊",
+    businessName: "Campus Pharmacy",
+    logoUrl: "💊",
     avrgPreparationTime: "2-5 mins",
     description: "Health essentials, medications, and wellness products.",
     category: "pharmacy",
@@ -414,7 +414,7 @@ export const orders: Order[] = [
   },
 ];
 
-export const ServicesInfo: ServiceInfo[] = [
+export const ServicesInfo = [
   {
     name: "Customer",
     url: "/sign-up",
@@ -433,4 +433,4 @@ export const ServicesInfo: ServiceInfo[] = [
     description: "Order food and groceries.",
     imgSrc: imageRider,
   },
-];
+] as ServiceInfo[];

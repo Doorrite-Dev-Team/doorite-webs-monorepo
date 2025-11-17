@@ -52,7 +52,8 @@
   "scripts": {
     "check-types": "tsc --noEmit",
     "generate:component": "turbo gen react-component",
-    "lint": "eslint . --max-warnings 0"
+    "lint": "eslint . --max-warnings 0",
+    "type-check": "tsc --noEmit"
   },
   "version": "0.0.0"
 }

@@ -21,6 +21,7 @@
     "dev:user": "turbo run dev --filter user-ui",
     "dev:vendor": "turbo run dev --filter vendor-ui",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check"
   }
 }

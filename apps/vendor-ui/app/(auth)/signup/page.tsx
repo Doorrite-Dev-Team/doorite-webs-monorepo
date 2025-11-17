@@ -10,8 +10,7 @@ import { z } from "zod";
 import Link from "next/link";
 import { NavigationButtons } from "./components/NavigationButtons";
 import { ProgressSteps } from "./components/progressSteps";
-import { FormValues, StepOne } from "./components/stepOne";
-import { StepTwo } from "./components/steptwo";
+import { FormValues } from "./components/stepOne";
 import BusinessSetupForm from "./components/BusinessSetupForm";
 
 const formSchema = z
@@ -28,14 +27,15 @@ const formSchema = z
       z.string().min(1, "Country is required"),
       z.string().optional(),
     ]),
-    category: z.array(z.string()).min(1, "Please select at least one business category"), // ✅ fixed
+    category: z
+      .array(z.string())
+      .min(1, "Please select at least one business category"), // ✅ fixed
     logo: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
   });
-
 
 const steps = [
   {
@@ -57,21 +57,20 @@ export default function MultistepSignupForm() {
   const [files, setFiles] = useState<File[] | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
- const form = useForm<FormValues>({
-  resolver: zodResolver(formSchema),
-  mode: "onChange",
-  defaultValues: {
-    businessName: "",
-    phoneNumber: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    address: ["", ""],
-    category: [], // ✅ fixed
-    logo: "",
-  },
-});
-
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    mode: "onChange",
+    defaultValues: {
+      businessName: "",
+      phoneNumber: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      address: ["", ""],
+      category: [], // ✅ fixed
+      logo: "",
+    },
+  });
 
   const getFieldsToValidate = (step: number): (keyof FormValues)[] => {
     switch (step) {
@@ -138,7 +137,7 @@ export default function MultistepSignupForm() {
 
       <Form {...form}>
         <BusinessSetupForm />
-        
+
         <NavigationButtons
           currentStep={currentStep}
           totalSteps={steps.length}

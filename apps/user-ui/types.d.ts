@@ -2,7 +2,7 @@ declare type Vendor = {
   id: number;
   businessName: string;
   // image: StaticImageData | string;
-  logoUrl?: string;
+  logoUrl?: string | StaticImageData;
   avrgPreparationTime?: string;
   description?: string;
   category: string;
