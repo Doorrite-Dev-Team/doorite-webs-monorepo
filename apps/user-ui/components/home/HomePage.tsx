@@ -56,6 +56,7 @@ export default function HomePage() {
   const [isOrdersLoading] = useState(false);
   const [isRestaurantsLoading] = useState(false);
   const [hasActiveOrder] = useState(true);
+  const [userName, setUserName] = useState("Guest");
 
   // ✅ Fetch current user from localStorage
   // useEffect(() => {
@@ -104,7 +105,8 @@ export default function HomePage() {
 
   //   fetchUser();
   // }, []);
-  const userName = useUser();
+  const name = await useUser();
+  setUserName(name);
 
   // ✅ Keep updating current time
   useEffect(() => {

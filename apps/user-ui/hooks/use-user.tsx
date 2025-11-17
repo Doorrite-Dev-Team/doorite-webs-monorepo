@@ -34,7 +34,7 @@ export const useUser = async () => {
       res.data?.data?.fullName ?? user?.fullName ?? user?.name ?? "Guest";
 
     console.log("Fetched name from API or local:", name);
-    return { name };
+    return name;
   } catch (err) {
     console.error("❌ Failed to fetch user:", err);
     return "Guest";
