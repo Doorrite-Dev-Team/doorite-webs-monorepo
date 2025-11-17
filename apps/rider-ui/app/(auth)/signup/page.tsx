@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import VerifyOTP from "@/components/verify-otp";
+import { Page } from "../forgot-password/page";
 
 type SignUpFormData = {
   fullName: string;
@@ -26,7 +27,7 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState<string>();
-  const [showOTP, setShowOtp] = useState(false);
+  const [showOTP, setShowOtp] = useState<Page>(false);
   const router = useRouter();
 
   const {

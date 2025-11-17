@@ -4,7 +4,7 @@ import { use, useState } from "react";
 // app/orders/[id]/page.tsx
 import { DeliveryQrDisplay } from "@/components/qr-code-display";
 import { TrackYourOrder } from "@/components/track-order";
-import { orders as ORDERS, order as Order } from "@/libs/contant";
+import { orders as ORDERS } from "@/libs/contant";
 import { formatTime } from "@/libs/helper";
 import { Button } from "@repo/ui/components/button";
 import { MessageCircle, Phone, QrCode } from "lucide-react";

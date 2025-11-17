@@ -4,6 +4,7 @@ import { FC } from "react";
 import { Bell } from "lucide-react";
 import Image from "next/image";
 import Axios from "@/libs/Axios";
+import { useEffect, useState } from "react";
 
 const Dashboard: FC = () => {
   const [vendorName, setVendorName] = useState<string>("Loading...");
