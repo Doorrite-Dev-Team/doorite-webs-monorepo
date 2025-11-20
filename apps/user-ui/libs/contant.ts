@@ -8,7 +8,10 @@ import {
   imageStudyCafe,
   imageVendor,
 } from "@repo/ui/assets";
+import { LucideProps } from "lucide-react";
+import { Route } from "next";
 import { StaticImageData } from "next/image";
+import { ForwardRefExoticComponent, RefAttributes } from "react";
 // import { status } from "./helper";
 
 // constants.ts
@@ -56,11 +59,20 @@ export type Review = {
 type Service = "Customer" | "Vendor" | "Rider";
 export type ServiceInfo = {
   name: Service;
-  url: string;
+  url: Route<string>;
   description: string;
   imgSrc: StaticImageData;
 };
 
+export type Category = {
+  name: string;
+  icon: ForwardRefExoticComponent<
+    Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
+  >;
+  color: string;
+  description: string;
+  href: Route<string>;
+};
 export const REVIEWS: Review[] = [
   {
     name: "Sarah M.",
@@ -200,7 +212,7 @@ export const VENDORS: Vendor[] = [
   {
     id: 1,
     businessName: "The Campus Eatery",
-    logoUrl: imageCampusEatery,
+    image: imageCampusEatery,
     avrgPreparationTime: "15-20 mins",
     description:
       "A vibrant spot offering a variety of meals and snacks for students.",
@@ -215,7 +227,7 @@ export const VENDORS: Vendor[] = [
   {
     id: 2,
     businessName: "The Study Cafe",
-    logoUrl: imageStudyCafe,
+    image: imageStudyCafe,
     avrgPreparationTime: "10-15 mins",
     description:
       "A cozy cafe perfect for studying, serving coffee and light bites.",
@@ -230,7 +242,7 @@ export const VENDORS: Vendor[] = [
   {
     id: 3,
     businessName: "The Student Diner",
-    logoUrl: imageStudentDiner,
+    image: imageStudentDiner,
     avrgPreparationTime: "20-25 mins",
     description:
       "A classic diner with a diverse menu, ideal for students on the go.",
@@ -245,7 +257,7 @@ export const VENDORS: Vendor[] = [
   {
     id: 4,
     businessName: "The Library Cafe",
-    logoUrl: imageLibrary,
+    image: imageLibrary,
     avrgPreparationTime: "5-10 mins",
     description:
       "A quiet cafe located in the library, offering quick snacks and drinks.",
@@ -260,7 +272,7 @@ export const VENDORS: Vendor[] = [
   {
     id: 5,
     businessName: "The Quad Grill",
-    logoUrl: imageQuadDrill,
+    image: imageQuadDrill,
     avrgPreparationTime: "15-20 mins",
     description:
       "An outdoor grill serving fresh, grilled meals in a relaxed setting.",

@@ -35,6 +35,7 @@ import {
 
 import { VENDORS } from "@/libs/contant";
 import { vendorImage } from "@/libs/utils";
+import { Route } from "next";
 
 /* --- Configs --- */
 const CATEGORIES = [
@@ -109,7 +110,7 @@ export default function ExplorePage() {
     if (showOpenOnly) params.set("open", "true");
 
     const newURL = params.toString() ? `?${params.toString()}` : "";
-    router.replace(`/explore${newURL}`, { scroll: false });
+    router.replace(`/explore${newURL}` as Route<string>, { scroll: false });
   }, [router, search, category, sortBy, priceFilter, showOpenOnly]);
 
   useEffect(() => {

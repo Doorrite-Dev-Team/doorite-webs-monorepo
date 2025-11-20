@@ -9,7 +9,6 @@ import {
 } from "@repo/ui/components/select";
 import { Button } from "@repo/ui/components/button";
 import { CheckCircle2, Circle, SlidersHorizontal } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
 
 export default function FilterControls({
   sortBy,
@@ -24,19 +23,19 @@ export default function FilterControls({
   hasActiveFilters,
 }: {
   sortBy: string;
-  setSortBy: Dispatch<SetStateAction<string>>;
+  setSortBy: (sort: string) => void;
   sortOptions: {
     value: string;
     label: string;
   }[];
   priceFilter: string;
-  setPriceFilter: Dispatch<SetStateAction<string>>;
+  setPriceFilter: (price: string) => void;
   priceFilters: {
     value: string;
     label: string;
   }[];
   showOpenOnly: boolean;
-  setShowOpenOnly: Dispatch<SetStateAction<boolean>>;
+  setShowOpenOnly: (show: boolean) => void;
   clearFilters: () => void;
   hasActiveFilters: boolean;
 }) {
@@ -72,7 +71,7 @@ export default function FilterControls({
 
         <Button
           variant={showOpenOnly ? "default" : "outline"}
-          onClick={() => setShowOpenOnly((s: boolean) => !s)}
+          onClick={() => setShowOpenOnly(!showOpenOnly)}
           className="h-9 bg-white hover:bg-gray-50"
         >
           {showOpenOnly ? (

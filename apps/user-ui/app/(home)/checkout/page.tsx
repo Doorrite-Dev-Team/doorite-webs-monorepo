@@ -41,7 +41,7 @@ export default function CheckoutPage() {
       <div className="max-w-md mx-auto bg-gray-50 min-h-screen">
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-white border-b">
-          <Link href="/" className="text-gray-600">
+          <Link href="/home" className="text-gray-600">
             Close
           </Link>
           <h1 className="text-lg font-semibold">Checkout</h1>

@@ -55,8 +55,32 @@ declare type Product = {
   };
 };
 
-declare type ServerResponse<T> = {
-  ok: boolean;
-  data?: T;
-  error?: string;
+declare type CartItem = {
+  id: number;
+  name: string;
+  description?: string;
+  price: number;
+  vendor_name: string;
+  quantity: number;
 };
+
+declare type SuccessResponse<T> = {
+  ok: true;
+} & T;
+
+// 3. Error Type (the discriminant MUST be different)
+declare type ErrorResponse = {
+  ok: false;
+  error: string; // Guaranteed error message
+};
+
+// 4. The Final API Contract
+declare type APIResponse<T> = SuccessResponse<T> | ErrorResponse;
+
+declare interface ClientError {
+  message: string;
+  status?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  details?: any; // Matches your existing structure
+  isClientError: true; // Used for easy identification/narrowing
+}

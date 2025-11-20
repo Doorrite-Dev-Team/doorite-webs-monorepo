@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/actions/auth.ts
 
-import Axios, { extractMessageFromResponse } from "@/libs/Axios";
+import Axios from "@/libs/Axios";
 import { toast } from "@repo/ui/components/sonner";
 import axios, { AxiosResponse } from "axios";
 
@@ -98,9 +98,9 @@ export async function loginUser(identifier: string, password: string) {
       }
     );
     const ok = (res.data as any)?.ok;
-    const message = extractMessageFromResponse(res);
-    if (ok && message) {
-      toast.success("successfully Logged In: " + message);
+    // const message = extractMessageFromResponse(res);
+    if (ok) {
+      toast.success("successfully Logged In");
     }
     return handleSuccess(res);
   } catch (err) {
