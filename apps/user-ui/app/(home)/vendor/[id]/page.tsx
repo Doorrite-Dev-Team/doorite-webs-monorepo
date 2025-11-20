@@ -1,70 +1,102 @@
 "use client";
 
+import { cartAtom } from "@/store/cartAtom";
 import { imageStudyCafe } from "@repo/ui/assets";
 import { Button } from "@repo/ui/components/button";
+import { useAtom } from "jotai";
 import { Star, ThumbsDown, ThumbsUp } from "lucide-react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
-import { useState } from "react";
-
-type menuItem = {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-};
+// import { useParams } from "next/navigation";
+// import { useState } from "react";
 
 export default function VendorDetails() {
-  const [cart, setCart] = useState<menuItem[]>([]);
-  const { id } = useParams();
+  // const [cart, setCart] = useState<menuItem[]>([]);
+  // const { id } = useParams();
+
+  const [cart, setCart] = useAtom(cartAtom);
 
   const menuItems = {
     popular: [
       {
-        id: 1,
+        id: "1",
         name: "Cheeseburger",
         description: "Classic burger with cheese",
-        price: 7.99,
+        basePrice: 7.99,
+        isAvailable: true,
+        vendor: {
+          id: "1",
+          businessName: "None",
+        },
       },
       {
-        id: 2,
+        id: "2",
         name: "Chicken Sandwich",
         description: "Crispy chicken sandwich",
-        price: 8.49,
+        basePrice: 8.49,
+        isAvailable: true,
+        vendor: {
+          id: "1",
+          businessName: "None",
+        },
       },
       {
-        id: 3,
+        id: "3",
         name: "French Fries",
         description: "Fries with dipping sauce",
-        price: 3.99,
+        basePrice: 3.99,
+        isAvailable: true,
+        vendor: {
+          id: "1",
+          businessName: "None",
+        },
       },
     ],
     breakfast: [
       {
-        id: 4,
+        id: "4",
         name: "Breakfast Bagel",
         description: "Egg and cheese on a bagel",
-        price: 5.49,
+        basePrice: 5.49,
+        isAvailable: true,
+        vendor: {
+          id: "1",
+          businessName: "None",
+        },
       },
       {
-        id: 5,
+        id: "5",
         name: "Pancakes",
         description: "Pancakes with syrup",
-        price: 6.99,
+        basePrice: 6.99,
+        isAvailable: true,
+        vendor: {
+          id: "1",
+          businessName: "None",
+        },
       },
     ],
     lunch: [
       {
-        id: 6,
+        id: "6",
         name: "Chicken Salad",
         description: "Grilled chicken salad",
-        price: 9.99,
+        basePrice: 9.99,
+        isAvailable: true,
+        vendor: {
+          id: "1",
+          businessName: "None",
+        },
       },
       {
-        id: 7,
+        id: "7",
         name: "Veggie Wrap",
         description: "Vegetarian wrap",
-        price: 8.49,
+        basePrice: 8.49,
+        isAvailable: true,
+        vendor: {
+          id: "1",
+          businessName: "None",
+        },
       },
     ],
   };
@@ -100,8 +132,33 @@ export default function VendorDetails() {
     { stars: 1, percentage: 5 },
   ];
 
-  const addToCart = (item: menuItem) => {
-    setCart([...cart, item]);
+  const updateQuantity = (id: number, delta: number) => {
+    setCart((prev) =>
+      prev
+        .map((it) =>
+          it.id === id
+            ? { ...it, quantity: Math.max(0, it.quantity + delta) }
+            : it
+        )
+        .filter((it) => it.quantity > 0)
+    );
+  };
+
+  const addToCart = (item: Product) => {
+    const newCartItem: CartItem = {
+      id: parseInt(item.id),
+      name: item.name,
+      description: item.description,
+      price: item.basePrice,
+      quantity: 0,
+      vendor_name: item.vendor.businessName,
+    };
+
+    if (cart.find((i) => i.id === newCartItem.id)) {
+      updateQuantity(newCartItem.id, 1);
+    } else {
+      setCart((prev) => [...prev, newCartItem]);
+    }
     // Show feedback that item was added
     alert(`${item.name} added to cart!`);
   };
@@ -117,7 +174,7 @@ export default function VendorDetails() {
     ));
   };
 
-  const renderMenuItem = (item: menuItem) => (
+  const renderMenuItem = (item: Product) => (
     <div
       key={item.id}
       className="flex items-center justify-between py-4 border-b border-gray-100 last:border-b-0"
@@ -127,7 +184,7 @@ export default function VendorDetails() {
         <p className="text-primary text-sm">{item.description}</p>
       </div>
       <div className="flex items-center space-x-3">
-        <span className="font-semibold text-gray-900">${item.price}</span>
+        <span className="font-semibold text-gray-900">${item.basePrice}</span>
         <Button
           onClick={() => addToCart(item)}
           className="rounded-full text-sm"

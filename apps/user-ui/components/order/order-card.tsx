@@ -3,15 +3,15 @@ import { Badge } from "@repo/ui/components/badge";
 import { Card, CardContent } from "@repo/ui/components/card";
 import { Star } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { order } from "../libs/contant";
+// import type { order } from "../libs/contant";
 import {
   formatDate,
   formatTime,
   getStatusColor as getStatusBadgeClass,
   getStatusText,
-} from "../libs/helper";
+} from "../../libs/helper";
 
-export const OrderCard = ({ order }: { order: order }) => {
+export const OrderCard = ({ order }: { order: Order }) => {
   const router = useRouter();
 
   return (
@@ -61,9 +61,6 @@ export const OrderCard = ({ order }: { order: order }) => {
     </Card>
   );
 };
-
-// -----------------------------------------------------------------------
-// File: src/components/orders/OrdersList.tsx;
 
 export const OrdersList = ({ orders }: { orders: Order[] }) => {
   const sorted = [...orders].sort(

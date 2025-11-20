@@ -7,8 +7,9 @@ export const api = {
       const queryString = new URLSearchParams(params).toString();
 
       const url = `/products?${queryString ? `?${queryString}` : ""}`;
-      const res: ServerResponse<{ products: Product[] }> = await Axios.get(url);
-      return res.data;
+      const res: SuccessResponse<{ products: Product[] }> =
+        await Axios.get(url);
+      return res.products;
     } catch (error) {
       toast(`Unable to fetch Products: ${(error as Error).message}`);
       return null;
@@ -17,10 +18,10 @@ export const api = {
 
   fetchVendor: async (id: string) => {
     try {
-      const res: ServerResponse<{ products: Vendor[] }> = await Axios.get(
+      const res: SuccessResponse<{ Vendors: Vendor[] }> = await Axios.get(
         `/vendors/${id}`
       );
-      return res.data;
+      return res.Vendors;
     } catch (error) {
       toast(`Unable to fetch Vendor: ${(error as Error).message}`);
       return null;

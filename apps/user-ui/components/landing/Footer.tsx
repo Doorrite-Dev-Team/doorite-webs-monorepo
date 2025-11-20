@@ -22,7 +22,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href="/careers"
+                href="/continue"
                 className="hover:text-white transition-colors"
               >
                 Careers
@@ -45,7 +45,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href="/privacy"
+                href={"/privacy"}
                 className="hover:text-white transition-colors"
               >
                 Privacy Policy

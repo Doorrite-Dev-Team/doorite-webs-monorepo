@@ -18,7 +18,7 @@ type Restaurant = {
 
 export function RestaurantCard({ r }: { r: Restaurant }) {
   return (
-    <Link href={`/restaurants/${r.id}`} className="block">
+    <Link href={`/vendor/${r.id}`} className="block">
       <Card className="border-0 bg-white shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer relative overflow-hidden">
         <CardContent className="p-4">
           {r.trending && (

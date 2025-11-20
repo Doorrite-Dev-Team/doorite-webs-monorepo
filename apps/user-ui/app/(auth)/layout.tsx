@@ -8,7 +8,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
       <Header />
 
       {/* Give main enough top padding so content doesn't hide under fixed header */}
-      <main className="pt-24 pb-24 max-w-5xl mx-auto px-4">{children}</main>
+      <main className="pt-24 pb-24 max-w-md mx-auto px-4">{children}</main>
     </div>
   );
 };

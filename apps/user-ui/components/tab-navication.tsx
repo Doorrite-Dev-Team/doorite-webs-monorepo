@@ -5,6 +5,7 @@ import { Home, Package, Search, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { Route } from "next";
 
 interface TabItem {
   name: string;
@@ -35,7 +36,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ onNavigate }) => {
           return (
             <Link
               key={item.name}
-              href={item.href}
+              href={item.href as Route<string>}
               onClick={onNavigate} // 👈 close sidebar when clicked
               className={cn(
                 "flex items-center space-x-3 w-full px-3 py-2 rounded-lg transition",

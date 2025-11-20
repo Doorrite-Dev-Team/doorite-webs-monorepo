@@ -2,7 +2,6 @@
 
 import { Button } from "@repo/ui/components/button";
 import { Type } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
 
 export default function CategoryFilters({
   categories,
@@ -15,7 +14,7 @@ export default function CategoryFilters({
     icon: typeof Type;
   }[];
   category: string;
-  setCategoryAction: Dispatch<SetStateAction<string>>;
+  setCategoryAction: (id: string) => void;
 }) {
   return (
     <div className="mb-6">
