@@ -23,7 +23,7 @@ const Header = () => {
   const [isLoggedIn] = useAtom(isLoggedInAtom);
 
   const isTopLevel = ["/", "", "/home", "/landing"].includes(pathname);
-  const isTabRoute = ["/home", "/explore", "/orders", "/account"].includes(
+  const isTabRoute = ["/home", "/explore", "/order", "/account"].includes(
     pathname
   );
 

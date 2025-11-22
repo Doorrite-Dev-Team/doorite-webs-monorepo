@@ -18,7 +18,7 @@ interface TabItem {
 const tabs: TabItem[] = [
   { name: "Home", icon: Home, href: "/home" },
   { name: "Explore", icon: Search, href: "/explore" },
-  { name: "Orders", icon: Package, href: "/orders" },
+  { name: "Orders", icon: Package, href: "/order" },
   { name: "Account", icon: User, href: "/account" },
 ];
 

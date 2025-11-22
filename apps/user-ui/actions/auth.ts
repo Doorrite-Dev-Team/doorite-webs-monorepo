@@ -87,7 +87,7 @@ export async function signUpUser(
 
 export async function loginUser(identifier: string, password: string) {
   try {
-    const res = await axios.post(
+    const res = await Axios.post(
       "/api/auth/log-in",
       {
         identifier,

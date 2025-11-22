@@ -17,7 +17,7 @@ export const OrderCard = ({ order }: { order: Order }) => {
   return (
     <Card
       className="border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-      onClick={() => router.push(`/orders/${order.id}`)}
+      onClick={() => router.push(`/order/${order.id}`)}
     >
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">

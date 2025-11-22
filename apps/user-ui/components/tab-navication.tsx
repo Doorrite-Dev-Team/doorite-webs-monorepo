@@ -23,7 +23,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ onNavigate }) => {
   const tabs: TabItem[] = [
     { name: "Home", icon: <Home size={20} />, href: "/home" },
     { name: "Explore", icon: <Search size={20} />, href: "/explore" },
-    { name: "Orders", icon: <Package size={20} />, href: "/orders" },
+    { name: "Orders", icon: <Package size={20} />, href: "/order" },
     { name: "Account", icon: <User size={20} />, href: "/account" },
   ];
 
