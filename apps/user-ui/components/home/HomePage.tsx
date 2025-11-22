@@ -10,13 +10,14 @@ import { TrackYourOrder } from "@/components/home/track-order";
 import { orders } from "@/libs/contant";
 import { CategoryCard } from "@/components/home/CategoryCard";
 import { RestaurantsSkeleton } from "@/components/home/RestaurantsSkeleton";
-import { OrdersSkeleton } from "@/components/home/orderSkeleton";
+// import { OrdersSkeleton } from "@/components/home/orderSkeleton";
 import { EmptyOrders } from "@/components/home/EmptyOrders";
 import { EmptyRestaurants } from "@/components/home/EmptyRestaurants";
 import { RestaurantCard } from "@/components/home/RestaurantCard";
 import { Category } from "@/libs/contant";
 import { useAtom } from "jotai";
 import { userAtom } from "@/store/userAtom";
+import { OrdersSkeleton } from "./OrdersSkeleton";
 
 type Restaurant = {
   id: string;
