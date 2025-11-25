@@ -17,7 +17,7 @@ export default function ProfileSection() {
         <div className="flex flex-col items-center space-y-4">
           <div className="relative group">
             <div className="w-24 h-24 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-              {user ? getInitials(user.name) : "G"}
+              {user ? getInitials(user.fullName) : "G"}
             </div>
             <div className="absolute -bottom-1 -right-1 bg-primary rounded-full w-6 h-6 border-2 border-white shadow-sm"></div>
             <Button
@@ -32,7 +32,7 @@ export default function ProfileSection() {
           </div>
           <div className="text-center">
             <h2 className="text-xl font-semibold">
-              {user ? user.name : "Guest"}
+              {user ? user.fullName : "Guest"}
             </h2>
             <p className="text-muted-foreground">{user && user.email}</p>
             <Badge

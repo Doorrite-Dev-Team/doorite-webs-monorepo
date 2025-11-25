@@ -10,7 +10,6 @@ import { TrackYourOrder } from "@/components/home/track-order";
 import { orders } from "@/libs/contant";
 import { CategoryCard } from "@/components/home/CategoryCard";
 import { RestaurantsSkeleton } from "@/components/home/RestaurantsSkeleton";
-// import { OrdersSkeleton } from "@/components/home/orderSkeleton";
 import { EmptyOrders } from "@/components/home/EmptyOrders";
 import { EmptyRestaurants } from "@/components/home/EmptyRestaurants";
 import { RestaurantCard } from "@/components/home/RestaurantCard";
@@ -102,7 +101,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                Hello, {userName?.name || "Guest"}!
+                Hello, {userName?.fullName || "Guest"}!
               </h1>
               <p className="text-gray-500 text-sm mt-1">
                 {currentTime.toLocaleDateString(undefined, {

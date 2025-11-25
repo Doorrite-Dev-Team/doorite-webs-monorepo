@@ -36,10 +36,10 @@ declare type Order = {
 
 declare type User = {
   id: string;
-  _id?: string;
-  name: string;
   email: string;
-  token?: string;
+  fullName: string;
+  role: string;
+  address?: string;
 };
 
 declare type Product = {
