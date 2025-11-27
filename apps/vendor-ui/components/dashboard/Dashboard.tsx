@@ -1,32 +1,29 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import Image from "next/image";
 import Axios from "@/libs/Axios";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import CreateMenuItemForm from "../menu/CreateMenuItemForm";
 
 const Dashboard: FC = () => {
+  const router = useRouter();
   const [vendorName, setVendorName] = useState<string>("Loading...");
   const [loading, setLoading] = useState<boolean>(true);
+
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     const fetchVendor = async () => {
       try {
         const stored = localStorage.getItem("user");
-        console.log("🧩 LocalStorage user:", stored);
-
         if (!stored) {
-          console.warn("⚠️ No user found in localStorage");
           setVendorName("Guest Vendor");
-          setLoading(false);
           return;
         }
 
         const parsed = JSON.parse(stored);
-        console.log("🔍 Parsed user object:", parsed);
-
-        // ✅ Correctly get vendor from localStorage shape
         const vendor =
           parsed?.vendor ||
           parsed?.user ||
@@ -36,29 +33,20 @@ const Dashboard: FC = () => {
           parsed;
 
         const vendorId = vendor?.id || vendor?._id;
-        console.log("🆔 Extracted vendorId:", vendorId);
-
         if (!vendorId) {
-          console.warn("⚠️ No vendor ID found in stored data");
           setVendorName("Guest Vendor");
-          setLoading(false);
           return;
         }
 
-        console.log("🌐 Fetching vendor details from:", `vendors/${vendorId}`);
         const res = await Axios.get(`vendors/${vendorId}`);
-
-        console.log("✅ Vendor response:", res.data);
-
         const name =
-          res.data?.data?.businessName ??
-          vendor?.businessName ??
-          vendor?.name ??
+          res.data?.data?.businessName ||
+          vendor?.businessName ||
+          vendor?.name ||
           "Guest Vendor";
 
         setVendorName(name);
-      } catch (err: any) {
-        console.error("❌ Failed to fetch vendor:", err.message || err);
+      } catch (err) {
         setVendorName("Guest Vendor");
       } finally {
         setLoading(false);
@@ -69,87 +57,141 @@ const Dashboard: FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <main className="flex-1 p-6">
-        <div className="mb-6">
-          <h2 className="text-xl font-bold">
+    <div className="min-h-screen bg-[#F6F7F6] flex justify-center px-6 py-10">
+      <div className="w-full max-w-5xl">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold text-gray-900">
             Hi, {loading ? "Loading..." : vendorName}
-          </h2>
+          </h1>
 
-          <div className="flex items-center mt-2 p-3 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 w-fit">
-            <Bell className="w-5 h-5 text-green-600 mr-2" />
-            <p className="text-gray-700">You have a new order</p>
+          <div className="flex items-center gap-2 bg-white px-4 py-2 shadow-sm rounded-xl cursor-pointer hover:bg-gray-50">
+            <Bell className="w-5 h-5 text-green-700" />
+            <span className="text-gray-700 text-sm">You have a new order</span>
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid gap-6 md:grid-cols-3">
+        {/* Stats Section */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Orders */}
-          <div className="bg-white p-4 rounded-xl shadow hover:shadow-md transition flex justify-between items-center">
+          <div className="bg-white rounded-2xl p-5 shadow-sm flex justify-between items-center">
             <div>
-              <p className="text-sm font-medium text-gray-500">
-                Today&apos;s Orders
+              <p className="text-gray-800 font-medium text-sm">
+                Today's Orders
               </p>
-              <h3 className="text-2xl font-bold mt-2">12</h3>
+              <p className="text-green-700 font-bold text-xl mt-1">12</p>
             </div>
+
             <Image
               src="/assets/images/order.png"
               alt="orders"
-              width={120}
-              height={80}
-              className="mt-4 rounded-lg"
+              width={95}
+              height={95}
+              className="rounded-xl object-cover"
             />
           </div>
 
           {/* Earnings */}
-          <div className="bg-white p-4 rounded-xl shadow hover:shadow-md transition flex justify-between items-center">
+          <div className="bg-white rounded-2xl p-5 shadow-sm flex justify-between items-center">
             <div>
-              <p className="text-sm font-medium text-gray-500">Earnings</p>
-              <h3 className="text-2xl font-bold text-green-600 mt-2">$150</h3>
+              <p className="text-gray-800 font-medium text-sm">
+                Today's Earnings
+              </p>
+              <p className="text-green-700 font-bold text-xl mt-1">$150</p>
             </div>
+
             <Image
               src="/assets/images/earning.png"
               alt="earnings"
-              width={120}
-              height={80}
-              className="mt-4 rounded-lg"
+              width={95}
+              height={95}
+              className="rounded-xl object-cover"
             />
           </div>
 
-          {/* Items Available */}
-          <div className="bg-white p-4 rounded-xl shadow hover:shadow-md transition flex justify-between items-center">
+          {/* Items */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm flex justify-between items-center">
             <div>
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-gray-800 font-medium text-sm">
                 Items Available
               </p>
-              <h3 className="text-2xl font-bold mt-2">20</h3>
+              <p className="text-green-700 font-bold text-xl mt-1">20</p>
             </div>
+
             <Image
               src="/assets/images/items.png"
               alt="items"
-              width={120}
-              height={80}
-              className="mt-4 rounded-lg"
+              width={95}
+              height={95}
+              className="rounded-xl object-cover"
             />
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button className="px-4 py-3 rounded-xl bg-green-600 text-white font-medium hover:bg-green-700 transition">
-            Orders
+        {/* Active Orders */}
+        <h2 className="text-lg font-semibold text-gray-900 mt-10 mb-4">
+          Active Orders
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {/* Order 1 */}
+          <div className="bg-white p-3 rounded-2xl shadow-sm">
+            <Image
+              src="/assets/images/orderimg1.png"
+              alt="img"
+              width={500}
+              height={300}
+              className="rounded-xl w-full h-36 object-cover"
+            />
+            <p className="mt-3 text-gray-900 font-medium">Customer: Sarah</p>
+            <p className="text-gray-500 text-sm">Order ID: #12345</p>
+          </div>
+
+          {/* Order 2 */}
+          <div className="bg-white p-3 rounded-2xl shadow-sm">
+            <Image
+              src="/assets/images/orderimg2.png"
+              alt="img"
+              width={500}
+              height={300}
+              className="rounded-xl w-full h-36 object-cover"
+            />
+            <p className="mt-3 text-gray-900 font-medium">Customer: David</p>
+            <p className="text-gray-500 text-sm">Order ID: #67890</p>
+          </div>
+
+          {/* Order 3 */}
+          <div className="bg-white p-3 rounded-2xl shadow-sm">
+            <Image
+              src="/assets/images/orderimg2.png"
+              alt="img"
+              width={500}
+              height={300}
+              className="rounded-xl w-full h-36 object-cover"
+            />
+            <p className="mt-3 text-gray-900 font-medium">Customer: David</p>
+            <p className="text-gray-500 text-sm">Order ID: #67890</p>
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex flex-col gap-4 mt-10 mb-24 w-full max-w-md mx-auto">
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-green-700 text-white py-3 rounded-xl font-medium hover:bg-green-800 transition"
+          >
+            Create New Menu Item
           </button>
-          <button className="px-4 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition">
-            Menu
-          </button>
-          <button className="px-4 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition">
-            Earnings
-          </button>
-          <button className="px-4 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition">
-            Reviews
+
+          <button
+            onClick={() => router.push("/orders")}
+            className="bg-gray-200 text-gray-800 py-3 rounded-xl font-medium hover:bg-gray-300 transition"
+          >
+            View All Orders
           </button>
         </div>
-      </main>
+      </div>
+      {showForm && <CreateMenuItemForm onClose={() => setShowForm(false)} />}
     </div>
   );
 };
