@@ -1,13 +1,13 @@
 "use client";
 
-import { ArrowLeft, MapPin, Menu } from "lucide-react";
+import { ArrowLeft, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useCallback, useState } from "react";
 
 import { humanizePath } from "../libs/helper";
-import CartDrawer from "./cart";
+import CartDrawer from "./cart/cart";
 import NotificationPanel from "./notification";
 import TabNavigation from "./tab-navication"; // 👈 The sidebar component
 import { Button } from "@repo/ui/components/button";
@@ -50,11 +50,13 @@ const Header = () => {
           {/* Left */}
           <div className="flex items-center">
             {/* 👇 Mobile menu button */}
-            <div className="md:hidden mr-2">
-              <button onClick={() => setSidebarOpen(true)}>
-                <Menu className="w-6 h-6 text-gray-700" />
-              </button>
-            </div>
+            {/* {isLoggedIn && (
+              <div className="md:hidden mr-2">
+                <button onClick={() => setSidebarOpen(true)}>
+                  <Menu className="w-6 h-6 text-gray-700" />
+                </button>
+              </div>
+            )} */}
 
             {isTabRoute || isTopLevel ? (
               <Link href="/home" className="flex items-center gap-3">
@@ -105,10 +107,7 @@ const Header = () => {
               ) : (
                 <>
                   <Button asChild>
-                    <Link href="/log-in">Log IN</Link>
-                  </Button>
-                  <Button asChild>
-                    <Link href="/sign-up">Sign Up</Link>
+                    <Link href="/sign-up">Register</Link>
                   </Button>
                 </>
               ))}

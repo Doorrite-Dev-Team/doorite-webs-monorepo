@@ -1,9 +1,10 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useDebounceValue } from "usehooks-ts";
+import { parseAsString, parseAsBoolean, useQueryStates } from "nuqs";
 
+// UI Components
 import ExploreHeader from "@/components/explore/ExploreHeader";
 import SearchBar from "@/components/explore/SearchBar";
 import CategoryFilters from "@/components/explore/CategoryFilters";
@@ -13,132 +14,181 @@ import VendorCard from "@/components/explore/VendorCard";
 import EmptyState from "@/components/explore/EmptyState";
 import LoadingSkeleton from "@/components/explore/LoadingSkeleton";
 
-// constants
+// Constants and API
 import { CATEGORIES, SORT_OPTIONS, PRICE_FILTERS } from "@/libs/explore-config";
 import { api } from "@/libs/api";
 
+const defaultParams = {
+  q: null,
+  category: "all",
+  sort: "popular",
+  price: "all",
+  open: false,
+};
+
+// ➡️ Define the nuqs configuration map using explicit Param types to satisfy TypeScript
+const queryStateMap = {
+  // Use withDefault() to set the default state value ('')
+  // Use withOptions() to set configuration like 'shallow'
+  q: parseAsString.withDefault("").withOptions({ shallow: true }),
+  category: parseAsString.withDefault("all").withOptions({ shallow: true }),
+  sort: parseAsString.withDefault("popular").withOptions({ shallow: true }),
+  price: parseAsString.withDefault("all").withOptions({ shallow: true }),
+
+  // Boolean: Default to false if not present, and clear from URL when false (serialize: null)
+  open: parseAsBoolean.withDefault(false),
+};
+
 export default function ExplorePage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const [search, setSearch] = useState(searchParams.get("q") || "");
-  const [category, setCategory] = useState(
-    searchParams.get("category") || "all"
-  );
-  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "popular");
-  const [priceFilter, setPriceFilter] = useState(
-    searchParams.get("price") || "all"
-  );
-  const [showOpenOnly, setShowOpenOnly] = useState(
-    searchParams.get("open") === "true"
-  );
-
-  const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
-  const [debouncedSearch] = useDebounceValue(search, 300);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ Sync URL parameters
-  const updateURL = useCallback(() => {
-    const params = new URLSearchParams();
-    if (search) params.set("q", search);
-    if (category !== "all") params.set("category", category);
-    if (sortBy !== "popular") params.set("sort", sortBy);
-    if (priceFilter !== "all") params.set("price", priceFilter);
-    if (showOpenOnly) params.set("open", "true");
+  // Use nuqs to synchronize state with URL
+  const [{ q, category, sort, price, open }, setParams] = useQueryStates(
+    queryStateMap,
+    {
+      history: "replace",
+    }
+  );
 
-    const actParams = params.toString();
+  // Debounce the search term (q) from the URL state
+  const [debouncedSearch] = useDebounceValue(q, 300);
 
-    router.replace(`/explore?${actParams}`);
-  }, [router, search, category, sortBy, priceFilter, showOpenOnly]);
+  const clearFilters = useCallback(() => {
+    // Reset all parameters to default values
+    setParams(defaultParams);
+    // Clear local products state for immediate visual change
+    setProducts([]);
+  }, [setParams]);
 
-  useEffect(() => {
-    updateURL();
-  }, [updateURL]);
+  // Update the search query (q) in the URL
+  const setSearchAction = useCallback(
+    (value: string) => {
+      setParams({ q: value || null });
+    },
+    [setParams]
+  );
 
-  const clearFilters = () => {
-    setSearch("");
-    setCategory("all");
-    setSortBy("popular");
-    setPriceFilter("all");
-    setShowOpenOnly(false);
-  };
+  // Update the category in the URL
+  const setCategoryAction = useCallback(
+    (value: string) => {
+      setParams({ category: value === "all" ? null : value });
+    },
+    [setParams]
+  );
 
-  // ✅ Fetch products from API
+  // Update the sort parameter in the URL
+  const setSortByAction = useCallback(
+    (value: string) => {
+      setParams({ sort: value === "popular" ? null : value });
+    },
+    [setParams]
+  );
+
+  // Update the price filter in the URL
+  const setPriceFilterAction = useCallback(
+    (value: string) => {
+      setParams({ price: value === "all" ? null : value });
+    },
+    [setParams]
+  );
+
+  // Toggle the 'open' status in the URL
+  const setShowOpenOnlyAction = useCallback(
+    (value: boolean) => {
+      setParams({ open: value || null });
+    },
+    [setParams]
+  );
+
   const fetchProducts = useCallback(async () => {
+    // Skip fetch if no filters are active
+    if (
+      !q &&
+      category === "all" &&
+      sort === "popular" &&
+      price === "all" &&
+      !open
+    ) {
+      return;
+    }
+
     try {
       setIsLoading(true);
 
       const params: Record<string, string> = {};
       if (debouncedSearch) params.q = debouncedSearch;
       if (category !== "all") params.category = category;
-      if (priceFilter !== "all") params.price = priceFilter;
-      if (sortBy !== "popular") params.sort = sortBy;
+      if (price !== "all") params.price = price;
+      if (sort !== "popular") params.sort = sort;
 
+      // Fetch products using the generated API parameters
       const resProducts = await api.fetchProducts(params);
 
       if (Array.isArray(resProducts)) {
-        setProducts(resProducts);
+        // Apply client-side filtering for 'open' state
+        const finalProducts = open
+          ? resProducts.filter((p) => p.isAvailable)
+          : resProducts;
+        setProducts(finalProducts);
       } else {
         setProducts([]);
       }
     } catch (error) {
-      console.error("❌ Failed to fetch products:", error);
+      console.error("\u274c Failed to fetch products:", error);
       setProducts([]);
     } finally {
       setIsLoading(false);
     }
-    // let items = products
-    // if (priceFilter !== "all")
-    //   items = items?.filter((v) => v.priceRange === priceFilter);
-
-    // if (showOpenOnly) items = items.filter((v) => v.isOpen);
-    // // sort
-    // return items;
-  }, [category, debouncedSearch, priceFilter, sortBy]);
+  }, [category, debouncedSearch, price, sort, open, q]);
 
   useEffect(() => {
+    // Trigger fetch when debounced search or query state changes
     fetchProducts();
   }, [fetchProducts]);
 
-  // ✅ Filter results client-side if needed
-  const filteredProducts = useMemo(() => {
-    let items = [...products];
+  // Check if any filter is active
+  const hasActiveFilters = useMemo(
+    () =>
+      q !== "" ||
+      category !== "all" ||
+      sort !== "popular" ||
+      price !== "all" ||
+      open,
+    [q, category, sort, price, open]
+  );
 
-    if (showOpenOnly) {
-      items = items.filter((p) => p.isAvailable);
-    }
-
-    return items;
-  }, [products, showOpenOnly]);
-
-  const hasActiveFilters =
-    category !== "all" ||
-    priceFilter !== "all" ||
-    showOpenOnly ||
-    !!debouncedSearch;
+  const filteredProducts = products;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-6 pt-6 pb-8">
-        <ExploreHeader />
-        <SearchBar search={search} setSearch={setSearch} />
-        <CategoryFilters
-          categories={CATEGORIES}
-          category={category}
-          setCategoryAction={setCategory}
-        />
-        <FilterControls
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          sortOptions={SORT_OPTIONS}
-          priceFilter={priceFilter}
-          setPriceFilter={setPriceFilter}
-          priceFilters={PRICE_FILTERS}
-          showOpenOnly={showOpenOnly}
-          setShowOpenOnly={setShowOpenOnly}
-          clearFilters={clearFilters}
-          hasActiveFilters={hasActiveFilters}
-        />
+    // Mobile Overflow Fix: Use flex-col and min-h-screen for proper vertical layout
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Scrollable container with fixed-width content */}
+      <div className="w-full md:max-w-4xl mx-auto overflow-hidden px-4 md:px-6 flex-1 pt-6 pb-8">
+        {/* Header/Filters Section */}
+        <header className="space-y-4 mb-6">
+          <ExploreHeader />
+          <SearchBar search={q} setSearch={setSearchAction} />
+          <CategoryFilters
+            categories={CATEGORIES}
+            category={category}
+            setCategoryAction={setCategoryAction}
+          />
+          <FilterControls
+            sortBy={sort}
+            setSortBy={setSortByAction}
+            sortOptions={SORT_OPTIONS}
+            priceFilter={price}
+            setPriceFilter={setPriceFilterAction}
+            priceFilters={PRICE_FILTERS}
+            showOpenOnly={open}
+            setShowOpenOnly={setShowOpenOnlyAction}
+            clearFilters={clearFilters}
+            hasActiveFilters={hasActiveFilters}
+          />
+        </header>
+
+        {/* Results Section */}
         <ResultsHeader
           debouncedSearch={debouncedSearch}
           filteredCount={filteredProducts.length}
@@ -147,9 +197,13 @@ export default function ExplorePage() {
           hasActiveFilters={hasActiveFilters}
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           {isLoading ? (
-            <LoadingSkeleton />
+            // Render two skeletons for the 2-column grid
+            <>
+              <LoadingSkeleton />
+              <LoadingSkeleton />
+            </>
           ) : filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
               <VendorCard
@@ -157,7 +211,7 @@ export default function ExplorePage() {
                 vendor={{
                   id: parseInt(product.id),
                   description: product.description,
-                  priceRange: `₦${product.basePrice.toLocaleString()}`,
+                  priceRange: `${product.basePrice.toLocaleString()}`,
                   category: category,
                   isOpen: product.isAvailable,
                   logoUrl: product.vendor?.logoUrl,
@@ -166,11 +220,14 @@ export default function ExplorePage() {
               />
             ))
           ) : (
-            <EmptyState
-              hasSearch={!!debouncedSearch}
-              searchTerm={debouncedSearch}
-              onClear={clearFilters}
-            />
+            // EmptyState must span two columns
+            <div className="sm:col-span-2">
+              <EmptyState
+                hasSearch={!!debouncedSearch}
+                searchTerm={debouncedSearch}
+                onClear={clearFilters}
+              />
+            </div>
           )}
         </div>
       </div>

@@ -17,7 +17,7 @@ export function EmptyOrders() {
           Your order history will appear here
         </p>
         <div className="flex justify-center">
-          <Link href="/restaurants">
+          <Link href="/vendor">
             <Button size="sm">Browse Restaurants</Button>
           </Link>
         </div>

@@ -55,3 +55,12 @@ export const formatDate = (timeString: string) => {
     year: "numeric",
   });
 };
+
+export const getInitials = (s: string) => {
+  const splices = s.split(" ");
+  let I = "";
+  for (const splice of splices) {
+    I += splice[0]?.toUpperCase();
+  }
+  return I;
+};

@@ -1,208 +1,58 @@
-"use client";
-
-import { loginUser } from "@/actions/auth";
 import { logoFull } from "@repo/ui/assets";
-import { Button } from "@repo/ui/components/button";
-import { Input } from "@repo/ui/components/input";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { showToast } from "@/components/Toast";
-
-// \U0001f680 Import the user atom
-import { useSetAtom } from "jotai";
-import { userAtom } from "@/store/userAtom"; // Adjust path as needed
-
-type FormData = {
-  email: string;
-  password: string;
-};
-
-// Use the imported User type for consistency
-type LoginResponse = {
-  ok: boolean;
-  message?: string;
-  data?: User; // Use the Jotai User type
-};
+import LoginForm from "./components/form";
 
 export default function Login() {
-  const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
-  const [errorMessage, setErrorMessage] = useState<string>();
-
-  // \U0001f680 Get the setter function for the user atom
-  const setUser = useSetAtom(userAtom);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<FormData>();
-
-  const onSubmit = handleSubmit(async (data) => {
-    console.log("\U0001f7e2 Attempting login with:", data);
-
-    try {
-      const res = (await loginUser(data.email, data.password)) as LoginResponse;
-      console.log("\U0001f535 Login response:", res);
-
-      if (!res || !res.ok) {
-        // ... (Error handling remains the same)
-        const backendError =
-          (res as any)?.error ||
-          (res as any)?.message ||
-          "Login failed. Please try again.";
-
-        setErrorMessage(backendError);
-        showToast({
-          message: "Login Failed",
-          subtext: backendError,
-          type: "error",
-        });
-        return;
-      }
-
-      const user = res.data;
-      if (!user) {
-        // ... (Error handling remains the same)
-        const msg = "Invalid response from server.";
-        setErrorMessage(msg);
-        showToast({
-          message: "Login Failed",
-          subtext: msg,
-          type: "error",
-        });
-        return;
-      }
-
-      // \U0001f680 REPLACE: Use the Jotai setter instead of localStorage.setItem
-      setUser(user);
-      console.log("\U0001f4be Saved user via Jotai/localStorage:", user);
-
-      // \u2705 Success toast
-      showToast({
-        message: "Login Successful!",
-        subtext: `Welcome back, ${user.email}`,
-        type: "success",
-      });
-
-      // \u2705 Redirect
-      router.push("/home");
-    } catch (error: any) {
-      // ... (Catch block remains the same)
-      console.error("\u274c Login request failed:", error);
-      const backendError =
-        error?.response?.data?.error ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "An unexpected error occurred.";
-
-      setErrorMessage(backendError);
-      showToast({
-        message: "Login Failed",
-        subtext: backendError,
-        type: "error",
-      });
-    }
-  });
-
   return (
-    // ... (rest of the component JSX remains the same)
-    <div className="w-full max-w-md mx-auto p-6 mt-10 space-y-6">
-      {/* Header Section */}
-      <div className="space-y-4 text-center">
-        <div className="flex items-center justify-center gap-3">
-          <Image src={logoFull} alt="Doorite Logo" width={100} height={100} />
-          <div className="w-2 h-2 bg-primary rounded-full" />
-          <h1 className="font-bold text-2xl">Log In</h1>
+    <div className="flex min-h-[100dvh] flex-col bg-white px-6 py-10 sm:px-8">
+      {/* Top Content: Centered vertically */}
+      <div className="flex flex-1 flex-col justify-center space-y-8">
+        {/* Header: Large Brand Presence */}
+        <div className="space-y-2 text-center">
+          <Image
+            src={logoFull}
+            alt="Doorite Logo"
+            width={140}
+            height={40}
+            className="mx-auto h-auto w-auto"
+            priority
+          />
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+            Welcome Back
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Enter your credentials to continue
+          </p>
         </div>
-        <p className="text-xl font-semibold text-muted-foreground">
-          Log In to your Customer Account
-        </p>
+
+        {/* Form Area */}
+        <div>
+          <LoginForm />
+
+          {/* Forgot Password - Placed immediately for quick access */}
+          <div className="mt-4 text-right">
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-primary p-2 -mr-2" // Padding increases touch target
+            >
+              Forgot Password?
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Form Section */}
-      <form onSubmit={onSubmit} className="space-y-5">
-        <Input
-          label="Email Address"
-          leftIcon={<Mail className="w-4 h-4" />}
-          {...register("email", {
-            required: "Email is required",
-            pattern: {
-              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: "Please enter a valid email address",
-            },
-          })}
-          error={errors.email?.message}
-          placeholder="johndoe@gmail.com"
-          type="email"
-        />
-
-        <Input
-          label="Password"
-          leftIcon={<Lock className="w-4 h-4" />}
-          {...register("password", {
-            required: "Password is required",
-            minLength: {
-              value: 8,
-              message: "Password must be at least 8 characters",
-            },
-          })}
-          error={errors.password?.message}
-          type={showPassword ? "text" : "password"}
-          placeholder="Enter your password"
-          rightIcon={
-            <button
-              type="button"
-              className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
-              onClick={() => setShowPassword(!showPassword)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-            >
-              {showPassword ? (
-                <EyeOff className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <Eye className="w-4 h-4 text-muted-foreground" />
-              )}
-            </button>
-          }
-        />
-
-        <Button
-          type="submit"
-          size="lg"
-          className="w-full"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Logging In..." : "Log In"}
-        </Button>
-      </form>
-
-      {errorMessage && (
-        <p className="my-4 text-red-500 font-medium">{errorMessage}</p>
-      )}
-
-      {/* Footer Links */}
-      <div className="flex items-center justify-between text-sm">
-        <div>
-          <span className="text-muted-foreground">
-            Don&apos;t have an account?{" "}
-          </span>
+      {/* Footer: Pushed to bottom (Sticky feel) */}
+      <div className="mt-8 text-center pb-4">
+        <p className="text-sm text-muted-foreground">
+          New to Doorite?{" "}
           <Link
             href="/sign-up"
-            className="text-primary hover:text-primary/80 font-medium transition-colors"
+            className="font-semibold text-primary underline-offset-4 transition-colors hover:underline p-2"
           >
-            Sign Up
+            Create an account
           </Link>
-        </div>
-        <Link
-          href="/forgot-password"
-          className="text-primary hover:text-primary/80 font-medium transition-colors"
-        >
-          Forgot Password?
-        </Link>
+        </p>
       </div>
     </div>
   );

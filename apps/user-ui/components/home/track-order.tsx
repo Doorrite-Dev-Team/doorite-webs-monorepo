@@ -1,11 +1,10 @@
-import { order } from "@/libs/contant";
 import { formatTime } from "@/libs/helper";
 import { Button } from "@repo/ui/components/button";
 import { Card, CardContent } from "@repo/ui/components/card";
 import { Badge, Clock, MapPin, Navigation, Phone, Truck } from "lucide-react";
 
 // Track your order small component
-export function TrackYourOrder({ order }: { order: order }) {
+export function TrackYourOrder({ order }: { order: Order }) {
   return (
     <div className="px-6 py-6 bg-white">
       <h2 className="text-xl font-bold text-gray-900 mb-4">Track Your Order</h2>

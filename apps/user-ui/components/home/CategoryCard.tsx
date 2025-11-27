@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@repo/ui/components/card";
 import Link from "next/link";
 import { LucideIcon } from "lucide-react";
+import { Route } from "next";
 
 export function CategoryCard({
   href,
@@ -11,7 +12,7 @@ export function CategoryCard({
   color,
   description,
 }: {
-  href: string;
+  href: Route<string>;
   title: string;
   color: string;
   Icon: LucideIcon;
