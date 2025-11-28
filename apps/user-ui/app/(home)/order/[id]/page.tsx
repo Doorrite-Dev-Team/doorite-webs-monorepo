@@ -1,7 +1,7 @@
 "use client";
 import { use, useState } from "react";
 
-// app/orders/[id]/page.tsx
+// app/order/[id]/page.tsx
 import { DeliveryQrDisplay } from "@/components/qr-code-display";
 import { TrackYourOrder } from "@/components/home/track-order";
 import { orders as ORDERS } from "@/libs/contant";

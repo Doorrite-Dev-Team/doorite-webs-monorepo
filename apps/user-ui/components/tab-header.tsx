@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft, MapPin, Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -12,7 +12,7 @@ import NotificationPanel from "./notification";
 import TabNavigation from "./tab-navication"; // 👈 The sidebar component
 import { Button } from "@repo/ui/components/button";
 import { useAtom } from "jotai";
-import { isLoggedInAtom } from "@/store/userAtom";
+import { isLoggedInAtom, userAtom } from "@/store/userAtom";
 
 // --------------------- Header ---------------------
 const Header = () => {
@@ -21,9 +21,10 @@ const Header = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false); // 👈 control sidebar
   // const userName = useUser();
   const [isLoggedIn] = useAtom(isLoggedInAtom);
+  const [user] = useAtom(userAtom);
 
   const isTopLevel = ["/", "", "/home", "/landing"].includes(pathname);
-  const isTabRoute = ["/home", "/explore", "/orders", "/account"].includes(
+  const isTabRoute = ["/home", "/explore", "/order", "/account"].includes(
     pathname
   );
 
@@ -50,13 +51,16 @@ const Header = () => {
           {/* Left */}
           <div className="flex items-center">
             {/* 👇 Mobile menu button */}
-            {/* {isLoggedIn && (
-              <div className="md:hidden mr-2">
-                <button onClick={() => setSidebarOpen(true)}>
+            {isLoggedIn && (
+              <div className="max-md:hidden mr-4 cursor-pointer flex items-center justify-center">
+                <button
+                  className="cursor-pointer hover:opacity-80"
+                  onClick={() => setSidebarOpen(true)}
+                >
                   <Menu className="w-6 h-6 text-gray-700" />
                 </button>
               </div>
-            )} */}
+            )}
 
             {isTabRoute || isTopLevel ? (
               <Link href="/home" className="flex items-center gap-3">
@@ -91,7 +95,7 @@ const Header = () => {
             {isTopLevel && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
                 <MapPin size={12} />
-                <span className="truncate">Lagos, NG</span>
+                <span className="truncate">{user?.address ?? "Lagos, NG"}</span>
               </div>
             )}
           </div>
@@ -121,7 +125,7 @@ const Header = () => {
       {/* ---------------- Mobile Sidebar ---------------- */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-[999] md:hidden"
+          className="fixed inset-0 bg-black/50 z-[999] max-md:hidden"
           onClick={() => setSidebarOpen(false)}
         >
           <div

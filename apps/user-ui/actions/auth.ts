@@ -102,7 +102,7 @@ export async function loginUser(identifier: string, password: string) {
     if (ok) {
       toast.success("successfully Logged In");
     }
-    return handleSuccess(res);
+    return res.data;
   } catch (err) {
     console.error("loginUser error:", err);
     const message = handleError(err).message;

@@ -10,13 +10,13 @@ import { TrackYourOrder } from "@/components/home/track-order";
 import { orders } from "@/libs/contant";
 import { CategoryCard } from "@/components/home/CategoryCard";
 import { RestaurantsSkeleton } from "@/components/home/RestaurantsSkeleton";
-import { OrdersSkeleton } from "@/components/home/OrdersSkeleton";
 import { EmptyOrders } from "@/components/home/EmptyOrders";
 import { EmptyRestaurants } from "@/components/home/EmptyRestaurants";
 import { RestaurantCard } from "@/components/home/RestaurantCard";
 import { Category } from "@/libs/contant";
 import { useAtom } from "jotai";
 import { userAtom } from "@/store/userAtom";
+import { OrdersSkeleton } from "./OrdersSkeleton";
 
 type Restaurant = {
   id: string;
@@ -101,7 +101,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                Hello, {userName?.name || "Guest"}!
+                Hello, {userName?.fullName || "Guest"}!
               </h1>
               <p className="text-gray-500 text-sm mt-1">
                 {currentTime.toLocaleDateString(undefined, {
@@ -115,7 +115,7 @@ export default function HomePage() {
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                 <span className="text-2xl">👋</span>
               </div>
-              <Link href="/orders">
+              <Link href="/order">
                 <Button variant="ghost" size="sm">
                   My Orders
                 </Button>
@@ -142,7 +142,7 @@ export default function HomePage() {
       <section className="px-4 sm:px-6 md:px-8 py-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg sm:text-xl font-bold">Recent Orders</h2>
-          <Link href="/orders">
+          <Link href="/order">
             <Button variant="ghost" size="sm" className="text-primary">
               View All <ChevronRight size={16} className="ml-1" />
             </Button>

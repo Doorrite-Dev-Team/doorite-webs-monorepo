@@ -20,7 +20,7 @@ type FormData = {
 type LoginResponse = {
   ok: boolean;
   message?: string;
-  data?: User; // Use the Jotai User type
+  user?: User; // Use the Jotai User type
 };
 
 const LogingForm = () => {
@@ -59,7 +59,8 @@ const LogingForm = () => {
         return;
       }
 
-      const user = res.data;
+      const user = res?.user;
+      console.log(user);
       if (!user) {
         // ... (Error handling remains the same)
         const msg = "Invalid response from server.";
@@ -77,11 +78,11 @@ const LogingForm = () => {
       console.log(" Saved user via Jotai/localStorage:", user);
 
       //  Success toast
-      showToast({
-        message: "Login Successful!",
-        subtext: `Welcome back, ${user.email}`,
-        type: "success",
-      });
+      // showToast({
+      //   message: "Login Successful!",
+      //   subtext: `Welcome back, ${user.email}`,
+      //   type: "success",
+      // });
 
       //  Redirect
       router.push("/home");

@@ -14,5 +14,8 @@ export async function isTokenExpired() {
 
   const access_token = myCookies.get(ACCESS_TOKEN_KEY);
 
-  return access_token;
+  if (!access_token) {
+    return true;
+  }
+  return false;
 }
