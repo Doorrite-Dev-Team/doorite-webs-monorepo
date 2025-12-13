@@ -7,16 +7,16 @@ import { parseAsString, parseAsBoolean, useQueryStates } from "nuqs";
 // UI Components
 import ExploreHeader from "@/components/explore/ExploreHeader";
 import SearchBar from "@/components/explore/SearchBar";
-import CategoryFilters from "@/components/explore/CategoryFilters";
+// import CategoryFilters from "@/components/explore/CategoryFilters";
 import FilterControls from "@/components/explore/FilterControls";
 import ResultsHeader from "@/components/explore/ResultsHeader";
-import VendorCard from "@/components/explore/VendorCard";
 import EmptyState from "@/components/explore/EmptyState";
 import LoadingSkeleton from "@/components/explore/LoadingSkeleton";
 
 // Constants and API
 import { CATEGORIES, SORT_OPTIONS, PRICE_FILTERS } from "@/libs/explore-config";
 import { api } from "@/libs/api";
+import ProductCard from "./ProductCard";
 
 const defaultParams = {
   q: null,
@@ -48,11 +48,11 @@ export default function ExplorePage() {
     queryStateMap,
     {
       history: "replace",
-    }
+    },
   );
 
   // Debounce the search term (q) from the URL state
-  const [debouncedSearch] = useDebounceValue(q, 300);
+  const [debouncedSearch] = useDebounceValue(q, 700);
 
   const clearFilters = useCallback(() => {
     // Reset all parameters to default values
@@ -66,15 +66,7 @@ export default function ExplorePage() {
     (value: string) => {
       setParams({ q: value || null });
     },
-    [setParams]
-  );
-
-  // Update the category in the URL
-  const setCategoryAction = useCallback(
-    (value: string) => {
-      setParams({ category: value === "all" ? null : value });
-    },
-    [setParams]
+    [setParams],
   );
 
   // Update the sort parameter in the URL
@@ -82,7 +74,7 @@ export default function ExplorePage() {
     (value: string) => {
       setParams({ sort: value === "popular" ? null : value });
     },
-    [setParams]
+    [setParams],
   );
 
   // Update the price filter in the URL
@@ -90,7 +82,7 @@ export default function ExplorePage() {
     (value: string) => {
       setParams({ price: value === "all" ? null : value });
     },
-    [setParams]
+    [setParams],
   );
 
   // Toggle the 'open' status in the URL
@@ -98,21 +90,10 @@ export default function ExplorePage() {
     (value: boolean) => {
       setParams({ open: value || null });
     },
-    [setParams]
+    [setParams],
   );
 
   const fetchProducts = useCallback(async () => {
-    // Skip fetch if no filters are active
-    if (
-      !q &&
-      category === "all" &&
-      sort === "popular" &&
-      price === "all" &&
-      !open
-    ) {
-      return;
-    }
-
     try {
       setIsLoading(true);
 
@@ -140,7 +121,7 @@ export default function ExplorePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [category, debouncedSearch, price, sort, open, q]);
+  }, [category, debouncedSearch, price, sort, open]);
 
   useEffect(() => {
     // Trigger fetch when debounced search or query state changes
@@ -155,7 +136,7 @@ export default function ExplorePage() {
       sort !== "popular" ||
       price !== "all" ||
       open,
-    [q, category, sort, price, open]
+    [q, category, sort, price, open],
   );
 
   const filteredProducts = products;
@@ -164,26 +145,21 @@ export default function ExplorePage() {
     // Mobile Overflow Fix: Use flex-col and min-h-screen for proper vertical layout
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Scrollable container with fixed-width content */}
-      <div className="w-full md:max-w-4xl mx-auto overflow-hidden px-4 md:px-6 flex-1 pt-6 pb-8">
+      <div className="max-w-md md:max-w-4xl mx-auto w-full overflow-hidden px-4 md:px-6 flex-1 pt-6 pb-8">
         {/* Header/Filters Section */}
         <header className="space-y-4 mb-6">
           <ExploreHeader />
           <SearchBar search={q} setSearch={setSearchAction} />
-          <CategoryFilters
-            categories={CATEGORIES}
-            category={category}
-            setCategoryAction={setCategoryAction}
-          />
           <FilterControls
             sortBy={sort}
-            setSortBy={setSortByAction}
+            setSortByAction={setSortByAction}
             sortOptions={SORT_OPTIONS}
             priceFilter={price}
-            setPriceFilter={setPriceFilterAction}
+            setPriceFilterAction={setPriceFilterAction}
             priceFilters={PRICE_FILTERS}
             showOpenOnly={open}
             setShowOpenOnly={setShowOpenOnlyAction}
-            clearFilters={clearFilters}
+            clearFiltersAction={clearFilters}
             hasActiveFilters={hasActiveFilters}
           />
         </header>
@@ -206,18 +182,7 @@ export default function ExplorePage() {
             </>
           ) : filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
-              <VendorCard
-                key={product.id}
-                vendor={{
-                  id: parseInt(product.id),
-                  description: product.description,
-                  priceRange: `${product.basePrice.toLocaleString()}`,
-                  category: category,
-                  isOpen: product.isAvailable,
-                  logoUrl: product.vendor?.logoUrl,
-                  businessName: product.vendor?.businessName,
-                }}
-              />
+              <ProductCard key={product.id} product={product} />
             ))
           ) : (
             // EmptyState must span two columns

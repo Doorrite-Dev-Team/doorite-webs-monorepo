@@ -54,22 +54,17 @@ const SignUpForm = () => {
       // ✅ Show OTP verification component after successful signup
       setUserEmail(data.email);
       setShowOtp(true);
-    } catch (err: any) {
+    } catch (err) {
       console.error("❌ Signup failed:", err);
 
       // ✅ Show exact backend or network error via toast
       toast("⚠️ Error", {
-        description:
-          err?.response?.data?.message ||
-          err.message ||
-          "An unexpected error occurred.",
+        description: (err as Error).message || "An unexpected error occurred.",
       });
 
       // fallback for UI text
       setErrorMessage(
-        err?.response?.data?.message ||
-          err.message ||
-          "An error occurred. Please try again Later."
+        (err as Error).message || "An error occurred. Please try again Later.",
       );
     }
   });

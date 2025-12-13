@@ -5,6 +5,7 @@ import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 // import { Provider } from "jotai";
 import Providers from "@/providers";
+import SplashScreen from "@/components/SplashScreen";
 
 const plus_Jakarta_Sans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -35,7 +36,7 @@ export default function RootLayout({
         className={`${plus_Jakarta_Sans.variable} ${geistMono.variable} max-w-full mx-auto`}
       >
         <Providers>
-          {children}
+          <SplashScreen duration={2500}>{children}</SplashScreen>
           <Toaster richColors />
         </Providers>
       </body>

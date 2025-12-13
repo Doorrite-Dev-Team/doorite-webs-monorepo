@@ -1,5 +1,3 @@
-"use client";
-
 import { Card, CardContent } from "@repo/ui/components/card";
 import { TrendingUp } from "lucide-react";
 

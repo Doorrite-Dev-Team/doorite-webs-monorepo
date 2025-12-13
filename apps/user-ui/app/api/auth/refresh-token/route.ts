@@ -11,11 +11,15 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   // Use a type assertion to specify the return type of the API call
-  const apiRes = (await axios.post(`${API_BASE}/auth/login-user`, body, {
-    headers: { "Content-Type": "application/json" },
-    withCredentials: true,
-    validateStatus: () => true,
-  })) as AxiosResponse; // \U0001f448 Assert the type here
+  const apiRes = (await axios.post(
+    `${API_BASE}/auth/refresh-user-token`,
+    body,
+    {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+      validateStatus: () => true,
+    },
+  )) as AxiosResponse; // \U0001f448 Assert the type here
 
   const nextRes = NextResponse.json(apiRes.data, { status: apiRes.status });
 

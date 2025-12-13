@@ -4,7 +4,7 @@ import React from "react";
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="min-h-screen w-full">
+    <div className="w-full">
       <Header />
 
       {/* Give main enough top padding so content doesn't hide under fixed header */}

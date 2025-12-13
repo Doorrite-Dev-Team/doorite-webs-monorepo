@@ -1,26 +1,22 @@
-"use client";
-
-import { Card, CardContent } from "@repo/ui/components/card";
+import { Package } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
+import { Card, CardContent } from "@repo/ui/components/card";
 import Link from "next/link";
-import { UtensilsCrossed } from "lucide-react";
 
 export function EmptyOrders() {
   return (
-    <Card className="border-0 bg-gradient-to-br from-gray-50 to-gray-100/50">
-      <CardContent className="p-8 text-center">
-        <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-          <UtensilsCrossed className="w-8 h-8 text-gray-400" />
-        </div>
-        <h3 className="font-semibold text-gray-700 mb-2">No recent orders</h3>
-        <p className="text-sm text-gray-500 mb-4">
-          Your order history will appear here
+    <Card className="border-0 shadow-sm">
+      <CardContent className="p-12 text-center">
+        <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          No orders yet
+        </h3>
+        <p className="text-gray-600 mb-6">
+          Start ordering from your favorite restaurants
         </p>
-        <div className="flex justify-center">
-          <Link href="/vendor">
-            <Button size="sm">Browse Restaurants</Button>
-          </Link>
-        </div>
+        <Link href="/vendor">
+          <Button>Browse Restaurants</Button>
+        </Link>
       </CardContent>
     </Card>
   );
