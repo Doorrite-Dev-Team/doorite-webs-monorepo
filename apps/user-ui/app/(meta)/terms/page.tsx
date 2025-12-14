@@ -1,6 +1,6 @@
 // app/(home)/terms/page.tsx (or wherever this lives)
 
-import Terms from "@/legal/terms";
+import Terms from "@/legal/Terms";
 import type { Metadata } from "next";
 import React from "react";
 

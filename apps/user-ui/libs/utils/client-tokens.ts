@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  getCookie,
-  setCookie,
-  deleteCookie,
-  OptionsType,
-} from "cookies-next/client";
+import { getCookie, setCookie, deleteCookie, OptionsType } from "cookies-next";
 
 const ACCESS_TOKEN_KEY = "access_token_user";
 const REFRESH_TOKEN_KEY = "refresh_token_user";

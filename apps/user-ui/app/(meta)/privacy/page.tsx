@@ -1,7 +1,7 @@
 // "use client";
 // app/(meta)/privacy/page.tsx
 
-import Privacy from "@/legal/privacy";
+import Privacy from "@/legal/Privacy";
 import type { Metadata } from "next";
 
 import React from "react";
