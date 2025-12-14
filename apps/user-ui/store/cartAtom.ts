@@ -2,28 +2,28 @@ import { atom } from "jotai";
 
 const initialcart: CartItem[] = [
   {
-    id: 1,
+    id: "1",
     name: "Classic Cheeseburger",
     price: 12.99,
     quantity: 1,
     vendor_name: "Burger Palace",
   },
   {
-    id: 2,
+    id: "2",
     name: "Large Fries",
     price: 8.99,
     quantity: 2,
     vendor_name: "Burger Palace",
   },
   {
-    id: 3,
+    id: "3",
     name: "Crispy Chicken Sandwich",
     price: 14.99,
     quantity: 1,
     vendor_name: "Chicken Co.",
   },
   {
-    id: 4,
+    id: "5",
     name: "Coke",
     price: 3.99,
     quantity: 2,

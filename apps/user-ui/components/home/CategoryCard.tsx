@@ -1,34 +1,36 @@
 "use client";
 
-import { Card, CardContent } from "@repo/ui/components/card";
 import Link from "next/link";
+import { Card, CardContent } from "@repo/ui/components/card";
 import { LucideIcon } from "lucide-react";
 import { Route } from "next";
 
-export function CategoryCard({
+interface CategoryCardProps {
+  href: string;
+  title: string;
+  description: string;
+  Icon: LucideIcon;
+  color: string;
+}
+
+export default function CategoryCard({
   href,
   title,
+  description,
   Icon,
   color,
-  description,
-}: {
-  href: Route<string>;
-  title: string;
-  color: string;
-  Icon: LucideIcon;
-  description?: string;
-}) {
+}: CategoryCardProps) {
   return (
-    <Link href={href} className="block">
-      <Card
-        className={`border hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer ${color}`}
-      >
-        <CardContent className="p-4 text-center">
-          <div className="w-12 h-12 bg-white/80 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm">
-            <Icon size={22} className={color.split(" ")[1]} />
+    <Link href={href as Route<string>} className="block group">
+      <Card className="border-2 border-transparent hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md">
+        <CardContent className="p-4">
+          <div
+            className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}
+          >
+            <Icon className="w-6 h-6" />
           </div>
-          <h3 className="font-semibold text-sm mb-1">{title}</h3>
-          <p className="text-xs opacity-75 leading-tight">{description}</p>
+          <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
+          <p className="text-xs text-gray-600">{description}</p>
         </CardContent>
       </Card>
     </Link>

@@ -67,7 +67,7 @@ export function TrackYourOrder({ order }: { order: Order }) {
             <div className="flex items-center space-x-2 text-primary">
               <Clock size={16} />
               <span className="font-medium">
-                ETA: {formatTime(order.estimatedDelivery)}
+                ETA: {formatTime(order.estimatedDelivery ?? "N/A")}
               </span>
             </div>
             <div className="text-primary/70">Progress</div>

@@ -3,13 +3,14 @@
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Mail, EyeOff, Eye, Lock } from "lucide-react";
-import React, { useState } from "react";
+import React, { FormEvent, useState } from "react";
 import { loginUser } from "@/actions/auth";
-import { showToast } from "@/components/Toast";
+// import { showToast } from "@/components/Toast";
 import { userAtom } from "@/store/userAtom";
 import { useSetAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "@repo/ui/components/sonner";
 
 type FormData = {
   email: string;
@@ -43,21 +44,21 @@ const LogingForm = () => {
       const res = (await loginUser(data.email, data.password)) as LoginResponse;
       console.log(" Login response:", res);
 
-      if (!res || !res.ok) {
-        // ... (Error handling remains the same)
-        const backendError =
-          (res as any)?.error ||
-          (res as any)?.message ||
-          "Login failed. Please try again.";
+      // if (!res || !res.ok) {
+      //   // ... (Error handling remains the same)
+      //   const backendError =
+      //     (res as any)?.error ||
+      //     (res as any)?.message ||
+      //     "Login failed. Please try again.";
 
-        setErrorMessage(backendError);
-        showToast({
-          message: "Login Failed",
-          subtext: backendError,
-          type: "error",
-        });
-        return;
-      }
+      //   setErrorMessage(backendError);
+      //   showToast({
+      //     message: "Login Failed",
+      //     subtext: backendError,
+      //     type: "error",
+      //   });
+      //   return;
+      // }
 
       const user = res?.user;
       console.log(user);
@@ -65,11 +66,7 @@ const LogingForm = () => {
         // ... (Error handling remains the same)
         const msg = "Invalid response from server.";
         setErrorMessage(msg);
-        showToast({
-          message: "Login Failed",
-          subtext: msg,
-          type: "error",
-        });
+        toast.error("Login Failed", { description: msg });
         return;
       }
 
@@ -86,21 +83,15 @@ const LogingForm = () => {
 
       //  Redirect
       router.push("/home");
-    } catch (error: any) {
+    } catch (error) {
       // ... (Catch block remains the same)
       console.error("Login request failed:", error);
       const backendError =
-        error?.response?.data?.error ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "An unexpected error occurred.";
+        (error as Error)?.message || "An unexpected error occurred.";
 
       setErrorMessage(backendError);
-      showToast({
-        message: "Login Failed",
-        subtext: backendError,
-        type: "error",
-      });
+
+      toast.error("Login Failed", { description: backendError });
     }
   });
 

@@ -25,7 +25,7 @@ const Header = () => {
 
   const isTopLevel = ["/", "", "/home", "/landing"].includes(pathname);
   const isTabRoute = ["/home", "/explore", "/order", "/account"].includes(
-    pathname
+    pathname,
   );
 
   const getTitle = () => {
@@ -95,7 +95,9 @@ const Header = () => {
             {isTopLevel && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
                 <MapPin size={12} />
-                <span className="truncate">{user?.address ?? "Lagos, NG"}</span>
+                <span className="truncate">
+                  {user?.address?.[0]?.address ?? "Lagos, NG"}
+                </span>
               </div>
             )}
           </div>

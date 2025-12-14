@@ -1,188 +1,219 @@
-// app/checkout/page.tsx
 "use client";
 
-import { Button } from "@repo/ui/components/button";
-import { Card, CardContent } from "@repo/ui/components/card";
-import { useState } from "react";
+import { useAtom } from "jotai";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 
-import { Minus, Plus } from "lucide-react";
-import Link from "next/link";
+// Assuming these are defined in your project
+import {
+  DeliveryAddressCard,
+  OrderItemsCard,
+  OrderSummaryCard,
+  PaymentMethodCard,
+} from "@/components/checkout/cards";
+import { AddressDialog, SuccessDialog } from "@/components/checkout/dialogs";
+import { cartAtom, EmptyCartAtom, totalPriceAtom } from "@/store/cartAtom";
+import Axios from "@/libs/Axios";
+import { Route } from "next";
 
-type Item = { id: number; name: string; price: number; quantity: number };
+// --- Main Checkout Page Component ---
 
 export default function CheckoutPage() {
-  const [items, setItems] = useState<Item[]>([
-    { id: 1, name: "Classic Cheeseburger", quantity: 1, price: 12.99 },
-    { id: 2, name: "Large Fries", quantity: 2, price: 8.99 },
-    { id: 3, name: "Crispy Chicken Sandwich", quantity: 1, price: 14.99 },
-    { id: 4, name: "Coke", quantity: 2, price: 3.99 },
-  ]);
+  const router = useRouter();
+  // Cart state and totals
+  const [cart] = useAtom<CartItem[]>(cartAtom);
+  const [totalPrice] = useAtom(totalPriceAtom);
+  const [, emptyCart] = useAtom(EmptyCartAtom);
 
-  const [selectedPayment, setSelectedPayment] = useState<
-    "card" | "campus" | "mobile"
-  >("mobile");
+  // Local state
+  const [paymentMethod, setPaymentMethod] =
+    React.useState<ClientPaymentMethod>("paystack");
+  const [isProcessing, setIsProcessing] = React.useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = React.useState(false);
+  const [showAddressDialog, setShowAddressDialog] = React.useState(false);
+  const [deliveryAddress, setDeliveryAddress] =
+    React.useState<DeliveryAddressForm>({
+      fullName: "",
+      phone: "",
+      email: "",
+      address: "Campus Address",
+      building: "Dormitory A",
+      room: "201",
+      instructions: "",
+    });
 
-  const updateQuantity = (id: number, newQuantity: number) => {
-    setItems((prev) =>
-      newQuantity === 0
-        ? prev.filter((p) => p.id !== id)
-        : prev.map((p) => (p.id === id ? { ...p, quantity: newQuantity } : p))
-    );
+  // Fee calculation (client-side display only, backend must re-calculate for integrity)
+  const subtotal = totalPrice;
+  const deliveryFee = cart.length > 0 ? 3.99 : 0;
+  const serviceFee = cart.length > 0 ? 1.99 : 0;
+  const total = subtotal + deliveryFee + serviceFee;
+
+  // Redirect if cart is empty
+  React.useEffect(() => {
+    if (cart.length === 0 && !showSuccessDialog) {
+      router.push("/cart");
+    }
+  }, [cart.length, router, showSuccessDialog]);
+
+  /**
+   * REFACTORED: Handles order creation and payment initialization via the backend API.
+   *
+   * 1. POST /api/v1/orders: Creates the Order (PENDING) and gets orderId/nextAction.
+   * 2. If PAYSTACK, POST /api/v1/orders/:id/payments/create-intent: Gets Paystack authorization URL.
+   * 3. Redirects to Paystack (or to order tracking for COD).
+   */
+  const handlePlaceOrder = async () => {
+    // 1. Validation
+    if (
+      !deliveryAddress.fullName ||
+      !deliveryAddress.phone ||
+      !deliveryAddress.email
+    ) {
+      alert("Please fill in all required delivery details");
+      setShowAddressDialog(true);
+      return;
+    }
+
+    if (cart.length === 0) {
+      alert("Your cart is empty");
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      const paymentMethodEnum: BackendPaymentMethod =
+        paymentMethod === "paystack" || paymentMethod === "card"
+          ? "PAYSTACK"
+          : "CASH_ON_DELIVERY";
+
+      // 1. POST /api/v1/orders - Create the Order (and PENDING Payment record)
+      const {
+        data,
+      }: SuccessResponse<{
+        message?: string;
+        order: { id: string; reference: string };
+        nextAction: "ORDER_PLACED_COD" | "INITIALIZE_PAYSTACK_PAYMENT";
+      }> = await Axios.post("/api/v1/orders", {
+        // The backend should calculate the fees/total based on these inputs
+        items: cart.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+        })),
+        deliveryAddress,
+        paymentMethod: paymentMethodEnum,
+      });
+
+      if (!data.ok) {
+        throw new Error(data.message || "Failed to create order");
+      }
+
+      const orderId = data.order.id;
+      const orderReference = data.order.reference;
+
+      if (data.nextAction === "ORDER_PLACED_COD") {
+        // --- CASH ON DELIVERY FLOW ---
+        emptyCart();
+        setShowSuccessDialog(true);
+        setTimeout(() => {
+          router.push(`/order/${orderId || orderReference}`);
+        }, 3000);
+      } else if (data.nextAction === "INITIALIZE_PAYSTACK_PAYMENT") {
+        // --- PAYSTACK FLOW ---
+
+        // 2. POST /orders/:id/payments/create-intent - Get Paystack URL
+        const {
+          data: initIntentResponse,
+        }: SuccessResponse<{ message: string; authorization_url: string }> =
+          await Axios.post(`/api/v1/orders/${orderId}/payments/create-intent`);
+
+        // const initIntentResult = await initIntentResponse.json();
+
+        if (!initIntentResponse.ok) {
+          throw new Error(
+            initIntentResponse.message || "Failed to initialize payment",
+          );
+        }
+
+        const authUrl = initIntentResponse.authorization_url;
+
+        // 3. Client redirects to Paystack URL
+        router.push(authUrl as Route<string>);
+      } else {
+        throw new Error(data.message || "Unknown next action from server");
+      }
+    } catch (error) {
+      console.error("Order placement error:", error);
+      alert("An error occurred. Please try again.");
+      setIsProcessing(false);
+    }
   };
 
-  const itemTotal = (it: Item) => it.quantity * it.price;
-  const subtotal = items.reduce((s, it) => s + itemTotal(it), 0);
-  const deliveryFee = items.length > 0 ? 3.99 : 0;
-  const taxes = 1.99;
-  const total = +(subtotal + deliveryFee + taxes).toFixed(2);
+  if (cart.length === 0) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-md mx-auto bg-gray-50 min-h-screen">
+    <div className="min-h-screen bg-gray-50 pb-32 sm:pb-8">
+      <div className="container max-w-6xl mx-auto px-4 py-6 sm:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-white border-b">
-          <Link href="/home" className="text-gray-600">
-            Close
-          </Link>
-          <h1 className="text-lg font-semibold">Checkout</h1>
-          <div className="w-6" />
+        <div className="flex items-center justify-between mb-6 sm:mb-8">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-medium">Back</span>
+          </button>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Checkout
+          </h1>
+          <div className="w-20" />
         </div>
 
-        <div className="p-4 space-y-4">
-          {/* Items */}
-          <Card>
-            <CardContent>
-              <h2 className="font-semibold text-lg mb-3">Items</h2>
-              <div className="space-y-3">
-                {items.map((it) => (
-                  <div
-                    key={it.id}
-                    className="flex justify-between items-center"
-                  >
-                    <div>
-                      <div className="font-medium text-gray-900">{it.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {it.quantity}x
-                      </div>
-                    </div>
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            <DeliveryAddressCard
+              address={deliveryAddress}
+              onEdit={() => setShowAddressDialog(true)}
+            />
 
-                    <div className="flex items-center gap-3">
-                      <div className="font-medium">
-                        ${itemTotal(it).toFixed(2)}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"
-                          onClick={() =>
-                            updateQuantity(it.id, Math.max(0, it.quantity - 1))
-                          }
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <div className="w-8 text-center">{it.quantity}</div>
-                        <button
-                          className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"
-                          onClick={() => updateQuantity(it.id, it.quantity + 1)}
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+            <PaymentMethodCard
+              paymentMethod={paymentMethod}
+              setPaymentMethod={setPaymentMethod}
+            />
 
-          {/* Delivery Address */}
-          <Card>
-            <CardContent>
-              <h2 className="font-semibold text-lg mb-3">Delivery Address</h2>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">Campus Address</div>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    Dormitory A, Room 201
-                  </div>
-                </div>
-                <div className="text-gray-400">{/* chevron */}</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Payment Methods */}
-          <Card>
-            <CardContent>
-              <h2 className="font-semibold text-lg mb-3">Payment Method</h2>
-              <div className="space-y-2">
-                {[
-                  { key: "card", label: "Credit/Debit Card" },
-                  { key: "campus", label: "Campus Card" },
-                  { key: "mobile", label: "Mobile Payment" },
-                ].map((m) => {
-                  const key = m.key as "card" | "campus" | "mobile";
-                  const active = selectedPayment === key;
-                  return (
-                    <div
-                      key={m.key}
-                      onClick={() => setSelectedPayment(key)}
-                      className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
-                        active
-                          ? "bg-primary/10 border border-primary/20"
-                          : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-5 rounded border bg-gray-100 border-gray-300 mr-3 flex items-center justify-center">
-                          {/* icon placeholder */}
-                        </div>
-                        <div className="text-gray-900">{m.label}</div>
-                      </div>
-                      <div className="text-gray-400">{/* chevron */}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+            <OrderItemsCard cart={cart} />
+          </div>
 
           {/* Order Summary */}
-          <Card>
-            <CardContent>
-              <h2 className="font-semibold text-lg mb-3">Order Summary</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-green-600">Subtotal</span>
-                  <span className="text-gray-900">${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-green-600">Delivery Fee</span>
-                  <span className="text-gray-900">
-                    ${deliveryFee.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-green-600">Taxes</span>
-                  <span className="text-gray-900">${taxes.toFixed(2)}</span>
-                </div>
-
-                <div className="border-t pt-3">
-                  <div className="flex justify-between">
-                    <span className="text-green-600 font-semibold">Total</span>
-                    <span className="text-gray-900 font-semibold text-lg">
-                      ${total.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Button className="w-full bg-primary text-white py-3">
-            Place Order
-          </Button>
+          <div className="lg:col-span-1">
+            <OrderSummaryCard
+              subtotal={subtotal}
+              deliveryFee={deliveryFee}
+              serviceFee={serviceFee}
+              total={total}
+              isProcessing={isProcessing}
+              onPlaceOrder={handlePlaceOrder}
+            />
+          </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <AddressDialog
+        open={showAddressDialog}
+        onOpenChange={setShowAddressDialog}
+        address={deliveryAddress}
+        setAddress={setDeliveryAddress}
+      />
+
+      <SuccessDialog
+        open={showSuccessDialog}
+        onOpenChange={setShowSuccessDialog}
+      />
     </div>
   );
 }

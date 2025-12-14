@@ -34,7 +34,7 @@ export function RestaurantCard({ r }: { r: Restaurant }) {
             {r.name}
           </h3>
           <p className="text-xs text-gray-500 mb-2">
-            {r.category} • {r.priceRange}
+            {r.category} • ₦{r.priceRange}
           </p>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1">

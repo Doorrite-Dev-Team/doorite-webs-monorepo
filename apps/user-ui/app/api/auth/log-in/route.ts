@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import axios, { AxiosResponse } from "axios";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://doorrite-api.onrender.com/api/v1";
+  process.env.NEXT_PUBLIC_API_URI || "https://doorrite-api.onrender.com/api/v1";
 const isProd = process.env.NODE_ENV === "production";
 // const isProd = process.env.NODE_ENV === "production";
 

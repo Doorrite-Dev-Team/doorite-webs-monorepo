@@ -47,7 +47,7 @@ function getMessageFromPayload(payload: unknown): string | undefined {
 }
 
 function handleSuccess<T = unknown>(
-  res: AxiosResponse<unknown>
+  res: AxiosResponse<unknown>,
 ): ApiResponse<T> {
   const payload = res.data as any;
   const okFlag = payload?.ok ?? true;
@@ -71,7 +71,7 @@ function handleError(err: unknown): ApiResponse {
 /* ========== Auth Actions ========== */
 
 export async function signUpUser(
-  payload: SignUpFormData
+  payload: SignUpFormData,
 ): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/create-user", payload);
@@ -95,7 +95,7 @@ export async function loginUser(identifier: string, password: string) {
       },
       {
         withCredentials: true,
-      }
+      },
     );
     const ok = (res.data as any)?.ok;
     // const message = extractMessageFromResponse(res);
@@ -125,7 +125,7 @@ export async function createOtp(email: string): Promise<ApiResponse> {
 }
 
 export async function verifyOtp(
-  payload: VerifyOtpPayload
+  payload: VerifyOtpPayload,
 ): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/verify-otp", payload);
@@ -153,7 +153,7 @@ export async function forgotPassword(email: string): Promise<ApiResponse> {
 }
 
 export async function resetPassword(
-  payload: ResetPasswordPayload
+  payload: ResetPasswordPayload,
 ): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/reset-password", payload);
@@ -167,15 +167,15 @@ export async function resetPassword(
   }
 }
 
-export async function refreshToken(): Promise<ApiResponse> {
-  try {
-    const res = await Axios.post("/auth/refresh-token");
-    return handleSuccess(res);
-  } catch (err: unknown) {
-    console.error("refreshToken error:", err);
-    return handleError(err);
-  }
-}
+// export async function refreshToken(): Promise<ApiResponse> {
+//   try {
+//     const res = await Axios.post("/auth/refresh-token");
+//     return handleSuccess(res);
+//   } catch (err: unknown) {
+//     console.error("refreshToken error:", err);
+//     return handleError(err);
+//   }
+// }
 
 export async function logout(): Promise<ApiResponse> {
   try {
