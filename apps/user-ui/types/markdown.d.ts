@@ -9,3 +9,7 @@ declare module "*.md" {
   // const Component: ComponentType;
   // export default Component;
 }
+declare module "*.mdx" {
+  let MDXComponent: (props: any) => JSX.Element;
+  export default MDXComponent;
+}

@@ -201,7 +201,15 @@ export const serverApi = {
     } catch (error) {
       console.warn("SERVER fetchOrders:", error);
       // throw error;
-      return [];
+      return {
+        orders: [],
+        pagination: {
+          page: 0,
+          limit: 0,
+          total: 0,
+          pages: 0,
+        },
+      };
     }
   },
   // ---------------- PAYMENT METHODS ----------------
