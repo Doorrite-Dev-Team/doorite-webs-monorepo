@@ -1,11 +1,11 @@
 "use client";
 
-import { getCookie, setCookie, deleteCookie, OptionsType } from "cookies-next";
+import { getCookie, setCookie, deleteCookie } from "cookies-next";
 
 const ACCESS_TOKEN_KEY = "access_token_user";
 const REFRESH_TOKEN_KEY = "refresh_token_user";
 
-const DEFAULT_OPTIONS: OptionsType = {
+const DEFAULT_OPTIONS = {
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict",
   path: "/",

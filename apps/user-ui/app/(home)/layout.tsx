@@ -2,6 +2,7 @@ import Header from "@/components/tab-header";
 import BottomNav from "@/components/mobile-bottom-nav";
 
 import React from "react";
+export const dynamic = "force-dynamic";
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   return (
