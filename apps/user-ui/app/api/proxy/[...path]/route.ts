@@ -150,12 +150,15 @@ async function forwardRequest(
   }
 }
 
+async function handler(req: NextRequest) {
+  return forwardRequest(req, false);
+}
 // Export HTTP method handlers
-export const GET = forwardRequest;
-export const POST = forwardRequest;
-export const PUT = forwardRequest;
-export const PATCH = forwardRequest;
-export const DELETE = forwardRequest;
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const PATCH = handler;
+export const DELETE = handler;
 
 // Disable static optimization for this route
 export const dynamic = "force-dynamic";
