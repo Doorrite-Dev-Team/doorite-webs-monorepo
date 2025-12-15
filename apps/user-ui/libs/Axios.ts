@@ -58,7 +58,7 @@ api.interceptors.response.use(
 
         const newToken = data.access;
 
-        clientToken.setAccess(newToken);
+        // clientToken.setAccess(newToken);
 
         flush(null, newToken);
 
