@@ -232,3 +232,10 @@ declare interface Notification {
   content: string;
   action: unknow;
 }
+
+declare interface ApiResponse<T = any> {
+  ok: boolean;
+  data?: T;
+  message?: string;
+  details?: any;
+}

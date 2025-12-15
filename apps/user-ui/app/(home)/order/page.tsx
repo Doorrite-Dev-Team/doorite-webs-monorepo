@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import OrdersClient from "@/components/order/OrdersClient";
 import OrdersPageSkeleton from "@/components/order/OrdersPageSkeleton";
 import { Metadata } from "next";
-import { serverApi as api } from "@/libs/api/server";
+import { api } from "@/actions/api";
 // import { revalidateCache } from "@/libs/api/revalidator";
 
 // Fetch user orders

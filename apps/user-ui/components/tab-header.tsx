@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, MapPin, Menu } from "lucide-react";
-import Image from "next/image";
+// import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useCallback, useState } from "react";
@@ -64,14 +64,14 @@ const Header = () => {
 
             {isTabRoute || isTopLevel ? (
               <Link href="/home" className="flex items-center gap-3">
-                <Image
-                  src="/assets/icons/logo.png"
+                {/*<Image
+                  src="/logo.ico"
                   alt="Doorrite Logo"
                   width={28}
                   height={28}
                   className="rounded-sm"
                   priority
-                />
+                />*/}
                 <div className="hidden sm:block">
                   <p className="font-bold text-lg text-primary truncate">
                     Doorrite

@@ -18,7 +18,7 @@ import CartSummaryFloat from "@/components/cart/CartSummaryFloat";
 import RelatedVendors from "@/components/vendor/RelatedVendors";
 import VendorSkeleton from "@/components/vendor/VendorSkeleton";
 import { Metadata } from "next";
-import { serverApi as api } from "@/libs/api/server";
+import { api } from "@/actions/api";
 import { calculateVendorPriceRange } from "@/libs/helper";
 
 // Metadata generation for SEO
@@ -62,7 +62,7 @@ export default async function VendorPage({
   // Fetch products and related vendors in parallel
   const [products, relatedVendors] = await Promise.all([
     api.fetchVendorsProduct(id),
-    api.fetchRelatedVendors(vendor.category),
+    api.fetchRelatedVendors(vendor.category, vendor.id),
   ]);
 
   // Group products by category

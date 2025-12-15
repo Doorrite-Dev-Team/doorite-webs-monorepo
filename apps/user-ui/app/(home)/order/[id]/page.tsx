@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import OrderTrackingClient from "@/components/orders/OrderTrackingClient";
 import OrderTrackingSkeleton from "@/components/orders/OrderTrackingSkeleton";
 import { Metadata } from "next";
-import { serverApi } from "@/libs/api/server";
+import { api as serverApi } from "@/actions/api";
 // import { revalidateCache } from "@/libs/api/revalidator";
 
-// import { api } from "@/libs/api";
+// import { api } from "@/actions/api";
 
 // Server-side data fetching
 // async function getOrderDetails(orderId: string): Promise<Order | null> {

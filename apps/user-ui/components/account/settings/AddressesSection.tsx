@@ -57,7 +57,7 @@ export default function AddressesSection({ addresses }: AddressesSectionProps) {
     },
   });
 
-  const handleAddAddress = (addressData: any) => {
+  const handleAddAddress = (addressData: DeliveryAddressForm) => {
     addMutation.mutate(addressData);
   };
 

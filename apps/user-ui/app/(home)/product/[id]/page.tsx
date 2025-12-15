@@ -21,7 +21,7 @@ import RelatedProducts from "@/components/product/RelatedProducts";
 import ProductSkeleton from "@/components/product/ProductSkeleton";
 import CartSummaryFloat from "@/components/cart/CartSummaryFloat";
 import { Metadata } from "next";
-import { serverApi as api } from "@/libs/api/server";
+import { api } from "@/actions/api";
 import { isVendorOpen } from "@/libs/utils";
 
 // Metadata generation for SEO

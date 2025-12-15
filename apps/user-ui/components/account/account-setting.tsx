@@ -11,7 +11,8 @@ import {
   CardDescription,
   CardContent,
 } from "@repo/ui/components/card";
-import { api } from "@/libs/api";
+// import { api } from "@/libs/api";
+import { api } from "@/actions/api";
 
 import ProfileSection from "./settings/ProfileSection";
 import PasswordSection from "./settings/PasswordSection";

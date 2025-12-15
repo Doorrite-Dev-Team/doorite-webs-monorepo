@@ -20,9 +20,10 @@ import { Switch } from "@repo/ui/components/switch";
 import { Bell, Globe, Moon, LogOut } from "lucide-react";
 import MenuItem from "./menu-item";
 import { useRouter } from "next/navigation";
-import { clientToken as tokenManager } from "@/libs/utils/client-tokens";
+// import { clientToken as tokenManager } from "@/libs/utils/client-tokens";
 import { useAtom } from "jotai";
 import { logoutAtom } from "@/store/userAtom";
+import { logout } from "@/actions/auth";
 
 // Notifications Settings Dialog
 export const NotificationsDialog = ({
@@ -209,7 +210,8 @@ export const ThemeDialog = ({ theme, onThemeChange }: ThemeDialogProps) => {
 export const SignOutDialog = () => {
   const [, logUserOut] = useAtom(logoutAtom);
   const logOut = async () => {
-    await tokenManager.clear();
+    // await tokenManager.clear();
+    await logout();
     await logUserOut();
     ///////////////////////////
     router.push("/log-in");
