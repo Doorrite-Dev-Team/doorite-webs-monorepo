@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import HomeClient from "@/components/home/HomeClient";
 import HomePageSkeleton from "@/components/home/HomePageSkeleton";
 import { Metadata } from "next";
-import { serverApi as api } from "@/libs/api/server";
+import { serverApi as api } from "@/actions/server";
 // import { revalidateCache } from "@/libs/api/revalidator";
 
 export const metadata: Metadata = {

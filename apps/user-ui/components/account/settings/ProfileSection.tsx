@@ -40,10 +40,13 @@ export default function ProfileSection({ profile }: ProfileSectionProps) {
   const updateMutation = useMutation({
     mutationFn: api.updateProfile,
     onSuccess: (data) => {
-      queryClient.setQueryData(["user-profile"], (oldData: any) => ({
-        ...oldData,
-        ...data.user,
-      }));
+      queryClient.setQueryData(
+        ["user-profile"],
+        (oldData: ProfileFormData) => ({
+          ...oldData,
+          ...data.user,
+        }),
+      );
       setShowDialog(false);
       toast.success("Profile updated successfully");
     },

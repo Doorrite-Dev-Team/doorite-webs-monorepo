@@ -19,7 +19,14 @@ export function middleware(req: NextRequest) {
   const authPaths = ["/log-in", "/sign-up", "/forget-password"];
 
   // 2. Public Paths: accessible by ANYONE (Guests & Users)
-  const publicPaths = ["/landing", "/continue", "/about", "/privacy", "/terms"];
+  const publicPaths = [
+    "/landing",
+    "/continue",
+    "/about",
+    "/privacy",
+    "/terms",
+    "/test",
+  ];
 
   const isPublicOrAuth =
     authPaths.includes(pathname) || publicPaths.includes(pathname);
