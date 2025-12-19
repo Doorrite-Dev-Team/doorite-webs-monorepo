@@ -14,8 +14,9 @@ import {
 } from "@/components/checkout/cards";
 import { AddressDialog, SuccessDialog } from "@/components/checkout/dialogs";
 import { cartAtom, EmptyCartAtom, totalPriceAtom } from "@/store/cartAtom";
-import Axios from "@/libs/Axios";
+// import Axios from "@/libs/Axios";
 import { Route } from "next";
+import { apiClient } from "@/libs/api-client";
 
 // --- Main Checkout Page Component ---
 
@@ -95,7 +96,7 @@ export default function CheckoutPage() {
         message?: string;
         order: { id: string; reference: string };
         nextAction: "ORDER_PLACED_COD" | "INITIALIZE_PAYSTACK_PAYMENT";
-      }> = await Axios.post("/api/v1/orders", {
+      }> = await apiClient.post("/api/v1/orders", {
         // The backend should calculate the fees/total based on these inputs
         items: cart.map((item) => ({
           productId: item.id,
@@ -126,7 +127,9 @@ export default function CheckoutPage() {
         const {
           data: initIntentResponse,
         }: SuccessResponse<{ message: string; authorization_url: string }> =
-          await Axios.post(`/api/v1/orders/${orderId}/payments/create-intent`);
+          await apiClient.post(
+            `/api/v1/orders/${orderId}/payments/create-intent`,
+          );
 
         // const initIntentResult = await initIntentResponse.json();
 

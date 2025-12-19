@@ -6,11 +6,13 @@ import { MapPin, Plus } from "lucide-react";
 
 import { Button } from "@repo/ui/components/button";
 import { toast } from "@repo/ui/components/sonner";
-import { api } from "@/libs/api";
+// import { api } from "@/libs/api";
+import { api } from "@/actions/api";
 
 import AddAddressDialog from "../address/Dialogue";
 import DeleteAddressDialog from "../address/DeleteAddressDialog";
 import AddressCard from "../address/AddressCard";
+import UpdateAddressDialog from "../address/UpdateLocation";
 
 interface AddressesSectionProps {
   addresses: Address[];
@@ -20,6 +22,9 @@ export default function AddressesSection({ addresses }: AddressesSectionProps) {
   const queryClient = useQueryClient();
   const [showAddDialog, setShowAddDialog] = React.useState(false);
   const [deleteAddress, setDeleteAddress] = React.useState<Address | null>(
+    null,
+  );
+  const [updateAddress, setUpdateAddress] = React.useState<Address | null>(
     null,
   );
 
@@ -54,6 +59,22 @@ export default function AddressesSection({ addresses }: AddressesSectionProps) {
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to delete address");
+    },
+  });
+
+  // Update address mutation
+  const updateMutation = useMutation({
+    mutationFn: api.updateProfile,
+    onSuccess: (data) => {
+      queryClient.setQueryData(["user-profile"], (oldData: any) => ({
+        ...oldData,
+        address: data.user.address,
+      }));
+      setShowAddDialog(false);
+      toast.success("Address Updated successfully");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to Update address");
     },
   });
 
@@ -103,6 +124,7 @@ export default function AddressesSection({ addresses }: AddressesSectionProps) {
                 address={address}
                 index={index}
                 onDelete={() => setDeleteAddress(address)}
+                onUpdate={() => setUpdateAddress(address)}
               />
             ))}
           </div>
@@ -125,6 +147,17 @@ export default function AddressesSection({ addresses }: AddressesSectionProps) {
         onConfirm={handleDeleteAddress}
         isLoading={deleteMutation.isPending}
       />
+
+      {/*Edit Adress Dialog*/}
+      {updateAddress && (
+        <UpdateAddressDialog
+          open={showAddDialog}
+          onOpenChange={setShowAddDialog}
+          onSubmit={handleAddAddress}
+          isLoading={addMutation.isPending}
+          data={updateAddress}
+        />
+      )}
     </>
   );
 }

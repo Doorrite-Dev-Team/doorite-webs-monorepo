@@ -13,6 +13,8 @@ import TabNavigation from "./tab-navication"; // 👈 The sidebar component
 import { Button } from "@repo/ui/components/button";
 import { useAtom } from "jotai";
 import { isLoggedInAtom, userAtom } from "@/store/userAtom";
+import Image from "next/image";
+import { dooriteLogo } from "@repo/ui/assets";
 
 // --------------------- Header ---------------------
 const Header = () => {
@@ -51,7 +53,7 @@ const Header = () => {
           {/* Left */}
           <div className="flex items-center">
             {/* 👇 Mobile menu button */}
-            {isLoggedIn && (
+            {isLoggedIn ? (
               <div className="max-md:hidden mr-4 cursor-pointer flex items-center justify-center">
                 <button
                   className="cursor-pointer hover:opacity-80"
@@ -59,6 +61,15 @@ const Header = () => {
                 >
                   <Menu className="w-6 h-6 text-gray-700" />
                 </button>
+              </div>
+            ) : (
+              <div>
+                <Image
+                  src={dooriteLogo}
+                  alt="Doorrite Logo"
+                  width={40}
+                  height={30}
+                />
               </div>
             )}
 
@@ -111,11 +122,14 @@ const Header = () => {
                   <CartDrawer />
                 </>
               ) : (
-                <>
+                <div className="flex items-center justify-center gap-5">
                   <Button asChild>
-                    <Link href="/sign-up">Register</Link>
+                    <Link href="/log-in">Log In</Link>
                   </Button>
-                </>
+                  <Button className="max-md:hidden" asChild>
+                    <Link href="/sign-up">Sign Up</Link>
+                  </Button>
+                </div>
               ))}
           </div>
         </nav>

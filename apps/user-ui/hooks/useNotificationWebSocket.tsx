@@ -1,3 +1,5 @@
+"use client";
+
 // hooks/useNotificationWebSocket.ts
 import { useCallback, useEffect } from "react";
 import { useSetAtom, useAtomValue } from "jotai";
@@ -9,6 +11,7 @@ import {
 import { toast } from "@repo/ui/components/sonner";
 import { Notification, WebSocketMessage } from "@/types/notification";
 import { clientToken } from "@/libs/utils/client-tokens";
+import "io";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:4000";
 const token = clientToken.getAccess();
