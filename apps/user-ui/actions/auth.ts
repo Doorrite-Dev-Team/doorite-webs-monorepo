@@ -49,30 +49,13 @@ export async function signUpUser(
 }
 
 export async function loginUser(identifier: string, password: string) {
-  try {
-    // const res = await axios.post(
-    //   "/api/auth/log-in",
-    //   {
-    //     identifier,
-    //     password,
-    //   },
-    //   {
-    //     withCredentials: true,
-    //   },
-    // );
-    const res = await authService.login(identifier, password);
-    const ok = (res.data as any)?.ok;
-    // const message = extractMessageFromResponse(res);
-    if (ok) {
-      toast.success("successfully Logged In");
-    }
-    return res.data;
-  } catch (err) {
-    console.warn("loginUser error:", err);
-    const message = err as string;
-    // toast.error(message);
-    return { ok: false, message };
+  const res = await authService.login(identifier, password);
+  const ok = (res.data as any)?.ok;
+  // const message = extractMessageFromResponse(res);
+  if (ok) {
+    toast.success("successfully Logged In");
   }
+  return res.data;
 }
 
 export async function createOtp(email: string): Promise<ApiResponse> {

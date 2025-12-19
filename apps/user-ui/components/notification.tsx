@@ -8,7 +8,7 @@ import {
   unreadCountAtom,
   activeNotificationsAtom,
 } from "@/store/notificationAtom";
-import { useNotificationWebSocket } from "@/hooks/useNotificationWebSocket";
+// import { useNotificationWebSocket } from "@/hooks/useNotificationWebSocket";
 import { Button } from "@repo/ui/components/button";
 import { Card, CardContent } from "@repo/ui/components/card";
 import { ScrollArea } from "@repo/ui/components/scroll-area";
@@ -40,7 +40,7 @@ export default function NotificationPanel() {
   const notifications = useAtomValue(activeNotificationsAtom);
 
   // WebSocket hook - only connects when sheet is open
-  useNotificationWebSocket(open);
+  // useNotificationWebSocket(open);
 
   // Mark single notification as read
   const markAsRead = (id: string) => {

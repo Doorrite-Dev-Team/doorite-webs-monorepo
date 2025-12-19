@@ -76,10 +76,23 @@ async function forwardRequest(
         );
       }
 
+      const token = await getCookieHeader(false, true);
+      if (!token) {
+        return Response.json(
+          {
+            ok: false,
+            message: "No refresh token found",
+            code: "NO_REFRESH_TOKEN",
+          },
+          { status: 401 },
+        );
+      }
+
       const refreshResponse = await fetch(
         `${req.nextUrl.origin}/api/auth/refresh`,
         {
           method: "POST",
+          body: JSON.stringify({ token }),
           headers: {
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
             cookie: cookieHeader,

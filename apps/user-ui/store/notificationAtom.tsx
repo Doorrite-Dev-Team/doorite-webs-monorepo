@@ -1,6 +1,7 @@
 // store/notificationAtom.ts
 import { defaultNotifications } from "@/libs/contant";
 import { Notification, NotificationState } from "@/types/notification";
+import { toast } from "@repo/ui/components/sonner";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
@@ -76,6 +77,39 @@ export const activeNotificationsAtom = atom((get) => {
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     );
 });
+
+// Writable atom to handle the "addNotification" logic
+export const addNotificationAtom = atom(
+  null,
+  (get, set, notification: Notification) => {
+    const prev = get(notificationStateAtom);
+
+    // Check for duplicates
+    if (prev.notifications.some((n) => n.id === notification.id)) {
+      console.warn("Duplicate notification received:", notification.id);
+      return;
+    }
+
+    const newNotifications = [notification, ...prev.notifications].slice(
+      0,
+      100,
+    );
+
+    set(notificationStateAtom, {
+      notifications: newNotifications,
+      lastSync: new Date().toISOString(),
+      unreadCount: newNotifications.filter((n) => !n.read).length,
+    });
+
+    // Toast Logic
+    if (["high", "urgent"].includes(notification.priority)) {
+      toast(notification.title, {
+        description: notification.message,
+        duration: 5000,
+      });
+    }
+  },
+);
 
 // WebSocket connection status atom
 export const wsConnectionAtom = atom<

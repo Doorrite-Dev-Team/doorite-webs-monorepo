@@ -71,6 +71,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const cookieHeader = await getCookieHeader();
 
+    if (!body.refresh) {
+      return Response.json(
+        {
+          ok: false,
+          message: "Please Provide Refresh Token",
+        },
+        { status: 400 },
+      );
+    }
+
     if (!cookieHeader) {
       return Response.json(
         {

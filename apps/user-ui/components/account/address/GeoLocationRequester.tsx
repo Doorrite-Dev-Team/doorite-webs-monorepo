@@ -6,6 +6,7 @@ import { Loader2, AlertCircle, Navigation, CheckCircle2 } from "lucide-react";
 
 import { Button } from "@repo/ui/components/button";
 import { toast } from "@repo/ui/components/sonner";
+import { Input } from "@repo/ui/components/input";
 
 interface GeoLocationRequesterProps {
   onAccept: (
@@ -33,6 +34,7 @@ export default function GeoLocationRequester({
 
   const [reverseLoading, setReverseLoading] = React.useState(false);
   const [preview, setPreview] = React.useState<ReverseGeoResult | null>(null);
+  const [displayName, setDisplayName] = React.useState<string>("");
   const [reverseError, setReverseError] = React.useState<string | null>(null);
 
   // Reverse geocode when coordinates are available
@@ -66,6 +68,7 @@ export default function GeoLocationRequester({
           state: address.state || address.region || address.county || "",
           country: address.country || "",
         });
+        setDisplayName(data?.display_name);
       } catch (err) {
         console.warn("Reverse geocode error:", err);
         setReverseError(
@@ -86,11 +89,19 @@ export default function GeoLocationRequester({
   const handleAccept = () => {
     if (latitude == null || longitude == null) {
       toast.error("Location not available. Please try again.");
+
       return;
     }
 
     onAccept({ latitude, longitude }, preview || undefined);
   };
+
+  // const changeDisplayName = () => {
+  //   setPreview((prev) => ({
+  //     ...prev,
+  //     display_name: displayName,
+  //   }));
+  // };
 
   // Permission error
   if (error) {
@@ -175,6 +186,10 @@ export default function GeoLocationRequester({
               <p className="text-xs font-mono text-gray-600">
                 {latitude.toFixed(6)}, {longitude.toFixed(6)}
               </p>
+              {/*<div className="w-full flex gap-2 items-center">
+                <Input value={displayName} />
+                <Button onClick={changeDisplayName}>OK</Button>
+              </div>*/}
             </div>
 
             {/* Reverse geocode status */}
@@ -214,6 +229,13 @@ export default function GeoLocationRequester({
                 )}
               </div>
             )}
+            <p className="text-yellow-400 font-bold text-sm italic">
+              Always Accept the Detected Address
+            </p>
+            <p className="text-red-500 font-bold text-sm italic">
+              Please Note: The Detected Address may not be Accurate Hence,
+              Kindly Change your Address after Acceptance If not Accurate.
+            </p>
 
             {!reverseLoading && !preview?.display_name && !reverseError && (
               <p className="text-sm text-gray-700 mb-2">

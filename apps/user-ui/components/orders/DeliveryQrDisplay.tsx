@@ -12,7 +12,8 @@ import { toast } from "@repo/ui/components/sonner";
 // Assuming QRCodeGenerator is located here or in a similar path
 // You MUST ensure the QRCodeGenerator component is imported correctly
 import QRCodeGenerator from "@/components/QrCodeGenerator";
-import Axios from "@/libs/Axios";
+import { apiClient } from "@/libs/api-client";
+// import Axios from "@/libs/Axios";
 
 // --- TYPES ---
 interface DeliveryQrDisplayProps {
@@ -28,7 +29,7 @@ async function verifyDelivery(orderId: string, code: string): Promise<void> {
   // NOTE: This URL construction looks like it assumes the API lives on the same origin or has a globally defined env var.
   // const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  const response: SuccessResponse = await Axios.post(
+  const response: SuccessResponse = await apiClient.post(
     `orders/${orderId}/verify-delivery`,
     { verificationCode: code },
   );

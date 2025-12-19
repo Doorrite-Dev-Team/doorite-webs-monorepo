@@ -18,11 +18,12 @@ import { toast } from "@repo/ui/components/sonner";
 
 import GeoLocationRequester from "./GeoLocationRequester";
 
-interface AddAddressDialogProps {
+interface UpdateAddressDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: any) => void;
   isLoading: boolean;
+  data: Partial<AddressFormData>;
 }
 
 interface AddressFormData {
@@ -32,17 +33,18 @@ interface AddressFormData {
   coordinates?: Coordinates | null;
 }
 
-export default function AddAddressDialog({
+export default function UpdateAddressDialog({
   open,
   onOpenChange,
   onSubmit,
   isLoading,
-}: AddAddressDialogProps) {
+  data,
+}: UpdateAddressDialogProps) {
   const [formData, setFormData] = React.useState<AddressFormData>({
-    address: "",
-    state: "",
-    country: "Nigeria",
-    coordinates: null,
+    address: data.address ?? "",
+    state: data.state ?? "",
+    country: data.country ?? "Nigeria",
+    coordinates: data.coordinates ?? null,
   });
   const [errors, setErrors] = React.useState<Partial<AddressFormData>>({});
   const [showGeoRequester, setShowGeoRequester] = React.useState(false);
@@ -86,7 +88,7 @@ export default function AddAddressDialog({
   const handleSubmit = () => {
     if (!validateForm()) return;
 
-    const payload: any = {
+    const payload: AddressFormData = {
       address: formData.address.trim(),
       state: formData.state.trim(),
       country: formData.country.trim(),
@@ -125,7 +127,7 @@ export default function AddAddressDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Address</DialogTitle>
+          <DialogTitle>Update Your Address</DialogTitle>
           <DialogDescription>
             Add a delivery address to your account
           </DialogDescription>
@@ -257,10 +259,10 @@ export default function AddAddressDialog({
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Adding...
+                Updating...
               </>
             ) : (
-              "Add Address"
+              "Update Address"
             )}
           </Button>
         </DialogFooter>

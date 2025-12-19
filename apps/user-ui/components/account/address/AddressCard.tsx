@@ -1,19 +1,21 @@
 // components/account/address/AddressCard.tsx
 "use client";
 
-import { Globe, Trash2, MapPin } from "lucide-react";
+import { Globe, Trash2, MapPin, Edit2 } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 
 interface AddressCardProps {
   address: Address;
   index: number;
   onDelete: () => void;
+  onUpdate: () => void;
 }
 
 export default function AddressCard({
   address,
   index,
   onDelete,
+  onUpdate,
 }: AddressCardProps) {
   return (
     <div className="flex items-start justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors group">
@@ -49,6 +51,14 @@ export default function AddressCard({
         className="text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
       >
         <Trash2 className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onUpdate}
+        className="text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <Edit2 className="w-4 h-4" />
       </Button>
     </div>
   );
