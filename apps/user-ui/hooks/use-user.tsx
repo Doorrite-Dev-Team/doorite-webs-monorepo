@@ -1,4 +1,6 @@
-import Axios from "@/libs/Axios";
+// import Axios from "@/libs/Axios";
+
+import { apiClient } from "@/libs/api-client";
 
 export const useUser = async () => {
   try {
@@ -26,7 +28,7 @@ export const useUser = async () => {
     }
 
     // 🌐 Fetch updated user details
-    const res = await Axios.get(`/user/${userId}`, {
+    const res = await apiClient.get(`/user/${userId}`, {
       withCredentials: true,
     });
 

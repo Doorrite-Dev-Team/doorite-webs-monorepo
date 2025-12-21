@@ -2,14 +2,13 @@ import Header from "@/components/tab-header";
 import BottomNav from "@/components/mobile-bottom-nav";
 
 import React from "react";
+import SocketInitializer from "@/components/socket-init";
+export const dynamic = "force-dynamic";
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="min-h-screen w-full flex">
-      {/* Sidebar for desktop */}
-      {/* <aside className="hidden md:block fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 border-r bg-white z-40">
-        <TabNavigation />
-      </aside> */}
+      <SocketInitializer />
       <BottomNav />
 
       {/* Main Content */}

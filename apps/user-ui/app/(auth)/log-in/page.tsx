@@ -5,7 +5,7 @@ import LoginForm from "./components/form";
 
 export default function Login() {
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-white px-6 py-10 sm:px-8">
+    <div className="flex flex-col bg-white px-6 py-10 sm:px-8">
       {/* Top Content: Centered vertically */}
       <div className="flex flex-1 flex-col justify-center space-y-8">
         {/* Header: Large Brand Presence */}
@@ -13,7 +13,7 @@ export default function Login() {
           <Image
             src={logoFull}
             alt="Doorite Logo"
-            width={140}
+            width={100}
             height={40}
             className="mx-auto h-auto w-auto"
             priority
