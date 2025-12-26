@@ -12,37 +12,37 @@ import { CheckCircle2, Circle, SlidersHorizontal } from "lucide-react";
 
 export default function FilterControls({
   sortBy,
-  setSortBy,
+  setSortByAction,
   sortOptions,
   priceFilter,
-  setPriceFilter,
+  setPriceFilterAction,
   priceFilters,
   showOpenOnly,
   setShowOpenOnly,
-  clearFilters,
+  clearFiltersAction,
   hasActiveFilters,
 }: {
   sortBy: string;
-  setSortBy: (sort: string) => void;
+  setSortByAction: (sort: string) => void;
   sortOptions: {
     value: string;
     label: string;
   }[];
   priceFilter: string;
-  setPriceFilter: (price: string) => void;
+  setPriceFilterAction: (price: string) => void;
   priceFilters: {
     value: string;
     label: string;
   }[];
   showOpenOnly: boolean;
   setShowOpenOnly: (show: boolean) => void;
-  clearFilters: () => void;
+  clearFiltersAction: () => void;
   hasActiveFilters: boolean;
 }) {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
       <div className="flex flex-wrap items-center gap-3 flex-1">
-        <Select value={sortBy} onValueChange={(v) => setSortBy(v)}>
+        <Select value={sortBy} onValueChange={(v) => setSortByAction(v)}>
           <SelectTrigger className="w-[180px] h-9 bg-white">
             <SlidersHorizontal size={16} className="mr-2" />
             <SelectValue />
@@ -56,7 +56,10 @@ export default function FilterControls({
           </SelectContent>
         </Select>
 
-        <Select value={priceFilter} onValueChange={(v) => setPriceFilter(v)}>
+        <Select
+          value={priceFilter}
+          onValueChange={(v) => setPriceFilterAction(v)}
+        >
           <SelectTrigger className="w-[140px] h-9 bg-white">
             <SelectValue />
           </SelectTrigger>
@@ -86,7 +89,7 @@ export default function FilterControls({
       {hasActiveFilters && (
         <Button
           variant="ghost"
-          onClick={clearFilters}
+          onClick={clearFiltersAction}
           className="text-gray-500 hover:text-gray-700 h-9"
         >
           Clear all

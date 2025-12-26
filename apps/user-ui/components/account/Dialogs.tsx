@@ -19,6 +19,11 @@ import { Label } from "@repo/ui/components/label";
 import { Switch } from "@repo/ui/components/switch";
 import { Bell, Globe, Moon, LogOut } from "lucide-react";
 import MenuItem from "./menu-item";
+import { useRouter } from "next/navigation";
+// import { clientToken as tokenManager } from "@/libs/utils/client-tokens";
+import { useAtom } from "jotai";
+import { logoutAtom } from "@/store/userAtom";
+import { logout } from "@/actions/auth";
 
 // Notifications Settings Dialog
 export const NotificationsDialog = ({
@@ -131,7 +136,7 @@ export const LanguageDialog = ({
               >
                 {lang}
               </Button>
-            )
+            ),
           )}
         </div>
       </DialogContent>
@@ -203,6 +208,15 @@ export const ThemeDialog = ({ theme, onThemeChange }: ThemeDialogProps) => {
 
 // Sign Out Confirmation Dialog
 export const SignOutDialog = () => {
+  const [, logUserOut] = useAtom(logoutAtom);
+  const logOut = async () => {
+    // await tokenManager.clear();
+    await logout();
+    await logUserOut();
+    ///////////////////////////
+    router.push("/log-in");
+  };
+  const router = useRouter();
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -223,10 +237,7 @@ export const SignOutDialog = () => {
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline">Cancel</Button>
-          <Button
-            variant="destructive"
-            onClick={() => (window.location.href = "/auth/signin")}
-          >
+          <Button variant="destructive" onClick={logOut}>
             Sign Out
           </Button>
         </DialogFooter>

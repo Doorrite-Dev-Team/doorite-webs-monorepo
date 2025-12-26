@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, MapPin, Menu } from "lucide-react";
-import Image from "next/image";
+// import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useCallback, useState } from "react";
@@ -13,6 +13,8 @@ import TabNavigation from "./tab-navication"; // 👈 The sidebar component
 import { Button } from "@repo/ui/components/button";
 import { useAtom } from "jotai";
 import { isLoggedInAtom, userAtom } from "@/store/userAtom";
+import Image from "next/image";
+import { dooriteLogo } from "@repo/ui/assets";
 
 // --------------------- Header ---------------------
 const Header = () => {
@@ -25,7 +27,7 @@ const Header = () => {
 
   const isTopLevel = ["/", "", "/home", "/landing"].includes(pathname);
   const isTabRoute = ["/home", "/explore", "/order", "/account"].includes(
-    pathname
+    pathname,
   );
 
   const getTitle = () => {
@@ -51,7 +53,7 @@ const Header = () => {
           {/* Left */}
           <div className="flex items-center">
             {/* 👇 Mobile menu button */}
-            {isLoggedIn && (
+            {isLoggedIn ? (
               <div className="max-md:hidden mr-4 cursor-pointer flex items-center justify-center">
                 <button
                   className="cursor-pointer hover:opacity-80"
@@ -60,18 +62,27 @@ const Header = () => {
                   <Menu className="w-6 h-6 text-gray-700" />
                 </button>
               </div>
+            ) : (
+              <div>
+                <Image
+                  src={dooriteLogo}
+                  alt="Doorrite Logo"
+                  width={40}
+                  height={30}
+                />
+              </div>
             )}
 
             {isTabRoute || isTopLevel ? (
               <Link href="/home" className="flex items-center gap-3">
-                <Image
-                  src="/assets/icons/logo.png"
+                {/*<Image
+                  src="/logo.ico"
                   alt="Doorrite Logo"
                   width={28}
                   height={28}
                   className="rounded-sm"
                   priority
-                />
+                />*/}
                 <div className="hidden sm:block">
                   <p className="font-bold text-lg text-primary truncate">
                     Doorrite
@@ -95,7 +106,9 @@ const Header = () => {
             {isTopLevel && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
                 <MapPin size={12} />
-                <span className="truncate">{user?.address ?? "Lagos, NG"}</span>
+                <span className="truncate">
+                  {user?.address?.[0]?.address ?? "Lagos, NG"}
+                </span>
               </div>
             )}
           </div>
@@ -109,11 +122,14 @@ const Header = () => {
                   <CartDrawer />
                 </>
               ) : (
-                <>
+                <div className="flex items-center justify-center gap-5">
                   <Button asChild>
-                    <Link href="/sign-up">Register</Link>
+                    <Link href="/log-in">Log In</Link>
                   </Button>
-                </>
+                  <Button className="max-md:hidden" asChild>
+                    <Link href="/sign-up">Sign Up</Link>
+                  </Button>
+                </div>
               ))}
           </div>
         </nav>

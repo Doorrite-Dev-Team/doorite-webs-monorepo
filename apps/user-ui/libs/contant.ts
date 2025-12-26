@@ -1,13 +1,5 @@
-import {
-  imageCampusEatery,
-  imageCustomer,
-  imageLibrary,
-  imageQuadDrill,
-  imageRider,
-  imageStudentDiner,
-  imageStudyCafe,
-  imageVendor,
-} from "@repo/ui/assets";
+import { Notification } from "@/types/notification";
+import { imageCustomer, imageRider, imageVendor } from "@repo/ui/assets";
 import { LucideProps } from "lucide-react";
 import { Route } from "next";
 import { StaticImageData } from "next/image";
@@ -20,21 +12,21 @@ export type Review = {
   review: string;
 };
 
-// export type vendor = {
-//   id: number;
-//   name: string;
-//   image: StaticImageData | string;
-//   logoUrl?: string | null;
-//   avrgPreparationTime: string;
-//   description: string;
-//   category: string;
-//   subcategory: string;
-//   rating: number;
-//   distance: number;
-//   isOpen: boolean;
-//   priceRange: string;
-//   tags: string[];
-// };
+export type vendor = {
+  id: number;
+  name: string;
+  image: StaticImageData | string;
+  logoUrl?: string | null;
+  avrgPreparationTime: string;
+  description: string;
+  category: string;
+  subcategory: string;
+  rating: number;
+  distance: number;
+  isOpen: boolean;
+  priceRange: string;
+  tags: string[];
+};
 
 // export type order = {
 //   id: string;
@@ -208,224 +200,6 @@ export const foodTags = [
   "snack",
 ];
 
-export const VENDORS: Vendor[] = [
-  {
-    id: 1,
-    businessName: "The Campus Eatery",
-    image: imageCampusEatery,
-    avrgPreparationTime: "15-20 mins",
-    description:
-      "A vibrant spot offering a variety of meals and snacks for students.",
-    category: "food",
-    subcategory: "restaurant",
-    rating: 4.5,
-    distance: 0.3,
-    isOpen: true,
-    priceRange: "$$",
-    tags: ["popular", "student-favorite", "variety"],
-  },
-  {
-    id: 2,
-    businessName: "The Study Cafe",
-    image: imageStudyCafe,
-    avrgPreparationTime: "10-15 mins",
-    description:
-      "A cozy cafe perfect for studying, serving coffee and light bites.",
-    category: "food",
-    subcategory: "cafe",
-    rating: 4.7,
-    distance: 0.1,
-    isOpen: true,
-    priceRange: "$",
-    tags: ["quiet", "coffee", "study-friendly"],
-  },
-  {
-    id: 3,
-    businessName: "The Student Diner",
-    image: imageStudentDiner,
-    avrgPreparationTime: "20-25 mins",
-    description:
-      "A classic diner with a diverse menu, ideal for students on the go.",
-    category: "food",
-    subcategory: "diner",
-    rating: 4.3,
-    distance: 0.5,
-    isOpen: true,
-    priceRange: "$$",
-    tags: ["classic", "diverse-menu", "comfort-food"],
-  },
-  {
-    id: 4,
-    businessName: "The Library Cafe",
-    image: imageLibrary,
-    avrgPreparationTime: "5-10 mins",
-    description:
-      "A quiet cafe located in the library, offering quick snacks and drinks.",
-    category: "food",
-    subcategory: "cafe",
-    rating: 4.1,
-    distance: 0.2,
-    isOpen: true,
-    priceRange: "$",
-    tags: ["quick", "library", "snacks"],
-  },
-  {
-    id: 5,
-    businessName: "The Quad Grill",
-    image: imageQuadDrill,
-    avrgPreparationTime: "15-20 mins",
-    description:
-      "An outdoor grill serving fresh, grilled meals in a relaxed setting.",
-    category: "food",
-    subcategory: "grill",
-    rating: 4.6,
-    distance: 0.4,
-    isOpen: false, // Closed for variety
-    priceRange: "$$",
-    tags: ["outdoor", "grilled", "fresh"],
-  },
-  {
-    id: 6,
-    businessName: "Campus Grocery",
-    logoUrl: "🛒",
-    avrgPreparationTime: "5 mins",
-    description: "Essential groceries and daily items for campus life.",
-    category: "grocery",
-    subcategory: "convenience",
-    rating: 4.2,
-    distance: 0.3,
-    isOpen: true,
-    priceRange: "$",
-    tags: ["essentials", "convenient", "daily-needs"],
-  },
-  {
-    id: 7,
-    businessName: "Fresh Market",
-    logoUrl: "🥬",
-    avrgPreparationTime: "10 mins",
-    description: "Fresh produce and healthy options for conscious students.",
-    category: "grocery",
-    subcategory: "fresh-produce",
-    rating: 4.4,
-    distance: 0.6,
-    isOpen: true,
-    priceRange: "$$",
-    tags: ["fresh", "healthy", "organic"],
-  },
-  {
-    id: 8,
-    businessName: "Campus Pharmacy",
-    logoUrl: "💊",
-    avrgPreparationTime: "2-5 mins",
-    description: "Health essentials, medications, and wellness products.",
-    category: "pharmacy",
-    subcategory: "health",
-    rating: 4.8,
-    distance: 0.2,
-    isOpen: true,
-    priceRange: "$$",
-    tags: ["health", "medications", "wellness"],
-  },
-];
-
-export const orders: Order[] = [
-  {
-    id: "ORD-001",
-    status: "delivered",
-    items: ["Spicy Chicken Sandwich", "Fries", "Coke"],
-    total: 19.01,
-    orderTime: "2025-08-11T09:30:00",
-    estimatedDelivery: "2025-08-11T10:45:00",
-    deliveryAddress: "123 University Ave, Apt 4B, Campus Town, CA 90210",
-    tracking: [
-      { step: "Order Placed", time: "9:30 AM", completed: true },
-      { step: "Preparing", time: "9:45 AM", completed: true },
-      { step: "Out for Delivery", time: "10:15 AM", completed: true },
-      { step: "Delivered", time: "10:30 AM", completed: true },
-    ],
-    orderDetails: [
-      { name: "Chicken Sandwich", quantity: 1, price: 8.99 },
-      { name: "Fries", quantity: 2, price: 3.98 },
-      { name: "Coke", quantity: 1, price: 2.49 },
-    ],
-  },
-  {
-    id: "ORD-002",
-    status: "out-for-delivery",
-    items: ["Breakfast Bagel", "Coffee"],
-    total: 8.49,
-    orderTime: "2025-08-11T08:15:00",
-    estimatedDelivery: "2025-08-11T09:00:00",
-    deliveryAddress: "Dormitory B, Room 305, Campus Town, CA 90210",
-    tracking: [
-      { step: "Order Placed", time: "8:15 AM", completed: true },
-      { step: "Preparing", time: "8:25 AM", completed: true },
-      { step: "Out for Delivery", time: "8:45 AM", completed: true },
-      { step: "Delivered", time: "9:00 AM", completed: false },
-    ],
-    orderDetails: [
-      { name: "Breakfast Bagel", quantity: 1, price: 5.49 },
-      { name: "Coffee", quantity: 1, price: 3.0 },
-    ],
-  },
-  {
-    id: "ORD-003",
-    status: "preparing",
-    items: ["Veggie Wrap", "Smoothie"],
-    total: 11.99,
-    orderTime: "2025-08-11T11:30:00",
-    estimatedDelivery: "2025-08-11T12:15:00",
-    deliveryAddress: "456 College St, Apt 2A, Campus Town, CA 90210",
-    tracking: [
-      { step: "Order Placed", time: "11:30 AM", completed: true },
-      { step: "Preparing", time: "11:35 AM", completed: true },
-      { step: "Out for Delivery", time: "Pending", completed: false },
-      { step: "Delivered", time: "Pending", completed: false },
-    ],
-    orderDetails: [
-      { name: "Veggie Wrap", quantity: 1, price: 8.49 },
-      { name: "Smoothie", quantity: 1, price: 3.5 },
-    ],
-  },
-  {
-    id: "ORD-004",
-    status: "cancelled",
-    items: ["Pizza", "Soda"],
-    total: 15.99,
-    orderTime: "2025-08-10T19:20:00",
-    estimatedDelivery: "2025-08-10T20:30:00",
-    deliveryAddress: "789 Student Ave, Room 101, Campus Town, CA 90210",
-    tracking: [
-      { step: "Order Placed", time: "7:20 PM", completed: true },
-      { step: "Cancelled", time: "7:25 PM", completed: true },
-    ],
-    orderDetails: [
-      { name: "Pizza", quantity: 1, price: 12.99 },
-      { name: "Soda", quantity: 1, price: 3.0 },
-    ],
-  },
-  {
-    id: "ORD-005",
-    status: "incoming",
-    items: ["Burger", "Fries", "Shake"],
-    total: 16.47,
-    orderTime: "2025-08-11T12:00:00",
-    estimatedDelivery: "2025-08-11T12:45:00",
-    deliveryAddress: "321 Academic Blvd, Suite 5C, Campus Town, CA 90210",
-    tracking: [
-      { step: "Order Placed", time: "12:00 PM", completed: true },
-      { step: "Preparing", time: "Pending", completed: false },
-      { step: "Out for Delivery", time: "Pending", completed: false },
-      { step: "Delivered", time: "Pending", completed: false },
-    ],
-    orderDetails: [
-      { name: "Burger", quantity: 1, price: 9.99 },
-      { name: "Fries", quantity: 1, price: 3.99 },
-      { name: "Shake", quantity: 1, price: 2.49 },
-    ],
-  },
-];
-
 export const ServicesInfo = [
   {
     name: "Customer",
@@ -446,3 +220,187 @@ export const ServicesInfo = [
     imgSrc: imageRider,
   },
 ] as ServiceInfo[];
+
+export const defaultNotifications: Notification[] = [
+  // ---- SYSTEM / USER ----
+  {
+    id: "welcome-first-time",
+    type: "SYSTEM",
+    title: "Welcome to Doorrite!",
+    message:
+      "Your meals, delivered faster and fresher. Thanks for joining us—let’s get you started!",
+    priority: "low",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+    metadata: {},
+  },
+  {
+    id: "welcome-back",
+    type: "SYSTEM",
+    title: "Welcome back!",
+    message: "Great to see you again. Hungry? Amazing options are waiting.",
+    priority: "low",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+    metadata: {},
+  },
+  {
+    id: "relaunch",
+    type: "SYSTEM",
+    title: "Good to have you here again!",
+    message:
+      "Browse your favorite restaurants or discover new flavors near you.",
+    priority: "low",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+    metadata: {},
+  },
+  {
+    id: "account-verified",
+    type: "SYSTEM",
+    title: "Your account is verified",
+    message: "You’re all set! Enjoy secure and seamless ordering on Doorrite.",
+    priority: "normal",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+    metadata: {},
+  },
+  {
+    id: "profile-incomplete",
+    type: "SYSTEM",
+    title: "Complete your profile",
+    message:
+      "Add a few details to unlock smoother checkout and personalized recommendations.",
+    priority: "normal",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+    metadata: {},
+  },
+
+  // ---- ORDER EVENTS ----
+  {
+    id: "order-placed",
+    type: "ORDER_PLACED",
+    title: "Order received!",
+    message: "Your meal is now being prepared. We’ll keep you updated.",
+    priority: "high",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+    metadata: { stage: "placed" },
+  },
+  {
+    id: "order-accepted",
+    type: "ORDER_ACCEPTED",
+    title: "Restaurant accepted your order",
+    message: "Your food is cooking. Sit tight!",
+    priority: "high",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+    metadata: { stage: "accepted" },
+  },
+  {
+    id: "rider-assigned",
+    type: "ORDER_DELIVERED",
+    title: "A rider is on the way",
+    message: "Your rider is heading to the restaurant.",
+    priority: "high",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+    metadata: { stage: "rider_assigned" },
+  },
+  {
+    id: "order-out-for-delivery",
+    type: "ORDER_OUT_FOR_DELIVERY",
+    title: "Your order is on the road!",
+    message: "Track your rider in real-time. Get ready!",
+    priority: "high",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+    metadata: { stage: "out_for_delivery" },
+  },
+  {
+    id: "order-delivered",
+    type: "ORDER_DELIVERED",
+    title: "Order delivered",
+    message: "Enjoy your meal! Want to rate your experience?",
+    priority: "normal",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+    metadata: { stage: "delivered" },
+  },
+
+  // ---- LOYALTY / ENGAGEMENT ----
+  {
+    id: "new-user-discount",
+    type: "PROMOTION",
+    title: "Special welcome offer!",
+    message: "Enjoy a discount on your first Doorrite order. Don’t miss it.",
+    priority: "normal",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+  },
+  {
+    id: "loyalty-reward",
+    type: "PROMOTION",
+    title: "You’ve earned a reward!",
+    message: "Thanks for ordering with Doorrite. Enjoy a special treat on us.",
+    priority: "normal",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+  },
+  {
+    id: "streak-encouragement",
+    type: "PROMOTION",
+    title: "You’re on a roll!",
+    message: "Another great order this week! Keep the streak going.",
+    priority: "low",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+  },
+
+  // ---- MARKETING ----
+  {
+    id: "nearby-discount",
+    type: "PROMOTION",
+    title: "Hot deals around you!",
+    message:
+      "Restaurants near your location just dropped new discounts. Grab them now.",
+    priority: "low",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+  },
+  {
+    id: "free-delivery-event",
+    type: "PROMOTION",
+    title: "Free delivery today!",
+    message: "Your favorite spots now deliver free for a limited time.",
+    priority: "normal",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+  },
+  {
+    id: "restaurant-launch",
+    type: "PROMOTION",
+    title: "New flavors just arrived!",
+    message: "A new restaurant is now available on Doorrite. Check it out.",
+    priority: "low",
+    read: false,
+    archived: false,
+    timestamp: new Date().toISOString(),
+  },
+];

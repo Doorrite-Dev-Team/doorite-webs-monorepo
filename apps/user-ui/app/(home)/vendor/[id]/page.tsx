@@ -1,343 +1,265 @@
-"use client";
-
-import { cartAtom } from "@/store/cartAtom";
-import { imageStudyCafe } from "@repo/ui/assets";
-import { Button } from "@repo/ui/components/button";
-import { useAtom } from "jotai";
-import { Star, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Suspense } from "react";
+import { notFound } from "next/navigation";
 import Image from "next/image";
-// import { useParams } from "next/navigation";
-// import { useState } from "react";
+import { MapPin, Clock, Star, Store, ChevronRight } from "lucide-react";
 
-export default function VendorDetails() {
-  // const [cart, setCart] = useState<menuItem[]>([]);
-  // const { id } = useParams();
+import { Badge } from "@repo/ui/components/badge";
+import { Card, CardContent } from "@repo/ui/components/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/ui/components/tabs";
 
-  const [cart, setCart] = useAtom(cartAtom);
+import VendorMenuSection from "@/components/vendor/VendorMenuSection";
+import VendorReviewsSection from "@/components/vendor/VendorReviewsSection";
+import CartSummaryFloat from "@/components/cart/CartSummaryFloat";
+import RelatedVendors from "@/components/vendor/RelatedVendors";
+import VendorSkeleton from "@/components/vendor/VendorSkeleton";
+import { Metadata } from "next";
+import { api } from "@/actions/api";
+import { calculateVendorPriceRange } from "@/libs/helper";
 
-  const menuItems = {
-    popular: [
-      {
-        id: "1",
-        name: "Cheeseburger",
-        description: "Classic burger with cheese",
-        basePrice: 7.99,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-      {
-        id: "2",
-        name: "Chicken Sandwich",
-        description: "Crispy chicken sandwich",
-        basePrice: 8.49,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-      {
-        id: "3",
-        name: "French Fries",
-        description: "Fries with dipping sauce",
-        basePrice: 3.99,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-    ],
-    breakfast: [
-      {
-        id: "4",
-        name: "Breakfast Bagel",
-        description: "Egg and cheese on a bagel",
-        basePrice: 5.49,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-      {
-        id: "5",
-        name: "Pancakes",
-        description: "Pancakes with syrup",
-        basePrice: 6.99,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-    ],
-    lunch: [
-      {
-        id: "6",
-        name: "Chicken Salad",
-        description: "Grilled chicken salad",
-        basePrice: 9.99,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-      {
-        id: "7",
-        name: "Veggie Wrap",
-        description: "Vegetarian wrap",
-        basePrice: 8.49,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-    ],
-  };
+// Metadata generation for SEO
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const vendor = await api.fetchVendor(id);
 
-  const reviews = [
-    {
-      id: 1,
-      name: "Liam",
-      time: "2 weeks ago",
-      rating: 5,
-      comment: "Great food and fast delivery!",
-      likes: 10,
-      dislikes: 2,
-      avatar: "👨",
-    },
-    {
-      id: 2,
-      name: "Chloe",
-      time: "1 month ago",
-      rating: 4,
-      comment: "Good value for money, but delivery was a bit late.",
-      likes: 5,
-      dislikes: 1,
-      avatar: "👩",
-    },
-  ];
-
-  const ratingDistribution = [
-    { stars: 5, percentage: 40 },
-    { stars: 4, percentage: 30 },
-    { stars: 3, percentage: 15 },
-    { stars: 2, percentage: 10 },
-    { stars: 1, percentage: 5 },
-  ];
-
-  const updateQuantity = (id: number, delta: number) => {
-    setCart((prev) =>
-      prev
-        .map((it) =>
-          it.id === id
-            ? { ...it, quantity: Math.max(0, it.quantity + delta) }
-            : it
-        )
-        .filter((it) => it.quantity > 0)
-    );
-  };
-
-  const addToCart = (item: Product) => {
-    const newCartItem: CartItem = {
-      id: parseInt(item.id),
-      name: item.name,
-      description: item.description,
-      price: item.basePrice,
-      quantity: 0,
-      vendor_name: item.vendor.businessName,
+  if (!vendor) {
+    return {
+      title: "Vendor Not Found",
     };
+  }
 
-    if (cart.find((i) => i.id === newCartItem.id)) {
-      updateQuantity(newCartItem.id, 1);
-    } else {
-      setCart((prev) => [...prev, newCartItem]);
-    }
-    // Show feedback that item was added
-    alert(`${item.name} added to cart!`);
+  return {
+    title: `${vendor.businessName} - Order Now`,
+    description: vendor.description || `Order from ${vendor.businessName}`,
+    openGraph: {
+      title: vendor.businessName,
+      description: vendor.description,
+      images: vendor.logoUrl ? [vendor.logoUrl] : [],
+    },
   };
+}
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < rating ? "text-primary/80 fill-primary/80" : "text-gray-300"
-        }`}
-      />
-    ));
-  };
+export default async function VendorPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const vendor = await api.fetchVendor(id);
 
-  const renderMenuItem = (item: Product) => (
-    <div
-      key={item.id}
-      className="flex items-center justify-between py-4 border-b border-gray-100 last:border-b-0"
-    >
-      <div className="flex-1">
-        <h3 className="font-medium text-gray-900 mb-1">{item.name}</h3>
-        <p className="text-primary text-sm">{item.description}</p>
-      </div>
-      <div className="flex items-center space-x-3">
-        <span className="font-semibold text-gray-900">${item.basePrice}</span>
-        <Button
-          onClick={() => addToCart(item)}
-          className="rounded-full text-sm"
-        >
-          Add
-        </Button>
-      </div>
-    </div>
+  if (!vendor) {
+    notFound();
+  }
+
+  // Fetch products and related vendors in parallel
+  const [products, relatedVendors] = await Promise.all([
+    api.fetchVendorsProduct(id),
+    api.fetchRelatedVendors(vendor.category, vendor.id),
+  ]);
+
+  // Group products by category
+  const groupedProducts = products.reduce(
+    (acc, product) => {
+      const category = product.attributes?.category || "Other";
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(product);
+      return acc;
+    },
+    {} as Record<string, Product[]>,
   );
 
   return (
-    <div className="max-w-2xl mx-auto min-h-screen mt-10">
-      {/* Restaurant Image */}
-      <div className="relative h-48 bg-gray-200">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent">
+    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+      {/* Hero Section */}
+      <div className="relative h-48 sm:h-64 lg:h-80 w-full bg-gradient-to-br from-gray-800 to-gray-900">
+        {vendor.logoUrl && (
           <Image
-            src={imageStudyCafe}
-            alt="Image Study Cafe"
-            className="w-full h-full object-cover"
+            src={vendor.logoUrl}
+            alt={vendor.businessName}
+            fill
+            className="object-cover opacity-60"
+            priority
+            sizes="100vw"
           />
-        </div>
-        <div className="absolute bottom-4 left-4 text-white text-sm font-medium bg-black/50 px-3 py-1 rounded">
-          THIS FRUITS & JUICE
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+
+        {/* Floating Info Card */}
+        <div className="absolute bottom-0 left-0 right-0 translate-y-1/2">
+          <div className="container max-w-6xl mx-auto px-4">
+            <Card className="shadow-xl border-0">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-start gap-3 mb-2">
+                      <Store className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                      <div className="flex-1">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                          {vendor.businessName}
+                        </h1>
+                        <p className="text-gray-600 text-sm sm:text-base capitalize">
+                          {vendor.category}
+                        </p>
+                      </div>
+                    </div>
+
+                    {vendor.description && (
+                      <p className="text-gray-700 text-sm sm:text-base leading-relaxed mb-3">
+                        {vendor.description}
+                      </p>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                      <Badge
+                        variant={vendor.isOpen ? "default" : "secondary"}
+                        className={`text-xs sm:text-sm ${
+                          vendor.isOpen
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-500 text-white"
+                        }`}
+                      >
+                        {vendor.isOpen ? "Open Now" : "Closed"}
+                      </Badge>
+
+                      {vendor.rating && (
+                        <div className="flex items-center gap-1 bg-yellow-50 rounded-full px-2 sm:px-3 py-1">
+                          <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
+                          <span className="text-sm sm:text-base font-bold text-gray-900">
+                            {vendor.rating.toFixed(1)}
+                          </span>
+                        </div>
+                      )}
+
+                      {products && (
+                        <Badge variant="outline" className="text-xs sm:text-sm">
+                          {calculateVendorPriceRange(products)}
+                        </Badge>
+                      )}
+
+                      {vendor.avrgPreparationTime && (
+                        <div className="flex items-center gap-1 text-gray-600 text-xs sm:text-sm">
+                          <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <span>{vendor.avrgPreparationTime}</span>
+                        </div>
+                      )}
+
+                      {vendor.distance !== undefined && (
+                        <div className="flex items-center gap-1 text-gray-600 text-xs sm:text-sm">
+                          <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <span>{vendor.distance.toFixed(1)} km</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
-      <div className="p-4">
-        {/* Restaurant Info */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Campus Eats</h2>
-          <p className="text-gray-600">Fast food restaurant</p>
-        </div>
+      {/* Main Content */}
+      <div className="container max-w-6xl mx-auto px-4 mt-24 sm:mt-32 lg:mt-36">
+        <Tabs defaultValue="menu" className="w-full">
+          <TabsList className="w-full justify-start mb-6 bg-white shadow-sm p-1 rounded-lg overflow-x-auto">
+            <TabsTrigger value="menu" className="flex-1 sm:flex-none">
+              Menu
+            </TabsTrigger>
+            <TabsTrigger value="reviews" className="flex-1 sm:flex-none">
+              Reviews
+            </TabsTrigger>
+            <TabsTrigger value="info" className="flex-1 sm:flex-none">
+              Info
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Popular Items */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Popular Items
-          </h3>
-          <div className="space-y-1">
-            {menuItems.popular.map(renderMenuItem)}
-          </div>
-        </div>
+          <TabsContent value="menu" className="space-y-6">
+            <Suspense fallback={<VendorSkeleton />}>
+              <VendorMenuSection
+                groupedProducts={groupedProducts}
+                vendorId={vendor.id.toString()}
+              />
+            </Suspense>
+          </TabsContent>
 
-        {/* Breakfast */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Breakfast
-          </h3>
-          <div className="space-y-1">
-            {menuItems.breakfast.map(renderMenuItem)}
-          </div>
-        </div>
+          <TabsContent value="reviews">
+            <Suspense fallback={<VendorSkeleton />}>
+              <VendorReviewsSection vendorId={vendor.id.toString()} />
+            </Suspense>
+          </TabsContent>
 
-        {/* Lunch */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Lunch</h3>
-          <div className="space-y-1">{menuItems.lunch.map(renderMenuItem)}</div>
-        </div>
+          <TabsContent value="info">
+            <Card>
+              <CardContent className="p-6 space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Contact Information
+                </h3>
 
-        {/* Ratings & Reviews */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Ratings & Reviews
-          </h3>
+                <div className="space-y-3">
+                  {vendor.distance !== undefined && (
+                    <div className="flex items-start gap-3">
+                      <MapPin className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm text-gray-600">Location</p>
+                        <p className="font-medium text-gray-900">
+                          {vendor.distance.toFixed(1)} km away
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
-          {/* Overall Rating */}
-          <div className="flex items-center mb-6">
-            <div className="mr-6">
-              <div className="text-4xl font-bold text-gray-900 mb-1">4.5</div>
-              <div className="flex items-center mb-1">{renderStars(4)}</div>
-              <div className="text-gray-600 text-sm">120 reviews</div>
-            </div>
-
-            {/* Rating Distribution */}
-            <div className="flex-1">
-              {ratingDistribution.map((rating) => (
-                <div key={rating.stars} className="flex items-center mb-1">
-                  <span className="text-sm text-gray-600 w-3">
-                    {rating.stars}
-                  </span>
-                  <div className="flex-1 mx-2 bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-primary h-2 rounded-full"
-                      style={{ width: `${rating.percentage}%` }}
-                    ></div>
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm text-gray-600">Hours</p>
+                      <p className="font-medium text-gray-900">
+                        {vendor.isOpen ? "Open Now" : "Closed"}
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-sm text-gray-600 w-8">
-                    {rating.percentage}%
-                  </span>
+
+                  {/*{vendor.tags && vendor.tags.length > 0 && (
+                    <div className="pt-4 border-t">
+                      <p className="text-sm text-gray-600 mb-2">Specialties</p>
+                      <div className="flex flex-wrap gap-2">
+                        {vendor.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}*/}
                 </div>
-              ))}
-            </div>
-          </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
-          {/* Individual Reviews */}
-          <div className="space-y-6">
-            {reviews.map((review) => (
-              <div
-                key={review.id}
-                className="border-b border-gray-100 pb-4 last:border-b-0"
-              >
-                <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-lg">
-                    {review.avatar}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-medium text-gray-900">
-                        {review.name}
-                      </h4>
-                      <span className="text-primary text-sm">
-                        {review.time}
-                      </span>
-                    </div>
-                    <div className="flex items-center mb-2">
-                      {renderStars(review.rating)}
-                    </div>
-                    <p className="text-gray-700 text-sm mb-3">
-                      {review.comment}
-                    </p>
-                    <div className="flex items-center space-x-4">
-                      <button className="flex items-center space-x-1 text-primary text-sm">
-                        <ThumbsUp className="w-4 h-4" />
-                        <span>{review.likes}</span>
-                      </button>
-                      <button className="flex items-center space-x-1 text-gray-400 text-sm">
-                        <ThumbsDown className="w-4 h-4" />
-                        <span>{review.dislikes}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Cart Summary (if items in cart) */}
-        {cart.length > 0 && (
-          <div className="fixed bottom-4 left-4 right-4 max-w-2xl mx-auto">
-            <div className="bg-primary text-white p-4 rounded-lg shadow-lg">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">
-                  {cart.length} item(s) in cart
-                </span>
-                <button className="bg-white text-primary px-4 py-2 rounded-full font-medium text-sm">
-                  View Cart
-                </button>
-              </div>
+        {/* Related Vendors */}
+        {relatedVendors.length > 0 && (
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Similar Vendors
+              </h2>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
             </div>
+            <RelatedVendors vendors={relatedVendors} />
           </div>
         )}
       </div>
+
+      {/* Floating Cart Summary */}
+      <CartSummaryFloat />
     </div>
   );
 }

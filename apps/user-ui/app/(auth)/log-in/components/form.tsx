@@ -5,11 +5,13 @@ import { Input } from "@repo/ui/components/input";
 import { Mail, EyeOff, Eye, Lock } from "lucide-react";
 import React, { useState } from "react";
 import { loginUser } from "@/actions/auth";
-import { showToast } from "@/components/Toast";
+// import { showToast } from "@/components/Toast";
 import { userAtom } from "@/store/userAtom";
 import { useSetAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "@repo/ui/components/sonner";
+import { AxiosError } from "axios";
 
 type FormData = {
   email: string;
@@ -43,64 +45,27 @@ const LogingForm = () => {
       const res = (await loginUser(data.email, data.password)) as LoginResponse;
       console.log(" Login response:", res);
 
-      if (!res || !res.ok) {
-        // ... (Error handling remains the same)
-        const backendError =
-          (res as any)?.error ||
-          (res as any)?.message ||
-          "Login failed. Please try again.";
-
-        setErrorMessage(backendError);
-        showToast({
-          message: "Login Failed",
-          subtext: backendError,
-          type: "error",
-        });
-        return;
-      }
-
       const user = res?.user;
       console.log(user);
       if (!user) {
         // ... (Error handling remains the same)
         const msg = "Invalid response from server.";
         setErrorMessage(msg);
-        showToast({
-          message: "Login Failed",
-          subtext: msg,
-          type: "error",
-        });
+        toast.error("Login Failed", { description: msg });
         return;
       }
-
-      // REPLACE: Use the Jotai setter instead of localStorage.setItem
       setUser(user);
       console.log(" Saved user via Jotai/localStorage:", user);
-
-      //  Success toast
-      // showToast({
-      //   message: "Login Successful!",
-      //   subtext: `Welcome back, ${user.email}`,
-      //   type: "success",
-      // });
-
-      //  Redirect
       router.push("/home");
-    } catch (error: any) {
-      // ... (Catch block remains the same)
-      console.error("Login request failed:", error);
-      const backendError =
-        error?.response?.data?.error ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "An unexpected error occurred.";
+    } catch (error) {
+      const err = error as AxiosError;
+      console.error("Login request failed:", err.response?.data);
+
+      const backendError = `Login Failed: ${(err.response?.data as Error)?.message || "An unexpected error occurred."}`;
 
       setErrorMessage(backendError);
-      showToast({
-        message: "Login Failed",
-        subtext: backendError,
-        type: "error",
-      });
+
+      toast.error("Login Failed", { description: backendError });
     }
   });
 
@@ -162,7 +127,7 @@ const LogingForm = () => {
       </form>
 
       {errorMessage && (
-        <p className="my-4 text-red-500 font-medium">{errorMessage}</p>
+        <p className="my-4 text-red-500 font-medium text-sm">{errorMessage}</p>
       )}
     </>
   );

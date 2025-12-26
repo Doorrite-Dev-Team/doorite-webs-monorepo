@@ -1,6 +1,10 @@
+"use client";
+
 import { MenuItemProps } from "@/types/account";
 import { Shield, ChevronRight } from "lucide-react";
 import { Badge } from "@repo/ui/components/badge";
+import { useRouter } from "next/navigation";
+import { Route } from "next";
 
 // Menu Item Component
 const MenuItem = ({
@@ -12,9 +16,11 @@ const MenuItem = ({
   isSecure = false,
   href,
 }: MenuItemProps) => {
+  const router = useRouter();
+
   const handleClick = (): void => {
     if (href) {
-      window.location.href = href;
+      router.push(href as Route<string>);
     } else if (onClick) {
       onClick();
     }

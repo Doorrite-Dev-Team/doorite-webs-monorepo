@@ -27,7 +27,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       disabled,
       ...props
     },
-    ref
+    ref,
   ) => {
     const inputId = React.useId();
     const helperTextId = React.useId();
@@ -58,7 +58,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         "pr-9": rightIcon && size === "sm",
         "pr-10": rightIcon && size === "md",
         "pr-11": rightIcon && size === "lg",
-      }
+      },
     );
 
     const variantStyles = {
@@ -66,23 +66,23 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         "border border-border/60 bg-background/50 backdrop-blur-sm",
         "hover:border-border hover:bg-background/80",
         "focus:border-ring/70 focus:bg-background focus:shadow-[0_0_0_3px_hsl(var(--ring)/0.12)]",
-        "data-[invalid]:border-destructive/70 data-[invalid]:focus:shadow-[0_0_0_3px_hsl(var(--destructive)/0.12)]"
+        "data-[invalid]:border-destructive/70 data-[invalid]:focus:shadow-[0_0_0_3px_hsl(var(--destructive)/0.12)]",
       ),
       ghost: cn(
         "border-0 bg-transparent hover:bg-muted/50",
         "focus:bg-muted/80 focus:shadow-[0_0_0_3px_hsl(var(--ring)/0.12)]",
-        "data-[invalid]:focus:shadow-[0_0_0_3px_hsl(var(--destructive)/0.12)]"
+        "data-[invalid]:focus:shadow-[0_0_0_3px_hsl(var(--destructive)/0.12)]",
       ),
       filled: cn(
         "border-0 bg-muted/60 hover:bg-muted/80",
         "focus:bg-background focus:shadow-[0_0_0_3px_hsl(var(--ring)/0.12)]",
-        "data-[invalid]:focus:shadow-[0_0_0_3px_hsl(var(--destructive)/0.12)]"
+        "data-[invalid]:focus:shadow-[0_0_0_3px_hsl(var(--destructive)/0.12)]",
       ),
       underlined: cn(
         "border-0 border-b-2 border-border/60 bg-transparent rounded-none px-0 pb-2",
         "hover:border-border focus:border-ring/70",
         "focus:shadow-[0_1px_0_0_hsl(var(--ring))]",
-        "data-[invalid]:border-destructive/70 data-[invalid]:focus:border-destructive data-[invalid]:focus:shadow-[0_1px_0_0_hsl(var(--destructive))]"
+        "data-[invalid]:border-destructive/70 data-[invalid]:focus:border-destructive data-[invalid]:focus:shadow-[0_1px_0_0_hsl(var(--destructive))]",
       ),
     };
 
@@ -93,7 +93,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             htmlFor={inputId}
             className={cn(
               "peer-disabled:opacity-50 peer-disabled:cursor-not-allowed",
-              error && "text-destructive"
+              error && "text-destructive",
             )}
           >
             {label}
@@ -104,12 +104,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {leftIcon && (
             <div
               className={cn(
-                "absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-foreground/80 transition-colors pointer-events-none",
+                // Added z-10 here to ensure it sits on top of the input
+                "absolute left-0 top-1/2 -translate-y-1/2 z-10 text-muted-foreground/60 group-focus-within:text-foreground/80 transition-colors pointer-events-none",
                 {
                   "left-2.5 w-3 h-3": size === "sm",
                   "left-3 w-4 h-4": size === "md",
                   "left-3.5 w-5 h-5": size === "lg",
-                }
+                },
               )}
             >
               {leftIcon}
@@ -129,7 +130,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               baseStyles,
               variantStyles[variant],
               "peer",
-              className
+              className,
             )}
             {...props}
           />
@@ -142,7 +143,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                   "right-2.5 w-3 h-3": size === "sm",
                   "right-3 w-4 h-4": size === "md",
                   "right-3.5 w-5 h-5": size === "lg",
-                }
+                },
               )}
             >
               {rightIcon}
@@ -155,7 +156,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={helperTextId}
             className={cn(
               "text-xs",
-              error ? "text-destructive" : "text-muted-foreground/80"
+              error ? "text-destructive" : "text-muted-foreground/80",
             )}
           >
             {error || helperText}
@@ -163,7 +164,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = "Input";

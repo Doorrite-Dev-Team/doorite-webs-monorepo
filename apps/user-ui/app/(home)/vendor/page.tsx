@@ -1,337 +1,196 @@
 "use client";
 
-import { cartAtom } from "@/store/cartAtom";
-import { imageStudyCafe } from "@repo/ui/assets";
-import { Button } from "@repo/ui/components/button";
-import { useAtom } from "jotai";
-import { Star, ThumbsDown, ThumbsUp } from "lucide-react";
-import Image from "next/image";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useDebounceValue } from "usehooks-ts";
+import { parseAsString, parseAsBoolean, useQueryStates } from "nuqs";
 
-export default function VendorDetails() {
-  const [cart, setCart] = useAtom(cartAtom);
+// UI Components
+import ExploreHeader from "@/components/explore/ExploreHeader";
+import SearchBar from "@/components/explore/SearchBar";
+// import CategoryFilters from "@/components/explore/CategoryFilters";
+import FilterControls from "@/components/explore/FilterControls";
+import ResultsHeader from "@/components/explore/ResultsHeader";
+import EmptyState from "@/components/explore/EmptyState";
+import LoadingSkeleton from "@/components/explore/LoadingSkeleton";
 
-  const updateQuantity = (id: number, delta: number) => {
-    setCart((prev) =>
-      prev
-        .map((it) =>
-          it.id === id
-            ? { ...it, quantity: Math.max(0, it.quantity + delta) }
-            : it
-        )
-        .filter((it) => it.quantity > 0)
-    );
-  };
+// Constants and API
+import { CATEGORIES, SORT_OPTIONS, PRICE_FILTERS } from "@/libs/explore-config";
+import { api } from "@/libs/api";
+import VendorCard from "@/components/VendorCard";
+import { isVendorOpen } from "@/libs/utils";
 
-  const menuItems = {
-    popular: [
-      {
-        id: "1",
-        name: "Cheeseburger",
-        description: "Classic burger with cheese",
-        basePrice: 7.99,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-      {
-        id: "2",
-        name: "Chicken Sandwich",
-        description: "Crispy chicken sandwich",
-        basePrice: 8.49,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-      {
-        id: "3",
-        name: "French Fries",
-        description: "Fries with dipping sauce",
-        basePrice: 3.99,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-    ],
-    breakfast: [
-      {
-        id: "4",
-        name: "Breakfast Bagel",
-        description: "Egg and cheese on a bagel",
-        basePrice: 5.49,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-      {
-        id: "5",
-        name: "Pancakes",
-        description: "Pancakes with syrup",
-        basePrice: 6.99,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-    ],
-    lunch: [
-      {
-        id: "6",
-        name: "Chicken Salad",
-        description: "Grilled chicken salad",
-        basePrice: 9.99,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-      {
-        id: "7",
-        name: "Veggie Wrap",
-        description: "Vegetarian wrap",
-        basePrice: 8.49,
-        isAvailable: true,
-        vendor: {
-          id: "1",
-          businessName: "None",
-        },
-      },
-    ],
-  };
+const defaultParams = {
+  q: null,
+  category: "all",
+  sort: "popular",
+  open: false,
+};
 
-  const reviews = [
+// ➡️ Define the nuqs configuration map using explicit Param types to satisfy TypeScript
+const queryStateMap = {
+  // Use withDefault() to set the default state value ('')
+  // Use withOptions() to set configuration like 'shallow'
+  q: parseAsString.withDefault("").withOptions({ shallow: true }),
+  category: parseAsString.withDefault("all").withOptions({ shallow: true }),
+  sort: parseAsString.withDefault("popular").withOptions({ shallow: true }),
+  price: parseAsString.withDefault("all").withOptions({ shallow: true }),
+
+  // Boolean: Default to false if not present, and clear from URL when false (serialize: null)
+  open: parseAsBoolean.withDefault(false),
+};
+
+export default function ExplorePage() {
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Use nuqs to synchronize state with URL
+  const [{ q, category, sort, price, open }, setParams] = useQueryStates(
+    queryStateMap,
     {
-      id: 1,
-      name: "Liam",
-      time: "2 weeks ago",
-      rating: 5,
-      comment: "Great food and fast delivery!",
-      likes: 10,
-      dislikes: 2,
-      avatar: "👨",
+      history: "replace",
     },
-    {
-      id: 2,
-      name: "Chloe",
-      time: "1 month ago",
-      rating: 4,
-      comment: "Good value for money, but delivery was a bit late.",
-      likes: 5,
-      dislikes: 1,
-      avatar: "👩",
-    },
-  ];
-
-  const ratingDistribution = [
-    { stars: 5, percentage: 40 },
-    { stars: 4, percentage: 30 },
-    { stars: 3, percentage: 15 },
-    { stars: 2, percentage: 10 },
-    { stars: 1, percentage: 5 },
-  ];
-
-  const addToCart = (item: Product) => {
-    const newCartItem: CartItem = {
-      id: parseInt(item.id),
-      name: item.name,
-      description: item.description,
-      price: item.basePrice,
-      quantity: 0,
-      vendor_name: item.vendor.businessName,
-    };
-
-    if (cart.find((i) => i.id === newCartItem.id)) {
-      updateQuantity(newCartItem.id, 1);
-    } else {
-      setCart((prev) => [...prev, newCartItem]);
-    }
-    // Show feedback that item was added
-    alert(`${item.name} added to cart!`);
-  };
-
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < rating ? "text-primary/80 fill-primary/80" : "text-gray-300"
-        }`}
-      />
-    ));
-  };
-
-  const renderMenuItem = (item: Product) => (
-    <div
-      key={item.id}
-      className="flex items-center justify-between py-4 border-b border-gray-100 last:border-b-0"
-    >
-      <div className="flex-1">
-        <h3 className="font-medium text-gray-900 mb-1">{item.name}</h3>
-        <p className="text-primary text-sm">{item.description}</p>
-      </div>
-      <div className="flex items-center space-x-3">
-        <span className="font-semibold text-gray-900">${item.basePrice}</span>
-        <Button
-          onClick={() => addToCart(item)}
-          className="rounded-full text-sm"
-        >
-          Add
-        </Button>
-      </div>
-    </div>
   );
 
+  // Debounce the search term (q) from the URL state
+  const [debouncedSearch] = useDebounceValue(q, 700);
+
+  const clearFilters = useCallback(() => {
+    // Reset all parameters to default values
+    setParams(defaultParams);
+    // Clear local vendors state for immediate visual change
+    setVendors([]);
+  }, [setParams]);
+
+  // Update the search query (q) in the URL
+  const setSearchAction = useCallback(
+    (value: string) => {
+      setParams({ q: value || null });
+    },
+    [setParams],
+  );
+
+  // Update the sort parameter in the URL
+  const setSortByAction = useCallback(
+    (value: string) => {
+      setParams({ sort: value === "popular" ? null : value });
+    },
+    [setParams],
+  );
+
+  // Update the price filter in the URL
+  const setPriceFilterAction = useCallback(
+    (value: string) => {
+      setParams({ price: value === "all" ? null : value });
+    },
+    [setParams],
+  );
+
+  // Toggle the 'open' status in the URL
+  const setShowOpenOnlyAction = useCallback(
+    (value: boolean) => {
+      setParams({ open: value || null });
+    },
+    [setParams],
+  );
+
+  const fetchVendors = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      const params: Record<string, string> = {};
+      if (debouncedSearch) params.q = debouncedSearch;
+      if (category !== "all") params.category = category;
+      // if (price !== "all") params.price = price;
+      if (sort !== "popular") params.sort = sort;
+
+      // Fetch vendors using the generated API parameters
+      const queryString = new URLSearchParams(params).toString();
+      const resvendors = await api.fetchVendors(queryString);
+
+      if (Array.isArray(resvendors)) {
+        // Apply client-side filtering for 'open' state
+        const finalvendors = open
+          ? resvendors.filter((p) => p.isOpen && isVendorOpen(p))
+          : resvendors;
+        setVendors(finalvendors);
+      } else {
+        setVendors([]);
+      }
+    } catch (error) {
+      console.error("\u274c Failed to fetch vendors:", error);
+      setVendors([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [category, debouncedSearch, sort, open]);
+
+  useEffect(() => {
+    // Trigger fetch when debounced search or query state changes
+    fetchVendors();
+  }, [fetchVendors]);
+
+  // Check if any filter is active
+  const hasActiveFilters = useMemo(
+    () => q !== "" || category !== "all" || sort !== "popular" || open,
+    [q, category, sort, open],
+  );
+
+  const filteredvendors = vendors;
+
   return (
-    <div className="max-w-2xl mx-auto min-h-screen mt-10">
-      {/* Restaurant Image */}
-      <div className="relative h-48 bg-gray-200">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent">
-          <Image
-            src={imageStudyCafe}
-            alt="Image Study Cafe"
-            className="w-full h-full object-cover"
+    // Mobile Overflow Fix: Use flex-col and min-h-screen for proper vertical layout
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Scrollable container with fixed-width content */}
+      <div className="max-w-md md:max-w-4xl mx-auto w-full overflow-hidden px-4 md:px-6 flex-1 pt-6 pb-8">
+        {/* Header/Filters Section */}
+        <header className="space-y-4 mb-6">
+          <ExploreHeader isVendor />
+          <SearchBar search={q} setSearch={setSearchAction} />
+          <FilterControls
+            sortBy={sort}
+            setSortByAction={setSortByAction}
+            sortOptions={SORT_OPTIONS}
+            priceFilter={price}
+            setPriceFilterAction={setPriceFilterAction}
+            priceFilters={PRICE_FILTERS}
+            showOpenOnly={open}
+            setShowOpenOnly={setShowOpenOnlyAction}
+            clearFiltersAction={clearFilters}
+            hasActiveFilters={hasActiveFilters}
           />
-        </div>
-        <div className="absolute bottom-4 left-4 text-white text-sm font-medium bg-black/50 px-3 py-1 rounded">
-          THIS FRUITS & JUICE
-        </div>
-      </div>
+        </header>
 
-      <div className="p-4">
-        {/* Restaurant Info */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Campus Eats</h2>
-          <p className="text-gray-600">Fast food restaurant</p>
-        </div>
+        {/* Results Section */}
+        <ResultsHeader
+          debouncedSearch={debouncedSearch}
+          filteredCount={filteredvendors.length}
+          category={category}
+          categories={CATEGORIES}
+          hasActiveFilters={hasActiveFilters}
+        />
 
-        {/* Popular Items */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Popular Items
-          </h3>
-          <div className="space-y-1">
-            {menuItems.popular.map(renderMenuItem)}
-          </div>
-        </div>
-
-        {/* Breakfast */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Breakfast
-          </h3>
-          <div className="space-y-1">
-            {menuItems.breakfast.map(renderMenuItem)}
-          </div>
-        </div>
-
-        {/* Lunch  */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Lunch</h3>
-          <div className="space-y-1">{menuItems.lunch.map(renderMenuItem)}</div>
-        </div>
-
-        {/* Ratings & Reviews */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Ratings & Reviews
-          </h3>
-
-          {/* Overall Rating */}
-          <div className="flex items-center mb-6">
-            <div className="mr-6">
-              <div className="text-4xl font-bold text-gray-900 mb-1">4.5</div>
-              <div className="flex items-center mb-1">{renderStars(4)}</div>
-              <div className="text-gray-600 text-sm">120 reviews</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          {isLoading ? (
+            // Render two skeletons for the 2-column grid
+            <>
+              <LoadingSkeleton />
+              <LoadingSkeleton />
+            </>
+          ) : filteredvendors.length > 0 ? (
+            filteredvendors.map((vendor) => (
+              <VendorCard key={vendor.id} vendor={vendor} />
+            ))
+          ) : (
+            // EmptyState must span two columns
+            <div className="sm:col-span-2">
+              <EmptyState
+                hasSearch={!!debouncedSearch}
+                searchTerm={debouncedSearch}
+                onClear={clearFilters}
+              />
             </div>
-
-            {/* Rating Distribution */}
-            <div className="flex-1">
-              {ratingDistribution.map((rating) => (
-                <div key={rating.stars} className="flex items-center mb-1">
-                  <span className="text-sm text-gray-600 w-3">
-                    {rating.stars}
-                  </span>
-                  <div className="flex-1 mx-2 bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-primary h-2 rounded-full"
-                      style={{ width: `${rating.percentage}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-sm text-gray-600 w-8">
-                    {rating.percentage}%
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Individual Reviews */}
-          <div className="space-y-6">
-            {reviews.map((review) => (
-              <div
-                key={review.id}
-                className="border-b border-gray-100 pb-4 last:border-b-0"
-              >
-                <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-lg">
-                    {review.avatar}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-medium text-gray-900">
-                        {review.name}
-                      </h4>
-                      <span className="text-primary text-sm">
-                        {review.time}
-                      </span>
-                    </div>
-                    <div className="flex items-center mb-2">
-                      {renderStars(review.rating)}
-                    </div>
-                    <p className="text-gray-700 text-sm mb-3">
-                      {review.comment}
-                    </p>
-                    <div className="flex items-center space-x-4">
-                      <button className="flex items-center space-x-1 text-primary text-sm">
-                        <ThumbsUp className="w-4 h-4" />
-                        <span>{review.likes}</span>
-                      </button>
-                      <button className="flex items-center space-x-1 text-gray-400 text-sm">
-                        <ThumbsDown className="w-4 h-4" />
-                        <span>{review.dislikes}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          )}
         </div>
-
-        {/* Cart Summary (if items in cart) */}
-        {cart.length > 0 && (
-          <div className="fixed bottom-4 left-4 right-4 max-w-2xl mx-auto">
-            <div className="bg-primary text-white p-4 rounded-lg shadow-lg">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">
-                  {cart.length} item(s) in cart
-                </span>
-                <button className="bg-white text-primary px-4 py-2 rounded-full font-medium text-sm">
-                  View Cart
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
