@@ -1,11 +1,10 @@
 "use client";
-
 import { useState } from "react";
 import Topbar from "@/components/dashboard/Topbar";
 import Sidebar from "@/components/dashboard/Sidebar";
 import Bottombar from "@/components/dashboard/Bottombar";
 
-export default function AccountLayoutClient({
+export default function MapLayoutClient({
   children,
 }: {
   children: React.ReactNode;
@@ -20,7 +19,7 @@ export default function AccountLayoutClient({
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Topbar with dynamic title */}
-        <Topbar toggleSidebar={() => setOpen(!open)} title="My Profile" />
+        <Topbar toggleSidebar={() => setOpen(!open)} title="Map" />
 
         {/* Page body injected here */}
         <main className="flex-1 p-6 overflow-y-auto">{children}</main>

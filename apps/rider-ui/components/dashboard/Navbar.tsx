@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import Bottombar from "./Bottombar";
 
 export default function Navbar({ children }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -19,6 +20,9 @@ export default function Navbar({ children }: { children?: React.ReactNode }) {
 
         {/* Page body injected here */}
         <main className="flex-1 p-6 overflow-y-auto">{children}</main>
+
+        {/* Bottombar */}
+        <Bottombar />
       </div>
     </div>
   );

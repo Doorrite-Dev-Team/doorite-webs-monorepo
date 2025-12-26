@@ -53,7 +53,7 @@ const deliveries: Delivery[] = [
 export default function DeliveriesList() {
   const [open, setOpen] = useState(false);
   return (
-    <div className="min-h-screen bg-[#F9FCF9] flex flex-col">
+    <div className="h-[-webkit-fill-available] bg-[#F9FCF9] flex flex-col">
       <main className="flex-1 p-4 md:p-8">
         <div className="space-y-6 md:grid md:grid-cols-2 md:gap-6 md:space-y-0">
           {deliveries.map((delivery) => (
