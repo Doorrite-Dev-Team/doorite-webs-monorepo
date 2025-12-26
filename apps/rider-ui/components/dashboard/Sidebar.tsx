@@ -1,15 +1,23 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Home, Truck, DollarSign, User, LogOut } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/public/assets/icons";
+import { 
+  HomeIcon,
+  MapIcon,
+  TruckIcon,
+  WalletIcon,
+  UserCircle2,
+  LogOut,
+} from "lucide-react";
 
 const navItems = [
-  { name: "Home", icon: Home, href: "/dashboard" },
-  { name: "Deliveries", icon: Truck, href: "/deliveries" },
-  { name: "Earnings", icon: DollarSign, href: "/earnings" },
-  { name: "Account", icon: User, href: "/account" },
+  { name: "Home", icon: HomeIcon, href: "/dashboard" },
+  { name: "Deliveries", icon: TruckIcon, href: "/deliveries" },
+  { name: "Map", icon: MapIcon, href: "/map" },
+  { name: "Earnings", icon: WalletIcon, href: "/earnings" },
+  { name: "Account", icon: UserCircle2, href: "/account" },
 ];
 
 export default function Sidebar({
@@ -22,7 +30,7 @@ export default function Sidebar({
   const pathname = usePathname();
 
   return (
-    <>
+    <div className="hidden md:block">
       {/* 🔹 Mobile Backdrop */}
       {open && (
         <div
@@ -37,7 +45,7 @@ export default function Sidebar({
         onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
       >
         {/* Logo */}
-        <div className="p-4 border-b font-bold text-xl text-green-700 flex items-center space-x-2">
+        <div className="px-4 py-5.5 border-b font-bold text-xl text-green-700 flex items-center space-x-2">
           <Logo className="w-6 h-6" />
           <span>Doorrite</span>
         </div>
@@ -67,13 +75,13 @@ export default function Sidebar({
         </ul>
 
         {/* Logout */}
-        <div className="absolute bottom-4 left-0 w-full px-4">
-          <button className="flex items-center space-x-3 text-red-600 hover:text-red-800">
+        <div className="px-4 py-5 border-t absolute bottom-6 left-0 w-full">
+          <button className="cursor-pointer flex items-center space-x-3 text-red-600 hover:text-red-800">
             <LogOut className="w-5 h-5" />
             <span>Logout</span>
           </button>
         </div>
       </aside>
-    </>
+    </div>
   );
 }

@@ -2,7 +2,7 @@ import "@repo/ui/globals.css";
 import type { Metadata } from "next";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import Navbar from "@/components/dashboard/Navbar";
-import Dashboard from "@/components/dashboard/Dashboard";
+// import Dashboard from "@/components/dashboard/Dashboard";
 
 const plus_Jakarta_Sans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -30,7 +30,7 @@ export default function DashboardLayout({
       {/* Pass both children + Dashboard INTO Navbar layout */}
       <Navbar>
         {children}
-        <Dashboard />
+        {/* <Dashboard /> */}
       </Navbar>
     </div>
   );
