@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Page } from "../../forgot-password/components/form";
+import Image from "next/image";
+import { logoFull } from "@repo/ui/assets";
 
 type FormData = {
   fullName: string;
@@ -36,6 +38,8 @@ const SignUpForm = () => {
    */
   const onSubmit = handleSubmit(async (data) => {
     setErrorMessage(undefined); // clear previous error
+
+    console.log("hey!! (onsubmit)");
 
     try {
       const res = await signUpUser(data);
@@ -80,7 +84,26 @@ const SignUpForm = () => {
       />
     );
   return (
-    <>
+    <div className="flex flex-1 flex-col justify-center space-y-8">
+      {/* Header: Clean Brand Stack */}
+      <div className="space-y-2 text-center">
+        <Image
+          src={logoFull}
+          alt="Doorite Logo"
+          width={100}
+          height={40}
+          className="mx-auto h-auto w-auto"
+          priority
+        />
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+          Create Account
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Join us to get started with your customer account
+        </p>
+      </div>
+
+      {/* Form Section */}
       <form onSubmit={onSubmit} className="space-y-5">
         {/* Full Name */}
         <Input
@@ -182,7 +205,7 @@ const SignUpForm = () => {
       {errorMessage && (
         <p className="my-4 text-red-500 font-medium">{errorMessage}</p>
       )}
-    </>
+    </div>
   );
 };
 
