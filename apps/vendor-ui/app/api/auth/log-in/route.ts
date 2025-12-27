@@ -4,7 +4,7 @@
 
 // app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createErrorResponse, API_CONFIG } from "@/libs/api-utils";
+import { createErrorResponse, API_CONFIG } from "@/configs/api";
 
 export async function POST(req: NextRequest) {
   try {

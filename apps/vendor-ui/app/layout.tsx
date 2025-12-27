@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${plus_Jakarta_Sans.variable} ${geistMono.variable}`}>
-        <SocketProvider>{children}</SocketProvider>
+        {children}
       </body>
     </html>
   );

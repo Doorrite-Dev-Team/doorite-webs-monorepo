@@ -18,6 +18,15 @@ const nextConfig: NextConfig = {
 
     return config;
   },
+  typedRoutes: true,
+  typedEnv: true,
+  remotePatterns: [
+    {
+      protocol: "https",
+      hostname: "*.ufs.sh",
+      pathname: "/f/*",
+    },
+  ],
 };
 
 export default nextConfig;

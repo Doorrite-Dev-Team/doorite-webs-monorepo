@@ -3,7 +3,7 @@
 import { FC, useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import Image from "next/image";
-import Axios from "@/libs/Axios";
+import apiClient from "@/libs/api/client";
 import { useRouter } from "next/navigation";
 import CreateMenuItemForm from "../menu/CreateMenuItemForm";
 
@@ -38,7 +38,7 @@ const Dashboard: FC = () => {
           return;
         }
 
-        const res = await Axios.get(`vendors/${vendorId}`);
+        const res = await apiClient.get(`vendors/${vendorId}`);
         const name =
           res.data?.data?.businessName ||
           vendor?.businessName ||

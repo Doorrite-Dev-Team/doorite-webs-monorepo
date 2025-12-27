@@ -1,30 +1,17 @@
-// types/notification.ts
+export type NotificationPriority = "low" | "normal" | "high" | "urgent";
 
 export type NotificationType =
-  | "ORDER_PLACED"
-  | "ORDER_ACCEPTED"
-  | "ORDER_PREPARING"
-  | "ORDER_OUT_FOR_DELIVERY"
-  | "ORDER_DELIVERED"
-  | "ORDER_CANCELLED"
-  | "PROMOTION"
-  | "NEW_RESTAURANT"
-  | "PAYMENT_SUCCESS"
-  | "PAYMENT_FAILED"
-  | "DELIVERY_DELAYED"
-  | "RATING_REQUEST"
-  | "SYSTEM";
-
-export type NotificationPriority = "low" | "normal" | "high" | "urgent";
+  | "NEW_ORDER" // Requires Acceptance (Dialog)
+  | "ORDER_CANCELLED" // Urgent Stop (Toast + Sound)
+  | "DRIVER_ARRIVED" // Logistics (Toast)
+  | "SYSTEM_ALERT" // Maintenance/Auth (Toast)
+  | "PAYOUT_SUCCESS"; // Info (Silent/Low)
 
 export interface NotificationMetadata {
   orderId?: string;
-  vendorId?: string;
-  promotionId?: string;
-  deliveryTime?: string;
-  amount?: number;
+  orderAmount?: number;
+  customerName?: string;
   actionUrl?: string;
-  imageUrl?: string;
   [key: string]: any;
 }
 
@@ -36,20 +23,13 @@ export interface Notification {
   priority: NotificationPriority;
   read: boolean;
   archived: boolean;
-  timestamp: string; // ISO string
-  expiresAt?: string; // ISO string
+  timestamp: string;
+  expiresAt?: string;
   metadata?: NotificationMetadata;
 }
 
 export interface NotificationState {
   notifications: Notification[];
-  lastSync: string | null;
   unreadCount: number;
-}
-
-export interface WebSocketMessage {
-  type: "notification" | "ping" | "pong" | "error";
-  data?: Notification;
-  error?: string;
-  timestamp: string;
+  lastSync: string | null;
 }
