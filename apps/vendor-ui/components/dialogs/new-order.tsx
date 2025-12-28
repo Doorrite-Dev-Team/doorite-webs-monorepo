@@ -31,7 +31,7 @@ export function NewOrderAlert() {
   const handleViewOrder = () => {
     handleStop();
     if (urgentOrder?.orderId) {
-      router.push(`/dashboard/orders/${urgentOrder.orderId}`);
+      router.push(`/orders/${urgentOrder.orderId}`);
     }
   };
 
