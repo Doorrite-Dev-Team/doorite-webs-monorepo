@@ -3,7 +3,7 @@
 import { useState, ChangeEvent, DragEvent, FormEvent } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
-import Axios from "@/libs/Axios";
+import apiClient from "@/libs/api/client";
 import { showToast } from "@/components/Toast"; // ✅ added toast import
 
 interface Props {
@@ -29,7 +29,7 @@ export default function CreateMenuItemForm({ onClose }: Props) {
 
   // ✅ Handle text/number input changes
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -88,9 +88,7 @@ export default function CreateMenuItemForm({ onClose }: Props) {
         variants: [],
       };
 
-      const response = await Axios.post("/vendors/products", payload, {
-        withCredentials: true,
-      });
+      const response = await apiClient.post("/vendors/products", payload);
 
       // ✅ Success toast
       showToast({

@@ -15,7 +15,7 @@ const testimonials = [
 
 export default function Testimonials() {
   return (
-    <section className="px-6 md:px-16 py-12 bg-gray-50">
+    <section id="testimonials" className="px-6 md:px-16 py-12 bg-gray-50">
       <h2 className="text-2xl font-bold text-gray-900 mb-8">What People Say</h2>
       <div className="grid gap-8 md:grid-cols-2">
         {testimonials.map((t, i) => (

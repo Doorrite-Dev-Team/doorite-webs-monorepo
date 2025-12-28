@@ -1,3 +1,4 @@
+import LandingHeader from "@/components/header";
 import Benefits from "@/components/homepage/Benefits";
 import Footer from "@/components/homepage/Footer";
 import Hero from "@/components/homepage/Hero";
@@ -9,6 +10,7 @@ import Testimonials from "@/components/homepage/Testimonials";
 const Home = () => {
   return (
     <div>
+      <LandingHeader />
       <main className="min-h-screen bg-white">
         <Hero />
         <Benefits />

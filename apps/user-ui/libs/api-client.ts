@@ -76,15 +76,33 @@ export function handleApiError(error: unknown): string {
 
 export const authService = {
   async login(email: string, password: string) {
-    const response = await axios.post("/api/auth/log-in", {
-      identifier: email,
-      password,
-    });
+    const response = await axios.post(
+      "/api/auth/log-in",
+      {
+        identifier: email,
+        password,
+      },
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
     return response.data;
   },
 
   async logout() {
-    const response = await axios.post("/api/auth/logout");
+    const response = await axios.post(
+      "/api/auth/logout",
+      {},
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
     return response.data;
   },
 

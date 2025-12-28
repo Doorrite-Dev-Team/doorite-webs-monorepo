@@ -32,7 +32,7 @@ export default function Benefits() {
   ];
 
   return (
-    <section className="px-6 md:px-16 py-12 bg-gray-50">
+    <section id="benefits" className="px-6 md:px-16 py-12 bg-gray-50">
       <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
         Benefits for Everyone
       </h2>

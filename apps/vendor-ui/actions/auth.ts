@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/actions/auth.ts
 
-import Axios, { extractMessageFromResponse } from "@/libs/Axios";
+import Axios from "@/libs/api/client";
 import { toast } from "@repo/ui/components/sonner";
-import axios, { AxiosResponse } from "axios";
 
-// ✅ Correct vendor sign-up payload type
+/* ========== TYPES ========== */
+
 export interface VendorSignUpPayload {
   businessName: string;
   email: string;
@@ -15,12 +15,6 @@ export interface VendorSignUpPayload {
   categoryIds: string[];
   logoUrl?: string;
 }
-
-// Other payloads
-export type LoginPayload = {
-  identifier: string;
-  password: string;
-};
 
 export type VerifyOtpPayload = {
   email: string;
@@ -34,181 +28,114 @@ export type ResetPasswordPayload = {
   confirmPassword: string;
 };
 
-// ✅ User type (from backend)
-export type User = {
+export type Vendor = {
   id?: string;
   _id?: string;
   email: string;
   name?: string;
-  token?: string;
   role?: string;
   businessName?: string;
 };
 
-// Generic API response shape
 export type ApiResponse<T = unknown> = {
   ok: boolean;
-  message: string;
+  message?: string;
   data?: T;
 };
 
-// Helpers
-function getMessageFromPayload(payload: unknown): string | undefined {
-  if (!payload || typeof payload !== "object") return undefined;
-  const r = payload as Record<string, unknown>;
-  if (typeof r.message === "string") return r.message;
-  if (typeof r.error === "string") return r.error;
-  if (typeof r.msg === "string") return r.msg;
-  return undefined;
-}
-
-function handleSuccess<T = unknown>(
-  res: AxiosResponse<unknown>
-): ApiResponse<T> {
-  const payload = res.data as any;
-  const okFlag = payload?.ok ?? true;
-  const message = getMessageFromPayload(payload) ?? "Success";
-  const data = payload?.data ?? payload;
-
-  return { ok: Boolean(okFlag), message, data };
-}
-
-function handleError(err: unknown): ApiResponse {
-  if (axios.isAxiosError(err)) {
-    const payload = err.response?.data;
-    const message =
-      getMessageFromPayload(payload) ?? err.message ?? "Request failed";
-    return { ok: false, message };
-  }
-  if (err instanceof Error) return { ok: false, message: err.message };
-  return { ok: false, message: "An unexpected error occurred" };
-}
-
 /* ========== AUTH ACTIONS ========== */
 
-// ✅ Updated signUpUser for vendor creation
-export async function signUpUser(
-  payload: VendorSignUpPayload
-): Promise<ApiResponse> {
+/**
+ * LOGIN: Calls the internal Next.js Route Handler to set HttpOnly cookies
+ */
+export async function loginUser(
+  identifier: string,
+  password: string,
+): Promise<ApiResponse<Vendor>> {
   try {
-    // Log payload for debugging
-    console.log("Sign-up payload:", payload);
+    // Note: Calling our local Next.js API route, not the external backend directly
+    const res = await Axios.post(
+      "/api/auth/login",
+      { identifier, password },
+      { baseURL: "/" },
+    );
+    toast.success("Successfully Logged In");
 
-    const res = await Axios.post("/auth/create-vendor", payload);
-
-    toast.success((res.data as any)?.message ?? "Account created successfully");
-    return handleSuccess(res);
-  } catch (err: unknown) {
-    console.error("signUpUser error:", err);
-    const message = handleError(err).message;
-    toast.error(message);
-    return { ok: false, message };
+    return res.data;
+  } catch (err: any) {
+    // Errors are already toasted by the Axios interceptor
+    return { ok: false, message: err.message };
   }
 }
 
-// Other auth actions remain the same ↓
-
-export async function loginUser(
-  identifier: string,
-  password: string
-): Promise<ApiResponse<User>> {
+/**
+ * LOGOUT: Calls the internal Next.js Route Handler to clear cookies
+ */
+export async function logout(): Promise<ApiResponse> {
   try {
-    const res = await Axios.post(
-      "/auth/login-vendor",
-      { identifier, password },
-      { withCredentials: true }
-    );
+    const res = await Axios.post("/api/auth/logout", {}, { baseURL: "/" });
+    toast.success("Logged out successfully");
+    return res.data;
+  } catch (err: any) {
+    return { ok: false, message: err.message };
+  }
+}
 
-    const ok = (res.data as any)?.ok;
-    const message = extractMessageFromResponse(res);
-    if (ok && message) {
-      toast.success("Successfully Logged In: " + message);
-    }
-
-    return handleSuccess<User>(res); // ✅ explicitly type the response
-  } catch (err) {
-    console.error("loginUser error:", err);
-    const message = handleError(err).message;
-    toast.error(message);
-    return { ok: false, message };
+/**
+ * SIGN UP: Goes through the central Proxy
+ */
+export async function signUpUser(
+  payload: VendorSignUpPayload,
+): Promise<ApiResponse> {
+  try {
+    const res = await Axios.post("/auth/create-vendor", payload);
+    toast.success(res.data?.message ?? "Account created successfully");
+    return res.data;
+  } catch (err: any) {
+    return { ok: false, message: err.message };
   }
 }
 
 export async function createOtp(email: string): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/create-vendor-otp", { email });
-    toast.success((res.data as any)?.message ?? "OTP sent");
-    return handleSuccess(res);
-  } catch (err: unknown) {
-    console.error("createOtp error:", err);
-    const message = handleError(err).message;
-    toast.error(message);
-    return { ok: false, message };
+    toast.success(res.data?.message ?? "OTP sent");
+    return res.data;
+  } catch (err: any) {
+    return { ok: false, message: err.message };
   }
 }
 
 export async function verifyOtp(
-  payload: VerifyOtpPayload
+  payload: VerifyOtpPayload,
 ): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/verify-vendor-otp", payload);
-    toast.success((res.data as any)?.message ?? "OTP verified successfully");
-    return handleSuccess(res);
-  } catch (err: unknown) {
-    console.error("verifyOtp error:", err);
-    const message = handleError(err).message;
-    toast.error(message);
-    return { ok: false, message };
+    toast.success(res.data?.message ?? "OTP verified successfully");
+    return res.data;
+  } catch (err: any) {
+    return { ok: false, message: err.message };
   }
 }
 
 export async function forgotPassword(email: string): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/forget-vendor-password", { email });
-    toast.success((res.data as any)?.message ?? "Reset OTP sent");
-    return handleSuccess(res);
-  } catch (err: unknown) {
-    console.error("forgotPassword error:", err);
-    const message = handleError(err).message;
-    toast.error(message);
-    return { ok: false, message };
+    toast.success(res.data?.message ?? "Reset OTP sent");
+    return res.data;
+  } catch (err: any) {
+    return { ok: false, message: err.message };
   }
 }
 
 export async function resetPassword(
-  payload: ResetPasswordPayload
+  payload: ResetPasswordPayload,
 ): Promise<ApiResponse> {
   try {
     const res = await Axios.post("/auth/reset-vendor-password", payload);
-    toast.success((res.data as any)?.message ?? "Password reset successful");
-    return handleSuccess(res);
-  } catch (err: unknown) {
-    console.error("resetPassword error:", err);
-    const message = handleError(err).message;
-    toast.error(message);
-    return { ok: false, message };
-  }
-}
-
-export async function refreshToken(): Promise<ApiResponse> {
-  try {
-    const res = await Axios.post("/auth/refresh-vendor-token");
-    return handleSuccess(res);
-  } catch (err: unknown) {
-    console.error("refreshToken error:", err);
-    return handleError(err);
-  }
-}
-
-export async function logout(): Promise<ApiResponse> {
-  try {
-    const res = await Axios.post("/auth/logout-vendor");
-    toast.success("Logged out successfully");
-    return handleSuccess(res);
-  } catch (err: unknown) {
-    console.error("logout error:", err);
-    const message = handleError(err).message;
-    toast.error(message);
-    return { ok: false, message };
+    toast.success(res.data?.message ?? "Password reset successful");
+    return res.data;
+  } catch (err: any) {
+    return { ok: false, message: err.message };
   }
 }

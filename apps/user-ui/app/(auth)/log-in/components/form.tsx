@@ -4,14 +4,15 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Mail, EyeOff, Eye, Lock } from "lucide-react";
 import React, { useState } from "react";
-import { loginUser } from "@/actions/auth";
+// import { loginUser } from "@/actions/auth";
 // import { showToast } from "@/components/Toast";
 import { userAtom } from "@/store/userAtom";
 import { useSetAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "@repo/ui/components/sonner";
-import { AxiosError } from "axios";
+import { isAxiosError } from "axios";
+import { authService } from "@/libs/api-client";
 
 type FormData = {
   email: string;
@@ -19,11 +20,11 @@ type FormData = {
 };
 
 // Use the imported User type for consistency
-type LoginResponse = {
-  ok: boolean;
-  message?: string;
-  user?: User; // Use the Jotai User type
-};
+// type LoginResponse = {
+//   ok: boolean;
+//   message?: string;
+//   user?: User; // Use the Jotai User type
+// };
 
 const LogingForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -39,33 +40,32 @@ const LogingForm = () => {
   } = useForm<FormData>();
 
   const onSubmit = handleSubmit(async (data) => {
-    console.log(" Attempting login with:", data);
-
+    setErrorMessage(undefined);
     try {
-      const res = (await loginUser(data.email, data.password)) as LoginResponse;
-      console.log(" Login response:", res);
+      const { data: res } = await authService.login(data.email, data.password);
+      console.log("Login response:", res);
 
-      const user = res?.user;
-      console.log(user);
-      if (!user) {
-        // ... (Error handling remains the same)
-        const msg = "Invalid response from server.";
+      if (!res || !res.user) {
+        const msg = res?.message || "Invalid response from server.";
         setErrorMessage(msg);
         toast.error("Login Failed", { description: msg });
         return;
       }
-      setUser(user);
-      console.log(" Saved user via Jotai/localStorage:", user);
+
+      setUser(res.user);
       router.push("/home");
     } catch (error) {
-      const err = error as AxiosError;
-      console.error("Login request failed:", err.response?.data);
-
-      const backendError = `Login Failed: ${(err.response?.data as Error)?.message || "An unexpected error occurred."}`;
-
-      setErrorMessage(backendError);
-
-      toast.error("Login Failed", { description: backendError });
+      let errMsg = "Cannot login";
+      if (isAxiosError(error)) {
+        errMsg =
+          (error.response?.data && error.response?.data.message) ||
+          error.message ||
+          errMsg;
+      } else if (error instanceof Error) {
+        errMsg = error.message;
+      }
+      setErrorMessage(errMsg);
+      toast.error("Login Failed", { description: errMsg });
     }
   });
 
