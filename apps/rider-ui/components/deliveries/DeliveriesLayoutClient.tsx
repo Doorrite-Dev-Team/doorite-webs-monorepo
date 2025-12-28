@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Topbar from "@/components/dashboard/Topbar";
 import Sidebar from "@/components/dashboard/Sidebar";
+import Bottombar from "@/components/dashboard/Bottombar";
 
 export default function DeliveriesLayoutClient({
   children,
@@ -12,7 +13,6 @@ export default function DeliveriesLayoutClient({
   const [open, setOpen] = useState(false);
 
   return (
-    
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <Sidebar open={open} setOpen={setOpen} />
@@ -20,10 +20,13 @@ export default function DeliveriesLayoutClient({
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Topbar */}
-        <Topbar toggleSidebar={() => setOpen(!open)} title="Deliveries" />
+        <Topbar toggleSidebar={() => setOpen(!open)} title="My Deliveries" />
 
         {/* Page body injected here */}
         <main className="flex-1 p-6 overflow-y-auto">{children}</main>
+
+        {/* Bottombar */}
+        <Bottombar />
       </div>
     </div>
   );
