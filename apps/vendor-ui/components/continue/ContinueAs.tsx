@@ -1,5 +1,6 @@
 "use client";
 
+import { Route } from "next";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -49,7 +50,7 @@ export default function ContinueAs() {
               </h2>
               <p className="text-green-600 text-sm mt-1">{role.description}</p>
               <button
-                onClick={() => router.push(role.route)}
+                onClick={() => router.push(role.route as Route<string>)}
                 className="mt-4 bg-gray-100 text-gray-800 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition"
               >
                 Select →
