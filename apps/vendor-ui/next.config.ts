@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.ufs.sh", // Use ** to catch all subdomains like cnfvawbx16
+        pathname: "/f/**", // Use ** for recursive paths if needed
+      },
+    ],
+  },
   webpack(config) {
     // Add SVGR loader
     config.module.rules.push({
@@ -20,13 +29,6 @@ const nextConfig: NextConfig = {
   },
   typedRoutes: true,
   typedEnv: true,
-  remotePatterns: [
-    {
-      protocol: "https",
-      hostname: "*.ufs.sh",
-      pathname: "/f/*",
-    },
-  ],
 };
 
 export default nextConfig;

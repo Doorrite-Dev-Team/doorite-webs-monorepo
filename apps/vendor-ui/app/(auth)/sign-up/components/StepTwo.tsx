@@ -22,7 +22,8 @@ import { FormValues } from "./types";
 import { useState, useEffect } from "react";
 import { MultiSelect } from "./MultiSelect";
 import { toast } from "@repo/ui/components/sonner";
-import apiClient from "@/libs/api/client";
+import axios from "axios";
+import { Input } from "@repo/ui/components/input";
 
 // Nigeria states
 const NIGERIAN_STATES = [
@@ -65,40 +66,103 @@ const NIGERIAN_STATES = [
   { value: "zamfara", label: "Zamfara" },
 ];
 
+const CATEGORIES_CACHE_KEY = "doorrite-categories-cache";
+const CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+interface CachedCategories {
+  data: { value: string; label: string }[];
+  timestamp: number;
+}
+
+/**
+ * Transform the hierarchical category keys into human-readable labels
+ */
+const formatCategoryLabel = (key: string): string => {
+  // Split by dot to get parts
+  const parts = key.split(".");
+
+  // Format each part
+  const formatted = parts.map((part) => {
+    // Convert camelCase to Title Case
+    return part
+      .replace(/([A-Z])/g, " $1") // Add space before capital letters
+      .replace(/^./, (str) => str.toUpperCase()) // Capitalize first letter
+      .trim();
+  });
+
+  // Join with arrow for nested categories
+  return formatted.join(" → ");
+};
+
 export const StepTwo = () => {
   const form = useFormContext<FormValues>();
   const [categories, setCategories] = useState<
     { value: string; label: string }[]
   >([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const baseUrl = process.env.NEXT_PUBLIC_API_URI;
 
   // Set Nigeria as default country on mount
   useEffect(() => {
-    form.setValue("address.0", "nigeria");
+    form.setValue("address.country", "nigeria");
   }, [form]);
 
-  // Fetch categories from API
+  // Fetch categories from API with caching
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         setIsLoadingCategories(true);
-        const res = await apiClient("/auth/vendor-categories");
 
-        const data = res.data as string[];
+        // Check cache first
+        const cached = sessionStorage.getItem(CATEGORIES_CACHE_KEY);
+        if (cached) {
+          const parsedCache: CachedCategories = JSON.parse(cached);
+          const now = Date.now();
 
-        // Transform API response to select options format
-        const formattedCategories = data.map((cat) => ({
-          value: cat,
-          label: cat,
+          // If cache is still valid, use it
+          if (now - parsedCache.timestamp < CACHE_EXPIRY_MS) {
+            setCategories(parsedCache.data);
+            setIsLoadingCategories(false);
+            return;
+          }
+        }
+
+        // Fetch from API
+        const res = await axios.get(`${baseUrl}/auth/vendor-categories`);
+
+        const data = res.data as {
+          ok: boolean;
+          keys: string[];
+          message?: string;
+        };
+
+        if (!data.ok || !data.keys) {
+          toast.error("Failed to load business categories.", {
+            description: `Error: ${data.message || "Invalid response format"}, Please refresh the page.`,
+          });
+          console.error("Error fetching categories:", data.message);
+          return;
+        }
+
+        // Transform the keys array into formatted options
+        const formattedCategories = data.keys.map((key) => ({
+          value: key,
+          label: formatCategoryLabel(key),
         }));
 
         setCategories(formattedCategories);
-      } catch (error) {
+
+        // Cache the results
+        const cacheData: CachedCategories = {
+          data: formattedCategories,
+          timestamp: Date.now(),
+        };
+        sessionStorage.setItem(CATEGORIES_CACHE_KEY, JSON.stringify(cacheData));
+      } catch (error: any) {
         console.error("Error fetching categories:", error);
         toast.error("Failed to load business categories.", {
-          description: `Error: ${(error as Error).message}, Please refresh the page.`,
+          description: `Error: ${error?.response?.data?.message || error?.message}, Please refresh the page.`,
         });
-        // Set empty array on error
         setCategories([]);
       } finally {
         setIsLoadingCategories(false);
@@ -106,7 +170,7 @@ export const StepTwo = () => {
     };
 
     fetchCategories();
-  }, []);
+  }, [baseUrl]);
 
   return (
     <div className="space-y-6">
@@ -115,7 +179,7 @@ export const StepTwo = () => {
         {/* Country - Fixed to Nigeria */}
         <FormField
           control={form.control}
-          name="address.0"
+          name="address.country"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
@@ -142,7 +206,7 @@ export const StepTwo = () => {
         {/* State */}
         <FormField
           control={form.control}
-          name="address.1"
+          name="address.state"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
@@ -165,6 +229,23 @@ export const StepTwo = () => {
                   ))}
                 </SelectContent>
               </Select>
+              <FormMessage className="text-xs" />
+            </FormItem>
+          )}
+        />
+
+        {/*address string*/}
+        <FormField
+          control={form.control}
+          name="address.address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium text-gray-700">
+                Address <span className="text-red-500">*</span>
+              </FormLabel>
+              <FormControl>
+                <Input type="text" placeholder="Company's Address" {...field} />
+              </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>
           )}

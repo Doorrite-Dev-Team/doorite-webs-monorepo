@@ -1,10 +1,10 @@
-import MenuLayoutClient from "@/components/menu/MenuLayoutClient";
 import MenuList from "@/components/menu/MenuList";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Menu",
+};
 
 export default function MenuPage() {
-  return (
-    <MenuLayoutClient>
-      <MenuList />
-    </MenuLayoutClient>
-  );
+  return <MenuList />;
 }

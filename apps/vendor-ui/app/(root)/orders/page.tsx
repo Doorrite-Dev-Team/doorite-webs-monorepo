@@ -1,11 +1,10 @@
-
 import OrderList from "@/components/order/OrderList";
-import OrdersLayoutClient from "@/components/order/OrdersLayoutClient";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Orders",
+};
 
 export default function OrderPage() {
-  return (
-    <OrdersLayoutClient>
-      <OrderList />
-    </OrdersLayoutClient>
-  );
+  return <OrderList />;
 }

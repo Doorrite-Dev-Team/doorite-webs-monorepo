@@ -2,12 +2,13 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@repo/ui/components/sonner";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Building2 } from "lucide-react";
+import axios, { isAxiosError } from "axios";
 
 import { Form } from "@repo/ui/components/form";
 import { NavigationButtons } from "./components/NavigationButtons";
@@ -16,15 +17,19 @@ import { StepOne } from "./components/StepOne";
 import { StepTwo } from "./components/StepTwo";
 import { StepThree } from "./components/StepThree";
 import { FormValues, Step } from "./components/types";
-import apiClient from "@/libs/api/client";
 
+const STORAGE_KEY = "doorrite-vendor-signup-form-v1";
+
+/**
+ * Validation schema
+ */
 const formSchema = z
   .object({
     businessName: z
       .string()
       .min(4, "Business name must be at least 4 characters")
       .max(30, "Business name must be less than 30 characters"),
-    phoneNumber: z.string().min(1, "Phone number is required"),
+    phoneNumber: z.string().min(7, "Phone number must be at least 7 digits"),
     email: z.string().email("Please enter a valid email address"),
     password: z
       .string()
@@ -34,14 +39,15 @@ const formSchema = z
         "Password must contain at least one uppercase letter, one lowercase letter, and one number",
       ),
     confirmPassword: z.string().min(1, "Please confirm your password"),
-    address: z.tuple([
-      z.string().min(1, "Country is required"),
-      z.string().min(1, "State is required"),
-    ]),
+    address: z.object({
+      country: z.string().min(1, "Country is required"),
+      state: z.string().min(1, "State is required"),
+      address: z.string().min(3, "Address is required"),
+    }),
     category: z
       .array(z.string())
       .min(1, "Please select at least one business category"),
-    logo: z.string().optional(),
+    logo: z.string().optional().nullable(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -68,12 +74,14 @@ const steps: Step[] = [
 
 export default function MultistepSignupForm() {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);
+  const baseUrl = process.env.NEXT_PUBLIC_API_URI;
+
+  const [currentStep, setCurrentStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [pendingFormData, setPendingFormData] = useState<FormValues | null>(
-    null,
-  );
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
+
+  const saveTimerRef = useRef<number | null>(null);
+  const mountedRef = useRef(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -84,12 +92,86 @@ export default function MultistepSignupForm() {
       email: "",
       password: "",
       confirmPassword: "",
-      address: ["nigeria", ""],
+      address: {
+        country: "nigeria",
+        state: "",
+        address: "",
+      },
       category: [],
       logo: "",
     },
   });
 
+  // Load persisted state on mount
+  useEffect(() => {
+    mountedRef.current = true;
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as {
+          values?: Partial<FormValues>;
+          step?: number;
+        };
+
+        if (parsed?.values) {
+          form.reset({
+            ...form.getValues(),
+            ...(parsed.values as Partial<FormValues>),
+          } as FormValues);
+        }
+
+        if (parsed?.step && typeof parsed.step === "number") {
+          setCurrentStep(parsed.step);
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to restore signup form from sessionStorage", err);
+    }
+
+    return () => {
+      mountedRef.current = false;
+      if (saveTimerRef.current) {
+        window.clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, [form]);
+
+  // Save to sessionStorage (debounced)
+  const persistFormState = useCallback(() => {
+    if (!mountedRef.current) return;
+
+    if (saveTimerRef.current) {
+      window.clearTimeout(saveTimerRef.current);
+    }
+
+    saveTimerRef.current = window.setTimeout(() => {
+      try {
+        const toSave = {
+          values: form.getValues(),
+          step: currentStep,
+        };
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+      } catch (err) {
+        console.warn("Failed to persist signup form to sessionStorage", err);
+      } finally {
+        saveTimerRef.current = null;
+      }
+    }, 500);
+  }, [form, currentStep]);
+
+  // Subscribe to form changes and step changes
+  useEffect(() => {
+    persistFormState();
+  }, [currentStep, persistFormState]);
+
+  useEffect(() => {
+    const subscription = form.watch(() => {
+      persistFormState();
+    });
+    return () => subscription.unsubscribe();
+  }, [form, persistFormState]);
+
+  // Helper: fields to validate per step
   const getFieldsToValidate = (step: number): (keyof FormValues)[] => {
     switch (step) {
       case 1:
@@ -111,15 +193,20 @@ export default function MultistepSignupForm() {
     const fieldsToValidate = getFieldsToValidate(currentStep);
     const isStepValid = await form.trigger(fieldsToValidate);
 
-    if (isStepValid) {
-      // If moving from step 2 to step 3, send OTP
-      if (currentStep === 2) {
-        await handleSendOTP();
-      } else {
-        setCurrentStep((prev) => Math.min(prev + 1, steps.length));
-      }
-    } else {
+    if (!isStepValid) {
       toast.error("Please fix the errors before proceeding");
+      return;
+    }
+
+    // Step 1 → Step 2: Just move forward
+    if (currentStep === 1) {
+      setCurrentStep(2);
+      return;
+    }
+
+    // Step 2 → Step 3: Create vendor account first, then send OTP
+    if (currentStep === 2) {
+      await handleCreateVendorAndSendOTP();
     }
   };
 
@@ -127,30 +214,61 @@ export default function MultistepSignupForm() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const handleSendOTP = async () => {
-    const email = form.getValues("email");
+  /**
+   * Create vendor account, then send OTP
+   */
+  const handleCreateVendorAndSendOTP = async () => {
     setIsSubmitting(true);
     setError("");
 
     try {
-      const response = await apiClient.post("/api/auth/send-otp", {
-        email,
-        purpose: "verify",
-      });
-      const data = response.data;
+      const values = form.getValues();
 
-      if (!data.ok) {
-        toast.error(data.message || "Failed to send verification code");
+      // 1. Create vendor account
+      const payload = {
+        businessName: values.businessName,
+        email: values.email,
+        phoneNumber: values.phoneNumber,
+        password: values.password,
+        address: values.address,
+        categoryIds: values.category,
+        logoUrl: values.logo || undefined,
+      };
+
+      const createResponse = await axios.post(
+        `${baseUrl}/auth/create-vendor`,
+        payload,
+      );
+
+      const createData = createResponse.data;
+
+      if (!createData.ok) {
+        toast.error(createData.message || "Failed to create account");
+        setError(createData.message || "Failed to create account");
         return;
       }
 
+      toast.success(createData?.message ?? "Account created successfully");
+
       toast.success("Verification code sent to your email!");
       setCurrentStep(3);
-    } catch (error) {
-      console.error("Error sending OTP:", error);
-      const message = (error as Error).message;
-      toast.error("Failed to send verification code.", {
-        description: `${message} Please try again.`,
+    } catch (err) {
+      // console.error("Error in vendor creation/OTP:", err);
+      // const message =
+      //   err?.response?.data?.message || err?.message || "Unknown error";
+      // toast.error("Failed to proceed", {
+      //   description: message,
+      // });
+      let message;
+      if (isAxiosError(err)) {
+        message = err.response?.data.error || err.message || "Unknown error";
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      message = message || err;
+      console.error("Account creation failed", err);
+      toast.error("Account creation failed", {
+        description: message,
       });
       setError(message);
     } finally {
@@ -158,88 +276,49 @@ export default function MultistepSignupForm() {
     }
   };
 
+  /**
+   * Resend OTP
+   */
   const handleResendOTP = async (): Promise<boolean> => {
     const email = form.getValues("email");
     setError("");
 
     try {
-      const response = await apiClient.post("/api/auth/send-otp", {
+      const response = await axios.post(`${baseUrl}/auth/create-vendor-otp`, {
         email,
-        purpose: "verify",
       });
 
       const data = response.data;
 
       if (!data.ok) {
+        toast.error(data.message || "Failed to resend verification code");
         return false;
       }
 
+      toast.success("Verification code resent!");
       return true;
-    } catch (error) {
-      console.error("Error resending OTP:", error);
-      const message = (error as Error).message;
-      toast.error("Unable to Resend OTP", {
-        description: `Error: ${message}`,
+    } catch (err) {
+      let message;
+
+      if (isAxiosError(err)) {
+        message = err.response?.data?.message || err.message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      message = message || err;
+      console.error("Error resending OTP:", err);
+      toast.error("Unable to resend OTP", {
+        description: message,
       });
       setError(message);
       return false;
     }
   };
 
-  const onSubmit = async (values: FormValues) => {
-    setIsSubmitting(true);
-    setPendingFormData(values);
-    setError("");
-
-    try {
-      // Create the vendor account
-      const response = await apiClient.post("/api/auth/vendor-signup", values);
-
-      const data = response.data;
-
-      if (!data.ok) {
-        toast.error(data.message || "Failed to create account");
-        return;
-      }
-
-      toast.success("Account created successfully!");
-
-      // Redirect to dashboard or login
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Form submission error", error);
-      const message = (error as Error).message;
-      toast.error("Failed to create account", {
-        description: `Error: ${message}, Please try again.`,
-      });
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleVerifySuccess = () => {
-    // After successful OTP verification, submit the form
-    if (pendingFormData) {
-      onSubmit(pendingFormData);
-    } else {
-      // If no pending data, get current form values
-      const values = form.getValues();
-      onSubmit(values);
-    }
-  };
-
-  const handleSubmit = async () => {
-    const isValid = await form.trigger();
-    setError("");
-    if (isValid) {
-      // Move to OTP verification step
-      await handleSendOTP();
-    } else {
-      const message = "Please fix the errors before proceeding";
-      toast.error(message);
-      setError(message);
-    }
+    // Handle successful verification
+    // Redirect to the next step or perform any other action
+    router.push("/log-in");
   };
 
   return (
@@ -247,7 +326,7 @@ export default function MultistepSignupForm() {
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4 shadow-lg">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-2xl mb-4 shadow-lg">
             <Building2 className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -275,14 +354,14 @@ export default function MultistepSignupForm() {
               )}
             </div>
 
-            {/* Only show navigation buttons for steps 1 and 2 */}
+            {/* Navigation buttons for steps 1 and 2 */}
             {currentStep < 3 && (
               <NavigationButtons
                 currentStep={currentStep}
-                totalSteps={steps.length - 1} // Exclude OTP step from normal navigation
+                totalSteps={2}
                 onPrevious={prevStep}
                 onNext={nextStep}
-                onSubmit={handleSubmit}
+                onSubmit={nextStep}
                 isSubmitting={isSubmitting}
               />
             )}
@@ -293,8 +372,8 @@ export default function MultistepSignupForm() {
         {Object.keys(form.formState.errors).length > 0 && (
           <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             <ul className="list-disc space-y-1 pl-5">
-              {Object.values(form.formState.errors).map((error, index) => (
-                <li key={index}>{error?.message as string}</li>
+              {Object.values(form.formState.errors).map((errItem, index) => (
+                <li key={index}>{errItem?.message as string}</li>
               ))}
             </ul>
           </div>
@@ -311,8 +390,8 @@ export default function MultistepSignupForm() {
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
               <Link
-                href="/login"
-                className="font-semibold text-primary hover:text-primary/80 transition-colors"
+                href="/log-in"
+                className="font-semibold text-green-600 hover:text-green-700 transition-colors"
               >
                 Log in
               </Link>

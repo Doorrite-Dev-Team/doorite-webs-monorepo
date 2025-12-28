@@ -2,7 +2,7 @@ import "@repo/ui/globals.css";
 import type { Metadata } from "next";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import { SocketProvider } from "@/context/SocketContext";
+// import { SocketProvider } from "@/providers/socket";
 
 const plus_Jakarta_Sans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Doorite Vendor UI",
   description: "Vendor interface for Doorite",
   icons: {
-    icon: "/icon.ico",
+    icon: "/favicon.ico",
   },
 };
 

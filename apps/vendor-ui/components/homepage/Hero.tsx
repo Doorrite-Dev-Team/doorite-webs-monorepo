@@ -1,17 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { doorriteImage } from "@repo/ui/assets";
 
 export default function Hero() {
-  const router = useRouter();
   return (
     <section className="bg-white px-6 md:px-16 py-12 md:py-20 flex flex-col md:flex-row items-center gap-10">
       {/* Illustration */}
       <div className="flex-1 flex justify-center">
         <Image
-          src="/assets/images/heroImage.png" // replace with your image
-          alt="Delivery Illustration"
+          src={doorriteImage}
+          alt="Doorrite Image"
           width={400}
           height={400}
           className="w-full max-w-sm md:max-w-md"
@@ -31,13 +31,10 @@ export default function Hero() {
         {/* Buttons */}
         <div className="mt-6 flex justify-center md:justify-start gap-4">
           <button className="bg-green-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-800">
-            Explore Platform
+            <Link href="/continue">Explore Platform</Link>
           </button>
-          <button
-            onClick={() => router.push("/continue")}
-            className="bg-gray-100 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200"
-          >
-            Get Started
+          <button className="bg-gray-100 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200">
+            <Link href="/sign-up">Get Started</Link>
           </button>
         </div>
       </div>

@@ -29,6 +29,8 @@ async function forwardRequest(
       searchParams ? `?${searchParams}` : ""
     }`;
 
+    console.log(`Forwarding request to ${targetUrl}`);
+
     // Get cookies from server-side store
     const cookieHeader = await getCookieHeader();
     const accessToken = await getCookieHeader(true);

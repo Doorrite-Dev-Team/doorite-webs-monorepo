@@ -12,6 +12,8 @@ export async function POST(req: NextRequest) {
     let body;
     try {
       body = await req.json();
+
+      console.log(body);
     } catch {
       return NextResponse.json(
         { ok: false, message: "Invalid JSON" },
@@ -26,7 +28,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const response = await fetch(`${API_CONFIG.baseUrl}/auth/login-user`, {
+    const response = await fetch(`${API_CONFIG.baseUrl}/auth/login-vendor`, {
       method: "POST",
       body: JSON.stringify(body),
       headers: { "Content-Type": "application/json" },

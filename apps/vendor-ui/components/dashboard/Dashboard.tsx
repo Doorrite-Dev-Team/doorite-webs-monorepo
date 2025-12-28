@@ -1,60 +1,45 @@
 "use client";
 
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { Bell } from "lucide-react";
 import Image from "next/image";
-import apiClient from "@/libs/api/client";
+// import apiClient from "@/libs/api/client";
 import { useRouter } from "next/navigation";
 import CreateMenuItemForm from "../menu/CreateMenuItemForm";
+import { useAtom } from "jotai";
+import { vendorAtom } from "@/store/vendorAtom";
 
 const Dashboard: FC = () => {
   const router = useRouter();
-  const [vendorName, setVendorName] = useState<string>("Loading...");
-  const [loading, setLoading] = useState<boolean>(true);
+  // const [vendorName, setVendorName] = useState<string>("Loading...");
+  const [vendor] = useAtom(vendorAtom);
+  // const isVendorLog
+  // const [loading, setLoading] = useState<boolean>(true);
 
   const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
-    const fetchVendor = async () => {
-      try {
-        const stored = localStorage.getItem("user");
-        if (!stored) {
-          setVendorName("Guest Vendor");
-          return;
-        }
+  // useEffect(() => {
+  //   const fetchVendor = async () => {
+  //     try {
 
-        const parsed = JSON.parse(stored);
-        const vendor =
-          parsed?.vendor ||
-          parsed?.user ||
-          parsed?.data?.vendor ||
-          parsed?.data?.user ||
-          parsed?.data ||
-          parsed;
+  //       const res = await apiClient.get(`vendors/${vendorId}`);
+  //       const name =
+  //         res.data?.data?.businessName ||
+  //         vendor?.businessName ||
+  //         vendor?.name ||
+  //         "Guest Vendor";
 
-        const vendorId = vendor?.id || vendor?._id;
-        if (!vendorId) {
-          setVendorName("Guest Vendor");
-          return;
-        }
+  //       setVendorName(name);
+  //     } catch (err) {
+  //       console.log(err);
+  //       setVendorName("Guest Vendor");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-        const res = await apiClient.get(`vendors/${vendorId}`);
-        const name =
-          res.data?.data?.businessName ||
-          vendor?.businessName ||
-          vendor?.name ||
-          "Guest Vendor";
-
-        setVendorName(name);
-      } catch (err) {
-        setVendorName("Guest Vendor");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVendor();
-  }, []);
+  //   fetchVendor();
+  // }, []);
 
   return (
     <div className="min-h-screen bg-[#F6F7F6] flex justify-center px-6 py-10">
@@ -62,7 +47,7 @@ const Dashboard: FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-gray-900">
-            Hi, {loading ? "Loading..." : vendorName}
+            Hi, {vendor?.businessName || "Guest Vendor"}
           </h1>
 
           <div className="flex items-center gap-2 bg-white px-4 py-2 shadow-sm rounded-xl cursor-pointer hover:bg-gray-50">
@@ -77,7 +62,7 @@ const Dashboard: FC = () => {
           <div className="bg-white rounded-2xl p-5 shadow-sm flex justify-between items-center">
             <div>
               <p className="text-gray-800 font-medium text-sm">
-                Today's Orders
+                Today&apos;s Orders
               </p>
               <p className="text-green-700 font-bold text-xl mt-1">12</p>
             </div>
@@ -95,7 +80,7 @@ const Dashboard: FC = () => {
           <div className="bg-white rounded-2xl p-5 shadow-sm flex justify-between items-center">
             <div>
               <p className="text-gray-800 font-medium text-sm">
-                Today's Earnings
+                Today&apos;s Earnings
               </p>
               <p className="text-green-700 font-bold text-xl mt-1">$150</p>
             </div>

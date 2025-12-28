@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     // 2. EXPLICITLY DELETE COOKIES
     // This overrides whatever the backend says and ensures frontend cleanup
     nextResponse.cookies.delete(COOKIE_NAME.ACCESS);
-    nextResponse.cookies.delete(COOKIE_NAME.REFRESH);
+    // nextResponse.cookies.delete(COOKIE_NAME.REFRESH);
 
     return nextResponse;
   } catch (error) {

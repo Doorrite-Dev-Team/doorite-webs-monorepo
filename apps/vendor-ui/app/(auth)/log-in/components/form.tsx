@@ -1,7 +1,6 @@
 "use client";
 
 import { showToast } from "@/components/Toast";
-import apiClient from "@/libs/api/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@repo/ui/components/button";
 import {
@@ -15,14 +14,18 @@ import {
 } from "@repo/ui/components/form";
 import { Input } from "@repo/ui/components/input";
 import { toast } from "@repo/ui/components/sonner";
-import { Link, Lock, Mail } from "lucide-react";
-import { useRouter } from "next/router";
+import axios, { isAxiosError } from "axios";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
+import { vendorAtom } from "@/store/vendorAtom";
+import { useAtom } from "jotai";
 
 const formSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -30,6 +33,8 @@ type LoginValues = z.infer<typeof formSchema>;
 
 const LoginForm = () => {
   const [error, setError] = React.useState<string | null>(null);
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [, setVendor] = useAtom(vendorAtom);
   const router = useRouter();
 
   const form = useForm<LoginValues>({
@@ -43,14 +48,23 @@ const LoginForm = () => {
   async function onSubmit(values: LoginValues) {
     setError(null);
     try {
-      // Attempt login (replace with your actual login action)
-      const res = await apiClient.post("/login", {
-        email: values.email,
-        password: values.password,
-      });
+      const res = await axios.post(
+        "/api/auth/log-in",
+        {
+          identifier: values.email,
+          password: values.password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        },
+      );
 
+      console.log(res.data);
       if (!res || !res.data.ok) {
-        const message = "Login failed. Please try again.";
+        const message = res.data?.message || "Login failed. Please try again.";
         showToast({
           message: "Login Failed",
           subtext: message,
@@ -60,12 +74,52 @@ const LoginForm = () => {
         return;
       }
 
-      toast.success("Login Successful");
+      if (!res.data.data.vendor || !res.data.data.vendor.id) {
+        const message = res.data?.message || "Login failed. Please try again.";
+        showToast({
+          message: "Login Failed",
+          subtext: message,
+          type: "error",
+        });
+        setError(message);
+        return;
+      }
+      setVendor(res.data.data.vendor);
 
+      toast.success("Login Successful");
       router.push("/dashboard");
     } catch (error) {
-      const message =
-        (error as Error).message || "An unexpected error occurred.";
+      let message = "Login Failed: An unexpected error occurred.";
+
+      if (isAxiosError(error)) {
+        const status = error.response?.status;
+
+        // Handle 403 Forbidden - Account pending approval
+        if (status === 403) {
+          const errorMessage = error.response?.data?.message || "";
+
+          // Check if it's specifically about pending approval
+          if (
+            errorMessage.toLowerCase().includes("pending") ||
+            errorMessage.toLowerCase().includes("approval") ||
+            errorMessage.toLowerCase().includes("not approved") ||
+            errorMessage.toLowerCase().includes("Login failed".toLowerCase())
+          ) {
+            router.push("/pending-approval");
+            return;
+          }
+
+          message = errorMessage || "Account pending admin approval";
+        } else {
+          message =
+            error.response?.data?.error ||
+            error.response?.data?.message ||
+            error.message;
+        }
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+
       console.error("Login request failed:", error);
       setError(message);
       showToast({
@@ -75,6 +129,7 @@ const LoginForm = () => {
       });
     }
   }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -85,14 +140,12 @@ const LoginForm = () => {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <Input
-                    placeholder="e.g. johndoe@example.com"
-                    type="email"
-                    {...field}
-                  />
-                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 opacity-60 w-4 h-4" />
-                </div>
+                <Input
+                  leftIcon={<Mail className="w-4 h-4" />}
+                  placeholder="e.g. johndoe@example.com"
+                  type="email"
+                  {...field}
+                />
               </FormControl>
               <FormDescription>
                 Use the email associated with your account
@@ -109,10 +162,24 @@ const LoginForm = () => {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <Input placeholder="***********" type="password" {...field} />
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 opacity-60 w-4 h-4" />
-                </div>
+                <Input
+                  leftIcon={<Lock className="w-4 h-4" />}
+                  rightIcon={
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? (
+                        <Eye className="w-4 h-4 cursor-pointer" />
+                      ) : (
+                        <EyeOff className="w-4 h-4 cursor-pointer" />
+                      )}
+                    </button>
+                  }
+                  placeholder="***********"
+                  type={showPassword ? "text" : "password"}
+                  {...field}
+                />
               </FormControl>
               <FormDescription>
                 Enter your password (6+ characters)
@@ -122,7 +189,7 @@ const LoginForm = () => {
           )}
         />
 
-        <div className="flex items-center justify-between">
+        <div className="flex max-sm:flex-col items-center justify-between max-sm:space-y-2">
           <div className="text-sm">
             <Link
               href="/forgot-password"
@@ -135,7 +202,7 @@ const LoginForm = () => {
           <div className="text-sm text-gray-600">
             Don&apos;t have an account?{" "}
             <Link
-              href="/signup"
+              href="/sign-up"
               className="text-primary font-medium hover:underline"
             >
               Sign up

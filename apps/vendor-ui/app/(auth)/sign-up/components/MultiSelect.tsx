@@ -63,16 +63,43 @@ export const MultiSelect = ({
               <span className="text-gray-500">{placeholder}</span>
             ) : (
               selectedOptions.map((option) => (
+                // <Badge
+                //   key={option.value}
+                //   variant="secondary"
+                //   className="bg-primary/10 text-primary hover:bg-primary/20"
+                // >
+                //   {option.label}
+                //   <button
+                //     type="button"
+                //     className="ml-1 hover:text-primary-foreground"
+                //     onMouseDown={(e) => {
+                //       e.preventDefault();
+                //       e.stopPropagation();
+                //     }}
+                //     onClick={(e) => {
+                //       e.preventDefault();
+                //       e.stopPropagation();
+                //       handleRemove(option.value);
+                //     }}
+                //   >
+                //     <X className="h-3 w-3" />
+                //   </button>
+                // </Badge>
                 <Badge
                   key={option.value}
                   variant="secondary"
-                  className="bg-primary/10 text-primary hover:bg-primary/20"
+                  className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center"
                 >
-                  {option.label}
-                  <button
-                    type="button"
-                    className="ml-1 hover:text-primary-foreground"
+                  <span className="select-none">{option.label}</span>
+
+                  {/* <-- REPLACED: Change <button> to <span role="button"> */}
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Remove ${option.label}`}
+                    className="ml-1 hover:text-primary-foreground inline-flex items-center justify-center cursor-pointer"
                     onMouseDown={(e) => {
+                      // Prevent popover from closing or stealing focus
                       e.preventDefault();
                       e.stopPropagation();
                     }}
@@ -81,9 +108,17 @@ export const MultiSelect = ({
                       e.stopPropagation();
                       handleRemove(option.value);
                     }}
+                    onKeyDown={(e) => {
+                      // Allow keyboard activation (Enter or Space)
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleRemove(option.value);
+                      }
+                    }}
                   >
                     <X className="h-3 w-3" />
-                  </button>
+                  </span>
                 </Badge>
               ))
             )}

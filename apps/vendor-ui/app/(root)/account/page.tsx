@@ -1,14 +1,10 @@
-
 import Account from "@/components/account/Account";
-import AccountLayoutClient from "@/components/account/AccountLayoutClient";
+import { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: "Account",
+};
 
-
-export default function EarningPage() {
-  return (
-    <AccountLayoutClient>
-      <Account/>
-     
-    </AccountLayoutClient>
-  );
+export default function AccountPage() {
+  return <Account />;
 }

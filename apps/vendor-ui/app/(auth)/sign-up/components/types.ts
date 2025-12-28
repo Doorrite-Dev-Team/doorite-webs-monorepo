@@ -5,13 +5,22 @@ export interface FormValues {
   email: string;
   password: string;
   confirmPassword: string;
-  address: [string, string];
+  address: {
+    country: string;
+    state: string;
+    address: string;
+  };
   category: string[];
-  logo?: string;
+  logo?: string | null;
 }
 
 export interface Step {
   id: number;
   title: string;
   description: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
 }

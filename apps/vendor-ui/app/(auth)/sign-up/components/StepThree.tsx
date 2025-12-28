@@ -10,7 +10,8 @@ import {
 import { Button } from "@repo/ui/components/button";
 import { Mail, RotateCcw } from "lucide-react";
 import { toast } from "@repo/ui/components/sonner";
-import apiClient from "@/libs/api/client";
+import axios, { isAxiosError } from "axios";
+// import apiClient from "@/libs/api/client";
 
 const OTP_LENGTH = 6;
 const INITIAL_COUNTDOWN = 60;
@@ -43,6 +44,7 @@ export const StepThree = ({
   const [isResending, setIsResending] = useState(false);
   const [countdown, setCountdown] = useState(INITIAL_COUNTDOWN);
   const [resendAttempts, setResendAttempts] = useState(0);
+  const baseUrl = process.env.NEXT_PUBLIC_API_URI;
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -73,7 +75,7 @@ export const StepThree = ({
 
     try {
       // Call your API to verify OTP
-      const response = await apiClient.post("/api/auth/verify-otp", {
+      const response = await axios.post(`${baseUrl}/auth/verify-vendor-otp`, {
         email,
         otp,
         purpose: "verify",
@@ -89,7 +91,18 @@ export const StepThree = ({
       toast.success("Email verified successfully!");
       onVerifySuccess();
     } catch (err) {
-      setError("An error occurred. Please try again." + (err as Error).message);
+      let message;
+      if (isAxiosError(err)) {
+        message = err.response?.data.error || err.message || "Unknown error";
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      message = message || err;
+      console.error("Account creation failed", err);
+      toast.error("Account creation failed", {
+        description: message,
+      });
+      setError(message);
     } finally {
       setIsVerifying(false);
     }
