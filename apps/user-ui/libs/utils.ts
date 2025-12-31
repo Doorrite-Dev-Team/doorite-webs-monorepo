@@ -34,6 +34,7 @@ const parseTimeToMinutes = (timeStr: string): number | null => {
 interface VendorIn {
   openingTime?: string;
   closingTime?: string;
+  isOpen?: boolean;
 }
 
 /**
@@ -41,6 +42,9 @@ interface VendorIn {
  * Handles standard times (9 AM - 5 PM) and overnight shifts (10 PM - 2 AM).
  */
 export const isVendorOpen = (vendor: VendorIn): boolean => {
+  if (vendor.isOpen) {
+    return vendor.isOpen;
+  }
   const openingTime = vendor.openingTime;
   const closingTime = vendor.closingTime;
   // 1. Safety check: If times are missing, we default to closed

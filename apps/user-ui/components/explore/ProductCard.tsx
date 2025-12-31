@@ -97,9 +97,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <CardContent className="p-0 flex flex-col h-full">
           {/* Image Container */}
           <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-            {!imageError && (product.imageUrl || productFallbackImage) ? (
+            {!imageError ? (
               <Image
-                src={product.imageUrl ?? productFallbackImage}
+                src={product.imageUrl ?? "/no-image.png"}
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

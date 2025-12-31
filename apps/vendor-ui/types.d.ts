@@ -118,16 +118,47 @@ declare interface Product {
   };
 }
 
-declare interface OrderItem {
+interface OrderItem {
   id: string;
-  productId: string;
-  variantId?: string;
-  quantity: number; // Prisma Int to number
-  price: number; // Prisma Float to number
+  quantity: number;
+  price: number;
+  product: {
+    name: string;
+    imageUrl?: string;
+    basePrice: number;
+  };
+  variant?: {
+    name: string;
+    price: number;
+  };
+}
 
-  // Denormalized fields for simple display:
-  name: string; // Product/Variant name
-  description?: string;
+interface OrderDetails {
+  id: string;
+  status: string;
+  totalAmount: number;
+  deliveryFee: number;
+  createdAt: string;
+  updatedAt: string;
+  deliveryAddress: {
+    address: string;
+    city?: string;
+    state?: string;
+  };
+  customer: {
+    id: string;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    profileImageUrl?: string;
+  };
+  rider?: {
+    id: string;
+    fullName: string;
+    phoneNumber: string;
+    profileImageUrl?: string;
+  };
+  items: OrderItem[];
 }
 
 declare interface OrderHistory {
@@ -138,27 +169,48 @@ declare interface OrderHistory {
   createdAt: string; // Prisma DateTime to ISO String
 }
 
-declare interface Order {
+// declare interface Order {
+//   id: string;
+//   customerId: string;
+//   vendorId: string;
+//   riderId?: string;
+//   status: OrderStatus; // Use imported OrderStatus
+//   deliveryAddress: Address; // Use imported Address
+//   deliveryVerificationCode?: string;
+//   totalAmount: number; // Prisma Float to number
+//   paymentStatus: PaymentStatus; // Use imported PaymentStatus
+//   placedAt: string; // Prisma DateTime to ISO String
+//   deliveredAt?: string; // Prisma DateTime to ISO String
+
+//   // Relations
+//   items: OrderItem[];
+//   history: OrderHistory[]; // Used for tracking
+
+//   // Derived/Frontend-specific fields:
+//   orderTime: string; // Alias placedAt for display
+//   estimatedDelivery?: string; // Derived
+//   tracking: OrderHistory[]; // Alias history for tracking
+// }
+
+interface Order {
   id: string;
-  customerId: string;
-  vendorId: string;
-  riderId?: string;
-  status: OrderStatus; // Use imported OrderStatus
-  deliveryAddress: Address; // Use imported Address
-  deliveryVerificationCode?: string;
-  totalAmount: number; // Prisma Float to number
-  paymentStatus: PaymentStatus; // Use imported PaymentStatus
-  placedAt: string; // Prisma DateTime to ISO String
-  deliveredAt?: string; // Prisma DateTime to ISO String
-
-  // Relations
-  items: OrderItem[];
-  history: OrderHistory[]; // Used for tracking
-
-  // Derived/Frontend-specific fields:
-  orderTime: string; // Alias placedAt for display
-  estimatedDelivery?: string; // Derived
-  tracking: OrderHistory[]; // Alias history for tracking
+  status: string;
+  totalAmount: number;
+  createdAt: string;
+  customer: {
+    id: string;
+    fullName: string;
+    profileImageUrl?: string;
+  };
+  items: Array<{
+    id: string;
+    quantity: number;
+    price: number;
+    product: {
+      name: string;
+      imageUrl?: string;
+    };
+  }>;
 }
 
 // ===============================
@@ -189,4 +241,23 @@ declare interface ApiResponse<T = any> {
   data?: T;
   message?: string;
   details?: any;
+}
+
+// ===============================
+// Earning
+// ===============================
+declare type Period = "daily" | "weekly" | "monthly";
+
+declare interface ChartDataPoint {
+  label: string;
+  value: number;
+}
+
+declare interface Transaction {
+  id: string;
+  orderId: string;
+  customerName: string;
+  customerAvatar: string | null;
+  amount: number;
+  date: string;
 }

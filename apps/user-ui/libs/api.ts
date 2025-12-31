@@ -1,6 +1,7 @@
 // src/lib/api.ts (or equivalent)
 import { toast } from "@repo/ui/components/sonner";
 import Axios from "./Axios"; // Assuming this is your configured Axios instance
+import { cache } from "react";
 
 interface PasswordForm {
   currentPassword: string;
@@ -54,49 +55,52 @@ interface ReviewsData {
 
 export const api = {
   // ---------------- PRODUCTS ----------------
-  fetchProducts: async (params: Record<string, string>) => {
+  fetchProducts: async (params: string | Record<string, string>) => {
     try {
-      const qs = new URLSearchParams(params).toString();
-      const url = `/products${qs ? `?${qs}` : ""}`;
+      // const qs = new URLSearchParams(params).toString();
+      const url = `/products${params ? `?${params}` : ""}`;
 
       const res: SuccessResponse<{
         products: Product[];
         pagination: Pagination;
       }> = await Axios.get(url);
 
-      return res.data.products || [];
+      return { products: res.data.products, pagination: res.data.pagination };
     } catch (error) {
       toast(`Unable to fetch Products: ${(error as Error).message}`);
-      return [];
+      return { products: [], pagination: { total: 0, page: 1, limit: 10 } };
     }
   },
 
-  fetchProduct: async (id: string) => {
+  fetchProduct: cache(async (id: string): Promise<Product | null> => {
     try {
-      const { data }: SuccessResponse<{ product: Product }> = await Axios.get(
+      if (!id || typeof id !== "string") {
+        throw new Error("Invalid product ID");
+      }
+
+      const res: SuccessResponse<{ product: Product }> = await Axios.get(
         `/products/${id}`,
       );
-
-      return data.product;
+      console.log(res.data);
+      return res.data.product || null;
     } catch (error) {
-      toast(`Unable to fetch Product: ${(error as Error).message}`);
+      console.error(`Failed to fetch product ${id}:`, error);
+      // Only show toast on client side
+      if (typeof window !== "undefined") {
+        toast.error(`Unable to fetch product: ${(error as Error).message}`);
+      }
       return null;
     }
-  },
+  }),
 
   // ---------------- VENDORS ----------------
   fetchVendors: async (params?: string) => {
-    try {
-      const res: SuccessResponse<{
-        vendors: Vendor[];
-        pagination: Pagination;
-      }> = await Axios.get(`/vendors?${params || ""}`);
+    const res: SuccessResponse<{
+      vendors: Vendor[];
+      pagination: Pagination;
+    }> = await Axios.get(`/vendors?${params || ""}`);
 
-      return res.data.vendors || [];
-    } catch (error) {
-      toast(`Unable to fetch Vendors: ${(error as Error).message}`);
-      return [];
-    }
+    return res.data;
   },
 
   fetchVendor: async (id: string) => {
@@ -306,12 +310,10 @@ export const api = {
   // ---------------- REVIEWS ----------------
   fetchReviews: async (vendorId: string) => {
     try {
-      const { data: res }: SuccessResponse<{ data: ReviewsData }> = await Axios(
-        `/vendors/${vendorId}/reviews`,
-      );
-
+      const { data: res }: SuccessResponse<{ reviewsData: ReviewsData }> =
+        await Axios(`/vendors/${vendorId}/reviews`);
       if (!res.ok) throw new Error("Failed to fetch reviews");
-      return res.data;
+      return res.reviewsData;
     } catch (error) {
       throw new Error((error as Error).message);
     }

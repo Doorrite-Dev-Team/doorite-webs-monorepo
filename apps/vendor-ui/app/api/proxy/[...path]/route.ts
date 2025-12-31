@@ -35,10 +35,26 @@ async function forwardRequest(
     const cookieHeader = await getCookieHeader();
     const accessToken = await getCookieHeader(true);
 
+    const getBody = async () => {
+      // 1. Safe JSON parsing
+      let body;
+      try {
+        body = await req.json();
+
+        console.log(body);
+        return body;
+      } catch {
+        return NextResponse.json(
+          { ok: false, message: "Invalid JSON" },
+          { status: 400 },
+        );
+      }
+    };
+
     // Prepare request body (only for mutations)
     const body =
       req.method !== "GET" && req.method !== "HEAD"
-        ? await req.text()
+        ? await getBody()
         : undefined;
 
     // Forward request with timeout

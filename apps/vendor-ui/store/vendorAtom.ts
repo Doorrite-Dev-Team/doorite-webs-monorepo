@@ -9,7 +9,7 @@ export interface AuthVendor {
 }
 
 //This atom is automatically synchronized with localStorage.
-export const vendorAtom = atomWithStorage<AuthVendor | null>(
+export const vendorAtom = atomWithStorage<AuthVendor | Vendor | null>(
   "logged-in-vendor",
   null,
 );

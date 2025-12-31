@@ -2,7 +2,7 @@
 
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
-import { Mail, EyeOff, Eye, Lock } from "lucide-react";
+import { Mail, EyeOff, Eye, Lock, Loader2 } from "lucide-react";
 import React, { useState } from "react";
 // import { loginUser } from "@/actions/auth";
 // import { showToast } from "@/components/Toast";
@@ -53,6 +53,7 @@ const LogingForm = () => {
       }
 
       setUser(res.user);
+      router.refresh();
       router.push("/home");
     } catch (error) {
       let errMsg = "Cannot login";
@@ -122,7 +123,14 @@ const LogingForm = () => {
           className="w-full"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Logging In..." : "Log In"}
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Logging In...
+            </>
+          ) : (
+            "Log In"
+          )}
         </Button>
       </form>
 

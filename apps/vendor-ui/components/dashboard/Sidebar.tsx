@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 const navItems = [
   { name: "Home", icon: Home, href: "/dashboard" },
   { name: "Orders", icon: ListOrdered, href: "/orders" },
-  { name: "Menu", icon: Menu, href: "/menu" },
+  { name: "Poducts", icon: Menu, href: "/products" },
   { name: "Earnings", icon: DollarSign, href: "/earnings" },
   { name: "Account", icon: User, href: "/account" },
 ];

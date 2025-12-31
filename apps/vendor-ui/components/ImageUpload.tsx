@@ -1,4 +1,4 @@
-// src/components/LogoUpload.tsx
+// src/components/ImageUpload.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,14 +6,14 @@ import Image from "next/image";
 import { X, Loader2, Image as ImageIcon, Check, Upload } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import { toast } from "@repo/ui/components/sonner";
-import { UploadButton, UploadDropzone } from "@/lib/uploadthing";
+import { UploadButton, UploadDropzone } from "@/libs/uploadthing";
 
-interface LogoUploadProps {
+interface ImageUploadProps {
   value?: string | null;
   onChange: (value: string | null) => void;
 }
 
-export function LogoUpload({ value, onChange }: LogoUploadProps) {
+export function ImageUpload({ value, onChange }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(value || null);
   const [uploadMode, setUploadMode] = useState<"button" | "dropzone">(
