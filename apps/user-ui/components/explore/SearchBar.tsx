@@ -1,40 +1,37 @@
 "use client";
-
+// components/explore/SearchBar.tsx
 import { Search, X } from "lucide-react";
 import { Input } from "@repo/ui/components/input";
-import { Button } from "@repo/ui/components/button";
+
+interface SearchBarProps {
+  search: string;
+  setSearch: (value: string) => void;
+  placeholder?: string;
+}
 
 export default function SearchBar({
   search,
   setSearch,
-}: {
-  search: string;
-  setSearch: (val: string) => void;
-}) {
+  placeholder,
+}: SearchBarProps) {
   return (
-    <div className="mb-6">
-      <div className="relative">
-        <Search
-          size={20}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-        />
-        <Input
-          value={search}
-          onChange={(e) => setSearch((e.target as HTMLInputElement).value)}
-          placeholder="Search for food, vendors, or items..."
-          className="w-full h-12 pl-12 pr-12 text-base bg-white border-2 border-gray-200 rounded-lg focus:border-primary transition-colors"
-        />
-        {search && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSearch("")}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-          >
-            <X size={16} />
-          </Button>
-        )}
-      </div>
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+      <Input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder={placeholder || "Search products, vendors..."}
+        className="pl-10 pr-10 h-12 text-base rounded-xl border-gray-200 focus:border-primary shadow-sm"
+      />
+      {search && (
+        <button
+          onClick={() => setSearch("")}
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <X className="w-4 h-4 text-gray-500" />
+        </button>
+      )}
     </div>
   );
 }

@@ -73,7 +73,7 @@ declare interface Vendor {
   avrgPreparationTime: string;
 
   // Frontend/Derived fields (not directly in DB, but necessary for UI lists)
-  isOpen: boolean;
+  isOpen?: boolean;
   distance?: number;
   // avrgPreparationTime?: string; // Derived info
 }
@@ -106,6 +106,9 @@ declare interface Product {
   attributes?: Attributes; // Prisma Json to Record<string, any>
   isAvailable: boolean;
   imageUrl: string;
+  rating: number;
+  reviewCount: number;
+  orderCount: number;
 
   // Relations (required for frontend display)
   variants: ProductVariant[];
@@ -114,10 +117,11 @@ declare interface Product {
     id: string;
     businessName: string;
     logoUrl?: string;
-    // isOpen?: boolean;
+    isOpen?: boolean;
     isActive: boolean;
     openingTime: string;
     closingTime: string;
+    deliveryTime: string;
     address?: Address; // Derived from Vendor.address
   };
 }
