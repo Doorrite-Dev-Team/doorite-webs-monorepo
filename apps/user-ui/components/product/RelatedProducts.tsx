@@ -10,7 +10,7 @@ import { cartAtom } from "@/store/cartAtom";
 import { Card, CardContent } from "@repo/ui/components/card";
 import { Button } from "@repo/ui/components/button";
 import { Badge } from "@repo/ui/components/badge";
-import { imageBurger as productFallbackImage } from "@repo/ui/assets";
+// import { imageBurger as productFallbackImage } from "@repo/ui/assets";
 
 interface RelatedProductsProps {
   products: Product[];
@@ -89,7 +89,7 @@ export default function RelatedProducts({ products }: RelatedProductsProps) {
                 {/* Product Image */}
                 <div className="relative w-full aspect-square bg-gradient-to-br from-gray-100 to-gray-200">
                   <Image
-                    src={product.imageUrl || productFallbackImage}
+                    src={product.imageUrl || "/no-image.png"}
                     alt={product.name}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

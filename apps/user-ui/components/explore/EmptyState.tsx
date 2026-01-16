@@ -1,36 +1,58 @@
 "use client";
 
-import { Card, CardContent } from "@repo/ui/components/card";
+// components/explore/EmptyState.tsx
+import { Package, Search, Store } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
-import { Search } from "lucide-react";
+
+interface EmptyStateProps {
+  hasSearch: boolean;
+  searchTerm: string;
+  onClear: () => void;
+  mode: "products" | "vendors";
+}
 
 export default function EmptyState({
   hasSearch,
   searchTerm,
   onClear,
-}: {
-  hasSearch: boolean;
-  searchTerm: string;
-  onClear: () => void;
-}) {
+  mode,
+}: EmptyStateProps) {
+  const Icon = mode === "vendors" ? Store : Package;
+  const itemType = mode === "vendors" ? "vendors" : "products";
+
   return (
-    <Card className="border-0 bg-white">
-      <CardContent className="p-12 text-center">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+        {hasSearch ? (
           <Search className="w-8 h-8 text-gray-400" />
-        </div>
-        <h3 className="text-xl font-semibold text-gray-700 mb-3">
-          {hasSearch ? "No results found" : "No vendors available"}
-        </h3>
-        <p className="text-gray-500 mb-6 max-w-sm mx-auto">
-          {hasSearch
-            ? `We couldn't find anything matching "${searchTerm}". Try different keywords or clear your filters.`
-            : "Try adjusting your filters or search for something specific."}
-        </p>
-        <Button onClick={onClear} className="bg-primary hover:bg-primary/90">
-          {hasSearch ? "Clear search & filters" : "Reset filters"}
+        ) : (
+          <Icon className="w-8 h-8 text-gray-400" />
+        )}
+      </div>
+
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        {hasSearch ? `No ${itemType} found` : `No ${itemType} available`}
+      </h3>
+
+      <p className="text-gray-500 text-center max-w-md mb-6">
+        {hasSearch ? (
+          <>
+            We couldn&apos;t find any {itemType} matching{" "}
+            <q>
+              <span className="font-medium">{searchTerm}</span>
+            </q>
+            . Try adjusting your search or filters.
+          </>
+        ) : (
+          `There are no ${itemType} available at the moment. Please check back later.`
+        )}
+      </p>
+
+      {hasSearch && (
+        <Button onClick={onClear} variant="outline">
+          Clear Filter
         </Button>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }

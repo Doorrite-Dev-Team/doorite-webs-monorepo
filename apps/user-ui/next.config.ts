@@ -7,11 +7,20 @@ const withMDX = createMdx({
 });
 
 const nextConfig: NextConfig = {
+  typedRoutes: true,
   experimental: {
-    typedRoutes: true,
-    typedEnv: true,
+    typedEnv: false,
   },
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.ufs.sh",
+        pathname: "/f/**",
+      },
+    ],
+  },
 };
 
 export default withMDX(nextConfig);

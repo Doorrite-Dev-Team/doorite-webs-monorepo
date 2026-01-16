@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@repo/ui/components/select";
 import { MapPin, Loader2 } from "lucide-react";
-import { LogoUpload } from "@/components/LogoUpload";
+import { ImageUpload } from "@/components/ImageUpload";
 import { FormValues } from "./types";
 import { useState, useEffect } from "react";
 import { MultiSelect } from "./MultiSelect";
@@ -302,7 +302,7 @@ export const StepTwo = () => {
               Business Logo
             </FormLabel>
             <FormControl>
-              <LogoUpload value={field.value} onChange={field.onChange} />
+              <ImageUpload value={field.value} onChange={field.onChange} />
             </FormControl>
             <FormMessage className="text-xs" />
             <p className="text-xs text-gray-500 mt-1">

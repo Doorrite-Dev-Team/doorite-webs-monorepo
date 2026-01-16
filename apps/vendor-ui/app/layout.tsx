@@ -2,6 +2,8 @@ import "@repo/ui/globals.css";
 import type { Metadata } from "next";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import QueryProvider from "@/providers/query";
+import { Toaster } from "@repo/ui/components/sonner";
 // import { SocketProvider } from "@/providers/socket";
 
 const plus_Jakarta_Sans = Plus_Jakarta_Sans({
@@ -30,7 +32,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${plus_Jakarta_Sans.variable} ${geistMono.variable}`}>
-        {children}
+        <QueryProvider>
+          {children}
+          <Toaster position="top-right" />
+        </QueryProvider>
       </body>
     </html>
   );

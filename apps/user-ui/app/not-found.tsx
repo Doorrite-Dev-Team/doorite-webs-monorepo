@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Home, ArrowLeft, UtensilsCrossed } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
+import BackButton from "@/components/go-back";
 
 export default function NotFound() {
   return (
@@ -37,13 +38,7 @@ export default function NotFound() {
               Go Home
             </Link>
           </Button>
-
-          <Button asChild variant="outline" size="lg" className="gap-2">
-            <Link href="javascript:history.back()">
-              <ArrowLeft className="w-4 h-4" />
-              Go Back
-            </Link>
-          </Button>
+          <BackButton />
         </div>
 
         {/* Helpful Links */}

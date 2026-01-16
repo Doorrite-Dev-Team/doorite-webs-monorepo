@@ -91,7 +91,7 @@ export const api = {
     try {
       const { data }: SuccessResponse<{ product: Product }> =
         await apiClient.get(`/products/${id}`);
-
+      console.log(data);
       return data.product;
     } catch (error) {
       if (typeof window !== "undefined")
@@ -142,7 +142,7 @@ export const api = {
 
       return res.data.products || [];
     } catch (error) {
-      if (window)
+      if (typeof window !== "undefined")
         toast(`Unable to fetch vendor products: ${(error as Error).message}`);
       console.warn(`Unable to fetch Order: ${(error as Error).message}`);
       return [];
