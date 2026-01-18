@@ -1,7 +1,7 @@
 // components/vendor/RelatedVendors.tsx
 "use client";
 
-import VendorCard from "@/components/VendorCard";
+import VendorCard from "@/components/vendor/VendorCard";
 
 interface RelatedVendorsProps {
   vendors: Vendor[];

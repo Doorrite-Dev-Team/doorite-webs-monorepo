@@ -152,10 +152,10 @@ async function forwardRequest(
     });
 
     return nextResponse;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Proxy] Request failed:", error);
 
-    if (error.name === "AbortError") {
+    if ((error as Error).name === "AbortError") {
       return createErrorResponse({ message: "Request timeout" }, 504);
     }
 

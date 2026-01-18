@@ -1,8 +1,8 @@
 // app/not-found.tsx
 import Link from "next/link";
-import { Home, ArrowLeft, UtensilsCrossed } from "lucide-react";
+import { Home, UtensilsCrossed } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
-import BackButton from "@/components/go-back";
+import BackButton from "@/components/navigations/go-back";
 
 export default function NotFound() {
   return (

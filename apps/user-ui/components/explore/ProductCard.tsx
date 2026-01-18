@@ -13,7 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { imageBurger as productFallbackImage } from "@repo/ui/assets";
+// import { imageBurger as productFallbackImage } from "@repo/ui/assets";
 import { Card, CardContent } from "@repo/ui/components/card";
 import {
   Avatar,
@@ -68,7 +68,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
             name: product.name,
             // description: product.description,
             price: product.basePrice,
-            vendor_name: product.vendor.businessName,
+            vendorName: product.vendor.businessName,
+            vendorId: product.vendorId,
             quantity: 1,
           },
         ]);

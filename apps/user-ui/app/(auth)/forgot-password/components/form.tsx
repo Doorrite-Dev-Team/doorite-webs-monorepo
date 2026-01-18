@@ -1,7 +1,7 @@
 "use client";
 
 import { forgotPassword } from "@/actions/auth";
-import VerifyOTP from "@/components/verify-otp"; // Adjust path as per your project structure
+import VerifyOTP from "@/components/ui/verify-otp"; // Adjust path as per your project structure
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Mail } from "lucide-react";
@@ -48,7 +48,7 @@ export default function ForgotPasswordForm() {
     } catch (err) {
       setErrorMessage(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.message || "An error occurred. Please try again."
+        (err as any)?.message || "An error occurred. Please try again.",
       );
     }
   });

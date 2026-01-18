@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useDebounceValue } from "usehooks-ts";
 import { parseAsString, parseAsBoolean, useQueryStates } from "nuqs";
 import { api } from "@/libs/api";
-import VendorCard from "@/components/VendorCard";
+import VendorCard from "@/components/vendor/VendorCard";
 import LoadingSkeleton from "@/components/explore/LoadingSkeleton";
 import EmptyState from "@/components/explore/EmptyState";
 import { Switch } from "@repo/ui/components/switch"; // Assuming you have UI components

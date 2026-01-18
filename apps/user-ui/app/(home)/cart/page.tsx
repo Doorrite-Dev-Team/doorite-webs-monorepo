@@ -1,6 +1,5 @@
 "use client";
 
-import { useAtom } from "jotai";
 import {
   AlertCircle,
   ArrowLeft,
@@ -8,14 +7,11 @@ import {
   Plus,
   ShoppingCart,
   Store,
-  Tag,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-
-import { cartAtom, EmptyCartAtom, totalPriceAtom } from "@/store/cartAtom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,71 +26,26 @@ import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import { Card, CardContent } from "@repo/ui/components/card";
 import { Separator } from "@repo/ui/components/separator";
+import { useCart } from "@/hooks/use-cart";
 
 export default function CartPage() {
   const router = useRouter();
-  const [cart, setCart] = useAtom(cartAtom);
-  const [totalPrice] = useAtom(totalPriceAtom);
-  const [, emptyCart] = useAtom(EmptyCartAtom);
   const [showClearDialog, setShowClearDialog] = React.useState(false);
-  const [removingItemId, setRemovingItemId] = React.useState<string | null>(
-    null,
-  );
 
-  // Group items by vendor
-  const groupedByVendor = React.useMemo(() => {
-    const groups: Record<string, CartItem[]> = {};
-    cart.forEach((item) => {
-      if (!groups[item.vendor_name]) {
-        groups[item.vendor_name] = [];
-      }
-      groups[item.vendor_name]?.push(item);
-    });
-    return groups;
-  }, [cart]);
-
-  const updateQuantity = React.useCallback(
-    (id: string, delta: number) => {
-      setCart((prev) =>
-        prev
-          .map((item) =>
-            item.id === id
-              ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-              : item,
-          )
-          .filter((item) => item.quantity > 0),
-      );
-    },
-    [setCart],
-  );
-
-  const removeItem = React.useCallback(
-    (id: string) => {
-      setRemovingItemId(id);
-      setTimeout(() => {
-        setCart((prev) => prev.filter((item) => item.id !== id));
-        setRemovingItemId(null);
-      }, 300);
-    },
-    [setCart],
-  );
-
-  const handleClearCart = React.useCallback(() => {
-    emptyCart();
-    setShowClearDialog(false);
-  }, [emptyCart]);
-
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const deliveryFee = cart.length > 0 ? 3.99 : 0;
-  const serviceFee = cart.length > 0 ? 1.99 : 0;
-  const subtotal = totalPrice;
-  const total = subtotal + deliveryFee + serviceFee;
+  const {
+    cart,
+    clearCart,
+    updateQuantity,
+    removeItem,
+    getTotals,
+    getGroupedItems,
+    itemCount,
+  } = useCart();
 
   if (cart.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container max-w-4xl mx-auto px-4 py-8">
-          {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <Link
               href="/explore"
@@ -105,7 +56,6 @@ export default function CartPage() {
             </Link>
           </div>
 
-          {/* Empty State */}
           <Card className="border-0 shadow-lg">
             <CardContent className="p-12 text-center">
               <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-100 mb-6">
@@ -136,21 +86,21 @@ export default function CartPage() {
     <div className="min-h-screen bg-gray-50 pb-32 sm:pb-8">
       <div className="container max-w-6xl mx-auto px-4 py-6 sm:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 sm:mb-8">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/home"
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              className="shrink-0 flex items-center gap-2 text-gray-600 hover:text-gray-900"
             >
               <ArrowLeft className="w-5 h-5" />
               <span className="hidden sm:inline font-medium">Back</span>
             </Link>
             <Separator orientation="vertical" className="h-6 hidden sm:block" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            <h1 className="text-xl sm:text-3xl font-bold text-gray-900 truncate">
               Your Cart
             </h1>
-            <Badge variant="secondary" className="text-sm">
-              {totalItems} {totalItems === 1 ? "item" : "items"}
+            <Badge variant="secondary" className="shrink-0">
+              {itemCount}
             </Badge>
           </div>
 
@@ -158,114 +108,97 @@ export default function CartPage() {
             variant="outline"
             size="sm"
             onClick={() => setShowClearDialog(true)}
-            className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="shrink-0 gap-2 text-red-600 hover:bg-red-50"
           >
             <Trash2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Clear Cart</span>
+            <span className="hidden sm:inline">Clear</span>
           </Button>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-6">
-            {Object.entries(groupedByVendor).map(([vendorName, items]) => (
+          <div className="lg:col-span-2 space-y-6 min-w-0">
+            {Object.entries(getGroupedItems()).map(([vendorId, items]) => (
               <Card
-                key={vendorName}
+                key={vendorId}
                 className="border-0 shadow-lg overflow-hidden"
               >
                 <CardContent className="p-0">
-                  {/* Vendor Header */}
-                  <div className="bg-gray-50 border-b px-4 sm:px-6 py-3">
-                    <div className="flex items-center gap-2">
-                      <Store className="w-5 h-5 text-primary" />
-                      <h3 className="font-semibold text-gray-900">
-                        {vendorName}
+                  <div className="bg-gray-50 border-b px-4 sm:px-6 py-3 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Store className="w-4 h-4 text-primary shrink-0" />
+                      <h3 className="font-semibold text-gray-900 truncate">
+                        {vendorId}
                       </h3>
-                      <Badge variant="outline" className="ml-auto text-xs">
-                        {items.length} {items.length === 1 ? "item" : "items"}
-                      </Badge>
                     </div>
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 uppercase text-[10px]"
+                    >
+                      {items.length} {items.length === 1 ? "item" : "items"}
+                    </Badge>
                   </div>
 
-                  {/* Items List */}
                   <div className="divide-y">
                     {items.map((item) => (
-                      <div
-                        key={item.id}
-                        className={`p-4 sm:p-6 transition-all ${
-                          removingItemId === item.id
-                            ? "opacity-0 scale-95"
-                            : "opacity-100 scale-100"
-                        }`}
-                      >
-                        <div className="flex gap-4">
-                          {/* Item Info */}
+                      <div key={item.id} className="p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row gap-4">
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-gray-900 mb-1 line-clamp-2">
+                            <h4 className="font-semibold text-gray-900 mb-1 break-words">
                               {item.name}
                             </h4>
-                            {/*{item.description && (
-                              <p className="text-sm text-gray-600 line-clamp-2 mb-3">
-                                {item.description}
-                              </p>
-                            )}*/}
 
-                            <div className="flex items-center justify-between gap-3 flex-wrap">
-                              {/* Price */}
-                              <div className="flex items-baseline gap-2">
-                                <span className="text-xl font-bold text-gray-900">
-                                  ₦{item.price.toFixed(2)}
+                            <div className="flex items-center justify-between gap-4 flex-wrap mt-4">
+                              <div className="flex items-baseline gap-1.5 shrink-0">
+                                <span className="text-lg font-bold text-gray-900">
+                                  ₦{item.price.toLocaleString()}
                                 </span>
-                                <span className="text-sm text-gray-500">
+                                <span className="text-xs text-gray-500 italic">
                                   each
                                 </span>
                               </div>
 
-                              {/* Quantity Controls */}
-                              <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center bg-gray-100 rounded-lg p-1 border">
                                   <Button
-                                    size="sm"
+                                    size="icon"
                                     variant="ghost"
-                                    className="h-8 w-8 p-0 hover:bg-white"
+                                    className="h-7 w-7 p-0"
                                     onClick={() => updateQuantity(item.id, -1)}
                                   >
-                                    <Minus className="w-4 h-4" />
+                                    <Minus className="w-3.5 h-3.5" />
                                   </Button>
-                                  <span className="text-sm font-semibold min-w-[32px] text-center">
+                                  <span className="text-sm font-bold w-8 text-center">
                                     {item.quantity}
                                   </span>
                                   <Button
-                                    size="sm"
+                                    size="icon"
                                     variant="ghost"
-                                    className="h-8 w-8 p-0 hover:bg-white"
+                                    className="h-7 w-7 p-0"
                                     onClick={() => updateQuantity(item.id, 1)}
                                   >
-                                    <Plus className="w-4 h-4" />
+                                    <Plus className="w-3.5 h-3.5" />
                                   </Button>
                                 </div>
 
                                 <Button
-                                  size="sm"
+                                  size="icon"
                                   variant="ghost"
                                   onClick={() => removeItem(item.id)}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2"
+                                  className="text-red-500 h-9 w-9"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
                               </div>
                             </div>
 
-                            {/* Subtotal */}
-                            <div className="mt-3 pt-3 border-t">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">
-                                  Subtotal:
-                                </span>
-                                <span className="text-lg font-bold text-primary">
-                                  ₦{(item.price * item.quantity).toFixed(2)}
-                                </span>
-                              </div>
+                            <div className="mt-4 pt-3 border-t border-dashed flex items-center justify-between">
+                              <span className="text-xs text-gray-500 uppercase font-medium">
+                                Line Total
+                              </span>
+                              <span className="text-lg font-bold text-primary">
+                                ₦{(item.price * item.quantity).toLocaleString()}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -275,99 +208,63 @@ export default function CartPage() {
                 </CardContent>
               </Card>
             ))}
-
-            {/* Promo Code - Mobile */}
-            <Card className="lg:hidden border-0 shadow-lg">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Tag className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-gray-900">Promo Code</h3>
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Enter promo code"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  />
-                  <Button variant="outline">Apply</Button>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
-          {/* Order Summary - Sticky on Desktop */}
-          <div className="lg:col-span-1">
+          {/* Sidebar */}
+          <div className="lg:col-span-1 min-w-0">
             <div className="lg:sticky lg:top-6 space-y-4">
               <Card className="border-0 shadow-lg">
-                <CardContent className="p-6 space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
+                <CardContent className="p-6 space-y-6">
+                  <h3 className="text-lg font-bold text-gray-900">
                     Order Summary
                   </h3>
 
                   <div className="space-y-3">
-                    <div className="flex justify-between text-gray-700">
-                      <span>Subtotal ({totalItems} items)</span>
-                      <span className="font-medium">
-                        ${subtotal.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-gray-700">
-                      <span>Delivery Fee</span>
-                      <span className="font-medium">
-                        ${deliveryFee.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-gray-700">
-                      <span>Service Fee</span>
-                      <span className="font-medium">
-                        ${serviceFee.toFixed(2)}
-                      </span>
-                    </div>
+                    {[
+                      {
+                        label: `Subtotal (${itemCount})`,
+                        value: getTotals().subtotal,
+                      },
+                      { label: "Delivery Fee", value: getTotals().deliveryFee },
+                      { label: "Service Fee", value: getTotals().serviceFee },
+                    ].map((row) => (
+                      <div
+                        key={row.label}
+                        className="flex justify-between text-sm text-gray-600"
+                      >
+                        <span>{row.label}</span>
+                        <span className="font-semibold text-gray-900">
+                          ₦{row.value.toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
 
-                    <Separator />
+                    <Separator className="my-4" />
 
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-lg font-semibold text-gray-900">
+                    <div className="flex justify-between items-center">
+                      <span className="text-base font-bold text-gray-900">
                         Total
                       </span>
-                      <span className="text-2xl font-bold text-primary">
-                        ${total.toFixed(2)}
+                      <span className="text-2xl font-black text-primary italic">
+                        ₦{getTotals().total.toLocaleString()}
                       </span>
                     </div>
                   </div>
 
                   <Button
                     size="lg"
-                    className="w-full h-12 text-base font-semibold"
+                    className="w-full h-14 text-base font-bold shadow-md"
                     onClick={() => router.push("/checkout")}
                   >
-                    Proceed to Checkout
+                    Checkout Now
                   </Button>
 
-                  <div className="flex items-start gap-2 text-xs text-gray-600 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <p>
-                      Your order will be confirmed after payment. Estimated
-                      delivery time will be shown at checkout.
+                  <div className="flex gap-3 text-xs text-blue-700 bg-blue-50/50 border border-blue-100 rounded-xl p-4">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <p className="leading-relaxed">
+                      Final total is subject to delivery address verification at
+                      checkout.
                     </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Promo Code - Desktop */}
-              <Card className="hidden lg:block border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Tag className="w-5 h-5 text-primary" />
-                    <h3 className="font-semibold text-gray-900">Promo Code</h3>
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Enter code"
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
-                    <Button variant="outline">Apply</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -376,42 +273,43 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* Mobile Checkout Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
-        <div className="container max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-gray-600">Total</span>
-            <span className="text-2xl font-bold text-primary">
-              ${total.toFixed(2)}
+      {/* Mobile Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t shadow-2xl z-50 px-4 py-4 safe-area-bottom">
+        <div className="flex items-center justify-between gap-4 max-w-4xl mx-auto">
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] uppercase font-bold text-gray-400 leading-none">
+              Total
+            </span>
+            <span className="text-xl font-black text-primary truncate">
+              ₦{getTotals().total.toLocaleString()}
             </span>
           </div>
           <Button
             size="lg"
-            className="w-full h-12 text-base font-semibold"
+            className="flex-1 max-w-[200px] h-12 font-bold"
             onClick={() => router.push("/checkout")}
           >
-            Proceed to Checkout
+            Checkout
           </Button>
         </div>
       </div>
 
-      {/* Clear Cart Dialog */}
       <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Clear Cart?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove all items from your cart? This
-              action cannot be undone.
+              Are you sure you want to remove all items? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleClearCart}
-              className="bg-red-600 hover:bg-red-700"
+              onClick={clearCart}
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
-              Clear Cart
+              Clear Everything
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

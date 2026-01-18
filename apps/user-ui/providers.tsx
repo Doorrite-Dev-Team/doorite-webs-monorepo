@@ -4,6 +4,7 @@ import { Provider } from "jotai";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { SidebarProvider } from "@repo/ui/components/sidebar";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -21,15 +22,17 @@ const Providers = ({ children }: ProvidersProps) => {
     },
   });
   return (
-    <Provider>
-      <QueryClientProvider client={queryClient}>
-        <NuqsAdapter>
-          {children}
-          <ReactQueryDevtools initialIsOpen={false} />
-        </NuqsAdapter>
-        {/* The rest of your application */}
-      </QueryClientProvider>
-    </Provider>
+    <SidebarProvider>
+      <Provider>
+        <QueryClientProvider client={queryClient}>
+          <NuqsAdapter>
+            {children}
+            <ReactQueryDevtools initialIsOpen={false} />
+          </NuqsAdapter>
+          {/* The rest of your application */}
+        </QueryClientProvider>
+      </Provider>
+    </SidebarProvider>
   );
 };
 

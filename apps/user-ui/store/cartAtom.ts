@@ -1,49 +1,39 @@
 import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 
-const initialcart: CartItem[] = [
-  {
-    id: "1",
-    name: "Classic Cheeseburger",
-    price: 12.99,
-    quantity: 1,
-    vendor_name: "Burger Palace",
-  },
-  {
-    id: "2",
-    name: "Large Fries",
-    price: 8.99,
-    quantity: 2,
-    vendor_name: "Burger Palace",
-  },
-  {
-    id: "3",
-    name: "Crispy Chicken Sandwich",
-    price: 14.99,
-    quantity: 1,
-    vendor_name: "Chicken Co.",
-  },
-  {
-    id: "5",
-    name: "Coke",
-    price: 3.99,
-    quantity: 2,
-    vendor_name: "Burger Palace",
-  },
-];
-export const cartAtom = atom<CartItem[]>(initialcart);
+// Persisted atom
+export const cartAtom = atomWithStorage<CartItem[]>("cart", []);
 
 export const totalCartAtom = atom((get) => {
   const cart = get(cartAtom);
-
-  return cart.length;
+  return cart.reduce((acc, item) => acc + item.quantity, 0);
 });
 
 export const totalPriceAtom = atom((get) => {
   const cart = get(cartAtom);
-
-  return cart.map((p) => p.price).reduce((a, b) => a + b, 0);
+  return cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 });
 
 export const EmptyCartAtom = atom(null, (_, set) => {
   set(cartAtom, []);
 });
+
+export const hasConflict = atom<VendorConflictModalProps | null>(null);
+
+// Interfaces
+export interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  vendor_name: string;
+}
+
+export interface VendorConflictModalProps {
+  isOpen: boolean;
+  currentVendor: string | null;
+  newVendor: string;
+  onContinueWithCart: () => void;
+  onSwitchVendor: () => void;
+  onCancel: () => void;
+}

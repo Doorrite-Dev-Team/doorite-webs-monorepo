@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useDebounceValue } from "usehooks-ts";
 import { parseAsString, parseAsBoolean, useQueryStates } from "nuqs";
 import { api } from "@/libs/api";
-import ProductCard from "@/components/ProductCard";
+import ProductCard from "@/components/product/ProductCard";
 import LoadingSkeleton from "@/components/explore/LoadingSkeleton";
 import EmptyState from "@/components/explore/EmptyState";
 import FilterControls from "@/components/explore/FilterControls";

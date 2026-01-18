@@ -7,7 +7,52 @@ import { Notification, NotificationState } from "@/types/notification";
 export const notificationStateAtom = atomWithStorage<NotificationState>(
   "doorrite-vendor-notifications",
   { notifications: [], unreadCount: 0, lastSync: null },
-  // ... (Keep your existing getItem/setItem logic here for safety)
+  {
+    getItem: (key, initialValue) => {
+      try {
+        const item = localStorage.getItem(key);
+        if (!item) return initialValue;
+
+        const parsed = JSON.parse(item) as NotificationState;
+
+        // Cleanup expired notifications
+        const now = new Date().toISOString();
+        const validNotifications = parsed.notifications.filter(
+          (n: Notification) => !n.expiresAt || n.expiresAt > now,
+        );
+
+        return {
+          notifications: validNotifications,
+          lastSync: parsed.lastSync,
+          unreadCount: validNotifications.filter((n: Notification) => !n.read)
+            .length,
+        };
+      } catch (error) {
+        console.error(
+          "Failed to parse notifications from localStorage:",
+          error,
+        );
+        return initialValue;
+      }
+    },
+    setItem: (key, value) => {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (error) {
+        console.error("Failed to save notifications to localStorage:", error);
+      }
+    },
+    removeItem: (key) => {
+      try {
+        localStorage.removeItem(key);
+      } catch (error) {
+        console.error(
+          "Failed to remove notifications from localStorage:",
+          error,
+        );
+      }
+    },
+  },
 );
 
 // 2. Volatile State for "Active Urgent Order" (Triggers Dialog)

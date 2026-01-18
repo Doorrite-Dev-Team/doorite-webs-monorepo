@@ -1,54 +1,116 @@
 "use client";
 
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
 // Assuming these are defined in your project
 import {
-  DeliveryAddressCard,
   OrderItemsCard,
   OrderSummaryCard,
   PaymentMethodCard,
 } from "@/components/checkout/cards";
-import { AddressDialog, SuccessDialog } from "@/components/checkout/dialogs";
-import { cartAtom, EmptyCartAtom, totalPriceAtom } from "@/store/cartAtom";
-// import Axios from "@/libs/Axios";
+import { SuccessDialog } from "@/components/checkout/dialogs";
+import { userAtom } from "@/store/userAtom";
+import AddressSelection from "@/components/checkout/AddressSelection";
+import CheckoutAddressDialog from "@/components/checkout/CheckoutAddressDialog";
+import { useCart } from "@/hooks/use-cart";
 import { Route } from "next";
 import { apiClient } from "@/libs/api-client";
+import { toast } from "@repo/ui/components/sonner";
+
+// Type definitions for checkout
+interface CheckoutAddressData {
+  fullName: string;
+  phone: string;
+  email: string;
+  address: string;
+  state: string;
+  country: string;
+  coordinates?: Coordinates | null;
+  instructions?: string;
+}
+
+interface CheckoutContactInfo {
+  fullName: string;
+  phone: string;
+  email: string;
+  instructions?: string;
+}
 
 // --- Main Checkout Page Component ---
 
 export default function CheckoutPage() {
   const router = useRouter();
-  // Cart state and totals
-  const [cart] = useAtom<CartItem[]>(cartAtom);
-  const [totalPrice] = useAtom(totalPriceAtom);
-  const [, emptyCart] = useAtom(EmptyCartAtom);
+  const user = useAtomValue(userAtom);
+
+  // Cart hook
+  const { cart, clearCart, getTotals } = useCart();
 
   // Local state
   const [paymentMethod, setPaymentMethod] =
-    React.useState<ClientPaymentMethod>("paystack");
-  const [isProcessing, setIsProcessing] = React.useState(false);
+    React.useState<BackendPaymentMethod | null>(null);
   const [showSuccessDialog, setShowSuccessDialog] = React.useState(false);
   const [showAddressDialog, setShowAddressDialog] = React.useState(false);
-  const [deliveryAddress, setDeliveryAddress] =
-    React.useState<DeliveryAddressForm>({
-      fullName: "",
-      phone: "",
-      email: "",
-      address: "Campus Address",
-      building: "Dormitory A",
-      room: "201",
-      instructions: "",
-    });
+  const [isProcessing, setIsProcessing] = React.useState(false);
 
-  // Fee calculation (client-side display only, backend must re-calculate for integrity)
-  const subtotal = totalPrice;
-  const deliveryFee = cart.length > 0 ? 3.99 : 0;
-  const serviceFee = cart.length > 0 ? 1.99 : 0;
-  const total = subtotal + deliveryFee + serviceFee;
+  // Address state
+  const [selectedAddress, setSelectedAddress] = React.useState<Address | null>(
+    null,
+  );
+  const [contactInfo, setContactInfo] = React.useState<{
+    fullName: string;
+    phone: string;
+    email: string;
+    instructions?: string;
+  }>({
+    fullName: user?.fullName || "",
+    phone: user?.phoneNumber || "",
+    email: user?.email || "",
+    instructions: "",
+  });
+
+  const [newAddressData, setNewAddressData] =
+    React.useState<CheckoutAddressData | null>(null);
+
+  // Calculate delivery address for API submission
+  const getDeliveryAddress = (): Address => {
+    if (selectedAddress) {
+      return {
+        ...selectedAddress,
+        // Override contact info with current checkout data
+        ...contactInfo,
+      };
+    } else if (newAddressData) {
+      return {
+        address: newAddressData.address,
+        state: newAddressData.state,
+        country: newAddressData.country,
+        coordinates: newAddressData.coordinates || { lat: 0, long: 0 },
+      };
+    }
+    // Fallback - shouldn't happen
+    return {
+      address: "",
+      state: "",
+      country: "",
+      coordinates: { lat: 0, long: 0 },
+    };
+  };
+
+  // Get contact info for order submission
+  const getOrderContactInfo = () => {
+    if (newAddressData) {
+      return {
+        fullName: newAddressData.fullName,
+        phone: newAddressData.phone,
+        email: newAddressData.email,
+        instructions: newAddressData.instructions,
+      };
+    }
+    return contactInfo;
+  };
 
   // Redirect if cart is empty
   React.useEffect(() => {
@@ -56,6 +118,27 @@ export default function CheckoutPage() {
       router.push("/cart");
     }
   }, [cart.length, router, showSuccessDialog]);
+
+  // Check if user has address data
+  const hasCompleteAddress = selectedAddress || newAddressData;
+
+  // Handle address selection
+  const handleAddressSelect = (
+    address: Address | null,
+    contactInfo?: CheckoutContactInfo,
+  ) => {
+    setSelectedAddress(address);
+    if (address && contactInfo) {
+      setContactInfo(contactInfo);
+    }
+    setNewAddressData(null);
+  };
+
+  // Handle new address submission
+  const handleNewAddress = (addressData: CheckoutAddressData) => {
+    setNewAddressData(addressData);
+    setSelectedAddress(null);
+  };
 
   /**
    * REFACTORED: Handles order creation and payment initialization via the backend API.
@@ -66,13 +149,20 @@ export default function CheckoutPage() {
    */
   const handlePlaceOrder = async () => {
     // 1. Validation
+    const contact = getOrderContactInfo();
+
     if (
-      !deliveryAddress.fullName ||
-      !deliveryAddress.phone ||
-      !deliveryAddress.email
+      !contact.fullName ||
+      !contact.phone ||
+      !contact.email ||
+      !hasCompleteAddress
     ) {
-      alert("Please fill in all required delivery details");
-      setShowAddressDialog(true);
+      toast.error(
+        "Please fill in all required delivery details and select an address",
+      );
+      if (!hasCompleteAddress) {
+        setShowAddressDialog(true);
+      }
       return;
     }
 
@@ -84,12 +174,12 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      const paymentMethodEnum: BackendPaymentMethod =
-        paymentMethod === "paystack" || paymentMethod === "card"
-          ? "PAYSTACK"
-          : "CASH_ON_DELIVERY";
+      // const paymentMethodEnum: BackendPaymentMethod =
+      //   paymentMethod === "" || paymentMethod === "card"
+      //     ? "PAYSTACK"
+      //     : "CASH_ON_DELIVERY";
 
-      // 1. POST /api/v1/orders - Create the Order (and PENDING Payment record)
+      // 1. POST /api/v1/orders - Create Order (and PENDING Payment record)
       const {
         data,
       }: SuccessResponse<{
@@ -102,8 +192,9 @@ export default function CheckoutPage() {
           productId: item.id,
           quantity: item.quantity,
         })),
-        deliveryAddress,
-        paymentMethod: paymentMethodEnum,
+        deliveryAddress: getDeliveryAddress(),
+        contactInfo: contact,
+        paymentMethod: paymentMethod,
       });
 
       if (!data.ok) {
@@ -115,7 +206,7 @@ export default function CheckoutPage() {
 
       if (data.nextAction === "ORDER_PLACED_COD") {
         // --- CASH ON DELIVERY FLOW ---
-        emptyCart();
+        clearCart();
         setShowSuccessDialog(true);
         setTimeout(() => {
           router.push(`/order/${orderId || orderReference}`);
@@ -178,9 +269,11 @@ export default function CheckoutPage() {
         <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            <DeliveryAddressCard
-              address={deliveryAddress}
-              onEdit={() => setShowAddressDialog(true)}
+            <AddressSelection
+              selectedAddress={selectedAddress}
+              onAddressSelect={handleAddressSelect}
+              onNewAddress={handleNewAddress}
+              setShowNewAddressDialog={setShowAddressDialog}
             />
 
             <PaymentMethodCard
@@ -194,10 +287,7 @@ export default function CheckoutPage() {
           {/* Order Summary */}
           <div className="lg:col-span-1">
             <OrderSummaryCard
-              subtotal={subtotal}
-              deliveryFee={deliveryFee}
-              serviceFee={serviceFee}
-              total={total}
+              fee={getTotals()}
               isProcessing={isProcessing}
               onPlaceOrder={handlePlaceOrder}
             />
@@ -206,11 +296,14 @@ export default function CheckoutPage() {
       </div>
 
       {/* Modals */}
-      <AddressDialog
+      <CheckoutAddressDialog
         open={showAddressDialog}
         onOpenChange={setShowAddressDialog}
-        address={deliveryAddress}
-        setAddress={setDeliveryAddress}
+        onSubmit={(addressData) => {
+          setNewAddressData(addressData);
+          setSelectedAddress(null);
+          setShowAddressDialog(false);
+        }}
       />
 
       <SuccessDialog

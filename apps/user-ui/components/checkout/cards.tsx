@@ -88,8 +88,8 @@ export const DeliveryAddressCard = ({
 
 // 2. PaymentMethodCard
 interface PaymentMethodCardProps {
-  paymentMethod: ClientPaymentMethod;
-  setPaymentMethod: (method: ClientPaymentMethod) => void;
+  paymentMethod: BackendPaymentMethod | null;
+  setPaymentMethod: (method: BackendPaymentMethod) => void;
 }
 export const PaymentMethodCard = ({
   paymentMethod,
@@ -104,24 +104,24 @@ export const PaymentMethodCard = ({
 
       <RadioGroup
         value={paymentMethod}
-        onValueChange={(v) => setPaymentMethod(v as ClientPaymentMethod)}
+        onValueChange={(v) => setPaymentMethod(v as BackendPaymentMethod)}
       >
         <div className="space-y-3">
           {/* Paystack */}
           <label
-            htmlFor="paystack"
+            htmlFor="PAYSTACK"
             className={`flex items-center justify-between p-4 rounded-lg border-2 cursor-pointer transition-all ${
-              paymentMethod === "paystack"
+              paymentMethod === "PAYSTACK"
                 ? "border-primary bg-primary/5"
                 : "border-gray-200 hover:border-gray-300"
             }`}
           >
             <div className="flex items-center gap-3">
-              <RadioGroupItem value="paystack" id="paystack" />
+              <RadioGroupItem value="PAYSTACK" id="PAYSTACK" />
               <div>
-                <p className="font-medium text-gray-900">Paystack</p>
+                <p className="font-medium text-gray-900">Card/Bank Payment</p>
                 <p className="text-sm text-gray-600">
-                  Pay securely with card, bank transfer, or USSD
+                  Pay securely with your debit/credit card
                 </p>
               </div>
             </div>
@@ -130,40 +130,24 @@ export const PaymentMethodCard = ({
             </Badge>
           </label>
 
-          {/* Card (currently handled by Paystack backend flow, but kept for UI clarity) */}
-          <label
-            htmlFor="card"
-            className={`flex items-center justify-between p-4 rounded-lg border-2 cursor-pointer transition-all ${
-              paymentMethod === "card"
-                ? "border-primary bg-primary/5"
-                : "border-gray-200 hover:border-gray-300"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <RadioGroupItem value="card" id="card" />
-              <div>
-                <p className="font-medium text-gray-900">Credit/Debit Card</p>
-                <p className="text-sm text-gray-600">
-                  Pay with Visa, Mastercard
-                </p>
-              </div>
-            </div>
-          </label>
-
           {/* Cash on Delivery */}
           <label
-            htmlFor="cash"
-            className={`flex items-center justify-between p-4 rounded-lg border-2 cursor-pointer transition-all ${
-              paymentMethod === "cash"
+            htmlFor="CASH_ON_DELIVERY"
+            className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
+              paymentMethod === "CASH_ON_DELIVERY"
                 ? "border-primary bg-primary/5"
                 : "border-gray-200 hover:border-gray-300"
             }`}
           >
             <div className="flex items-center gap-3">
-              <RadioGroupItem value="cash" id="cash" />
+              <RadioGroupItem
+                value="CASH_ON_DELIVERY"
+                id="CASH_ON_DELIVERY"
+                disabled
+              />
               <div>
                 <p className="font-medium text-gray-900">Cash on Delivery</p>
-                <p className="text-sm text-gray-600">Pay when you receive</p>
+                <p className="text-sm text-gray-600">Currently unavailable</p>
               </div>
             </div>
           </label>
@@ -191,7 +175,7 @@ export const OrderItemsCard = ({ cart }: OrderItemsCardProps) => (
           >
             <div className="flex-1">
               <p className="font-medium text-gray-900">{item.name}</p>
-              <p className="text-sm text-gray-600">{item.vendor_name}</p>
+              <p className="text-sm text-gray-600">{item.vendorName}</p>
               <p className="text-sm text-gray-500 mt-1">
                 ₦{item.price.toFixed(2)} × {item.quantity}
               </p>
@@ -208,18 +192,17 @@ export const OrderItemsCard = ({ cart }: OrderItemsCardProps) => (
 
 // 4. OrderSummaryCard
 interface OrderSummaryCardProps {
-  subtotal: number;
-  deliveryFee: number;
-  serviceFee: number;
-  total: number;
+  fee: {
+    subtotal: number;
+    deliveryFee: number;
+    serviceFee: number;
+    total: number;
+  };
   isProcessing: boolean;
   onPlaceOrder: () => void;
 }
 export const OrderSummaryCard = ({
-  subtotal,
-  deliveryFee,
-  serviceFee,
-  total,
+  fee,
   isProcessing,
   onPlaceOrder,
 }: OrderSummaryCardProps) => (
@@ -231,15 +214,15 @@ export const OrderSummaryCard = ({
         <div className="space-y-3">
           <div className="flex justify-between text-gray-700">
             <span>Subtotal</span>
-            <span className="font-medium">₦{subtotal.toFixed(2)}</span>
+            <span className="font-medium">₦{fee.subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-gray-700">
             <span>Delivery Fee</span>
-            <span className="font-medium">₦{deliveryFee.toFixed(2)}</span>
+            <span className="font-medium">₦{fee.deliveryFee.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-gray-700">
             <span>Service Fee</span>
-            <span className="font-medium">₦{serviceFee.toFixed(2)}</span>
+            <span className="font-medium">₦{fee.serviceFee.toFixed(2)}</span>
           </div>
 
           <Separator />
@@ -247,7 +230,7 @@ export const OrderSummaryCard = ({
           <div className="flex justify-between items-baseline">
             <span className="text-lg font-semibold text-gray-900">Total</span>
             <span className="text-2xl font-bold text-primary">
-              ${total.toFixed(2)}
+              ${fee.total.toFixed(2)}
             </span>
           </div>
         </div>

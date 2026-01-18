@@ -1,30 +1,47 @@
-import Header from "@/components/tab-header";
-import BottomNav from "@/components/mobile-bottom-nav";
-
+import { SocketProvider } from "@/components/global/socket-init";
+import { AppSidebar } from "@/components/navigations/app-sidebar";
+import Header from "@/components/navigations/main-header";
+import MobileNav from "@/components/navigations/mobile-bottom-nav";
+import { getCookieHeader } from "@/libs/api-utils";
+import { SidebarInset } from "@repo/ui/components/sidebar";
+import { redirect } from "next/navigation";
 import React from "react";
-import SocketInitializer from "@/components/socket-init";
-export const dynamic = "force-dynamic";
 
-const HomeLayout = ({ children }: { children: React.ReactNode }) => {
+export default async function AuthenticatedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const token = await getCookieHeader(true);
+
+  if (!token) {
+    redirect("/log-in");
+  }
+
   return (
-    <div className="min-h-screen w-full flex">
-      <SocketInitializer />
-      <BottomNav />
+    <SocketProvider token={token}>
+      <div className="flex min-h-screen w-full">
+        {/* Desktop Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block">
+          <AppSidebar />
+        </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* ✅ No toggleSidebar prop anymore */}
-        <Header />
+        {/* Main Content Area */}
+        <SidebarInset className="flex-1 flex flex-col">
+          {/* Header */}
+          <Header />
 
-        {/* Spacer for fixed header */}
-        <div className="h-16" />
+          {/* Main Content */}
+          <main className="flex-1 w-full overflow-x-hidden">
+            <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6">
+              {children}
+            </div>
+          </main>
 
-        <main className="py-4 px-4 md:ml-64 max-w-5xl w-full mx-auto">
-          {children}
-        </main>
+          {/* Mobile Bottom Navigation */}
+          <MobileNav />
+        </SidebarInset>
       </div>
-    </div>
+    </SocketProvider>
   );
-};
-
-export default HomeLayout;
+}
