@@ -19,14 +19,12 @@ import OrdersPageSkeleton from "@/components/order/OrdersPageSkeleton";
 import { api } from "@/libs/api";
 
 interface OrdersClientProps {
-  initialOrders: Order[];
-  initialPagination: Pagination;
+  initialPage?: number;
   initialStatus?: OrderStatus;
 }
 
 export default function OrdersClient({
-  initialOrders,
-  initialPagination,
+  initialPage = 1,
   initialStatus,
 }: OrdersClientProps) {
   const router = useRouter();
@@ -34,18 +32,21 @@ export default function OrdersClient({
   const [selectedStatus, setSelectedStatus] = React.useState<
     OrderStatus | "all"
   >(initialStatus || "all");
-  const [currentPage, setCurrentPage] = React.useState(initialPagination.page);
+  const [currentPage, setCurrentPage] = React.useState(initialPage);
 
-  // Fetch orders with React Query
-  const { data, isLoading, refetch } = useQuery({
+  // Fetch orders with React Query (client-side only)
+  const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["orders", currentPage, selectedStatus],
-    queryFn: () =>
-      api.fetchOrders(
+    queryFn: async () => {
+      const response = await api.fetchOrders(
         currentPage,
         selectedStatus === "all" ? undefined : selectedStatus,
-      ),
-    initialData: { orders: initialOrders, pagination: initialPagination },
+      );
+      return response;
+    },
     staleTime: 30000, // 30 seconds
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   const handleStatusChange = (status: string) => {
@@ -75,12 +76,34 @@ export default function OrdersClient({
   const statusOptions = [
     { value: "all", label: "All Orders" },
     { value: "PENDING", label: "Pending" },
+    { value: "PENDING_PAYMENT", label: "Pending Payment" },
     { value: "ACCEPTED", label: "Accepted" },
     { value: "PREPARING", label: "Preparing" },
+    { value: "READY_FOR_PICKUP", label: "Ready for Pickup" },
     { value: "OUT_FOR_DELIVERY", label: "Out for Delivery" },
     { value: "DELIVERED", label: "Delivered" },
     { value: "CANCELLED", label: "Cancelled" },
   ];
+
+  // Show loading skeleton on initial load
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-8">
+        <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-6">
+          <div className="mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+              My Orders
+            </h1>
+            <p className="text-gray-600">Track and manage your order history</p>
+          </div>
+          <OrdersPageSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  const orders = data?.orders || [];
+  const pagination = data?.pagination || { page: 1, pages: 1, total: 0 };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
@@ -102,6 +125,7 @@ export default function OrdersClient({
                 <Select
                   value={selectedStatus}
                   onValueChange={handleStatusChange}
+                  disabled={isFetching}
                 >
                   <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="Filter by status" />
@@ -120,11 +144,11 @@ export default function OrdersClient({
                 variant="outline"
                 size="sm"
                 onClick={() => refetch()}
-                disabled={isLoading}
+                disabled={isFetching}
                 className="gap-2"
               >
                 <RefreshCw
-                  className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+                  className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`}
                 />
                 Refresh
               </Button>
@@ -133,9 +157,9 @@ export default function OrdersClient({
         </Card>
 
         {/* Orders List */}
-        {isLoading ? (
+        {isFetching && orders.length === 0 ? (
           <OrdersPageSkeleton />
-        ) : data.orders.length === 0 ? (
+        ) : orders.length === 0 ? (
           <Card className="border-0 shadow-lg">
             <CardContent className="p-12 text-center">
               <MessageSquare className="w-16 h-16 mx-auto text-gray-300 mb-4" />
@@ -145,7 +169,7 @@ export default function OrdersClient({
               <p className="text-gray-600 mb-6">
                 {selectedStatus === "all"
                   ? "Your order history will appear here"
-                  : `No ${selectedStatus.toLowerCase()} orders found`}
+                  : `No ${selectedStatus.toLowerCase().replace(/_/g, " ")} orders found`}
               </p>
               <Button onClick={() => router.push("/home")}>
                 Start Ordering
@@ -154,34 +178,39 @@ export default function OrdersClient({
           </Card>
         ) : (
           <>
+            {/* Loading overlay for background fetches */}
+            {isFetching && (
+              <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded-lg text-center text-sm text-blue-700">
+                <RefreshCw className="w-4 h-4 inline animate-spin mr-2" />
+                Updating orders...
+              </div>
+            )}
+
             <div className="space-y-4">
-              {data.orders.map((order) => (
+              {orders.map((order) => (
                 <OrderCard key={order.id} order={order} />
               ))}
             </div>
 
             {/* Pagination */}
-            {data.pagination.pages > 1 && (
+            {pagination.pages > 1 && (
               <div className="mt-6 flex items-center justify-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1 || isLoading}
+                  disabled={currentPage === 1 || isFetching}
                 >
                   Previous
                 </Button>
 
                 <div className="flex items-center gap-1">
-                  {Array.from(
-                    { length: data.pagination.pages },
-                    (_, i) => i + 1,
-                  )
+                  {Array.from({ length: pagination.pages }, (_, i) => i + 1)
                     .filter((page) => {
                       // Show first, last, current, and adjacent pages
                       return (
                         page === 1 ||
-                        page === data.pagination.pages ||
+                        page === pagination.pages ||
                         Math.abs(page - currentPage) <= 1
                       );
                     })
@@ -197,7 +226,7 @@ export default function OrdersClient({
                               }
                               size="sm"
                               onClick={() => handlePageChange(page)}
-                              disabled={isLoading}
+                              disabled={isFetching}
                             >
                               {page}
                             </Button>
@@ -211,7 +240,7 @@ export default function OrdersClient({
                           variant={page === currentPage ? "default" : "outline"}
                           size="sm"
                           onClick={() => handlePageChange(page)}
-                          disabled={isLoading}
+                          disabled={isFetching}
                         >
                           {page}
                         </Button>
@@ -223,7 +252,7 @@ export default function OrdersClient({
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === data.pagination.pages || isLoading}
+                  disabled={currentPage === pagination.pages || isFetching}
                 >
                   Next
                 </Button>
@@ -232,7 +261,7 @@ export default function OrdersClient({
 
             {/* Results Count */}
             <p className="text-center text-sm text-gray-600 mt-4">
-              Showing {data.orders.length} of {data.pagination.total} orders
+              Showing {orders.length} of {pagination.total} orders
             </p>
           </>
         )}

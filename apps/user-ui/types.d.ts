@@ -18,9 +18,8 @@ declare type DeliveryStatus =
   | "DELIVERING"
   | "DELIVERED";
 
-// Payment Method Mapping
+// Payment Method
 declare type BackendPaymentMethod = "PAYSTACK" | "CASH_ON_DELIVERY"; // Matches DB enum
-declare type ClientPaymentMethod = "paystack" | "card" | "cash"; // Client UI choices
 
 // ===============================
 // CORE TYPES (Matching DB Embedded Types)
@@ -201,7 +200,8 @@ declare interface CartItem {
   name: string;
   price: number;
   quantity: number;
-  vendor_name: string;
+  vendorName: string;
+  vendorId: string;
 
   // IDs required by OrderItem model:
   // productId: string;

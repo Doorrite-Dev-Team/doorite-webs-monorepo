@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { useAtom } from "jotai";
 import { ShoppingCart, Plus, Minus, Check } from "lucide-react";
-
-import { cartAtom } from "@/store/cartAtom";
+import { useAtom, useSetAtom } from "jotai";
+import { cartAtom, hasConflict } from "@/store/cartAtom";
 import { Button } from "@repo/ui/components/button";
 import { isVendorOpen } from "@/libs/utils";
+import { CartService } from "@/services/cart-service";
+// import { VendorConflictModal } from "@/components/vendor-conflict-modal";
 
 interface ProductActionsProps {
   product: Product;
@@ -14,58 +15,109 @@ interface ProductActionsProps {
 
 export default function ProductActions({ product }: ProductActionsProps) {
   const [cart, setCart] = useAtom(cartAtom);
+  const setHasConflict = useSetAtom(hasConflict);
   const [showAdded, setShowAdded] = React.useState(false);
+  const [isVendorModalOpen, setIsVendorModalOpen] = React.useState(false);
+  const [pendingVendor, setPendingVendor] = React.useState<{
+    vendorId: string;
+    vendorName: string;
+    newItem: CartItem;
+  } | null>(null);
 
   const cartItem = cart.find((item) => item.id === product.id);
   const quantity = cartItem?.quantity || 0;
 
   const addToCart = React.useCallback(() => {
-    if (cartItem) {
-      setCart((prev) =>
-        prev.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
-        ),
-      );
+    const newItem = {
+      id: product.id,
+      name: product.name,
+      price: product.basePrice,
+      vendorName: product.vendor.businessName,
+      vendorId: product.vendorId,
+    } as CartItem;
+
+    const conflict = CartService.checkVendorConflict(
+      cart,
+      product.vendor.businessName,
+    );
+
+    if (conflict.hasConflict) {
+      // Show vendor conflict modal
+      setPendingVendor({
+        vendorId: product.vendor.id,
+        vendorName: product.vendor.businessName,
+        newItem,
+      });
+      setIsVendorModalOpen(true);
     } else {
-      setCart((prev) => [
-        ...prev,
-        {
-          id: product.id,
-          name: product.name,
-          description: product.description,
-          price: product.basePrice,
-          quantity: 1,
-          vendor_name: product.vendor.businessName,
-        },
-      ]);
+      // Add item directly
+      const newCart = CartService.addItem(cart, newItem);
+      setCart(newCart);
+      setShowAdded(true);
+      setTimeout(() => setShowAdded(false), 2000);
     }
+  }, [cart, setCart, product]);
 
-    // Show success feedback
-    setShowAdded(true);
-    setTimeout(() => setShowAdded(false), 2000);
-  }, [product, cartItem, setCart]);
+  const handleContinueWithCart = React.useCallback(() => {
+    setIsVendorModalOpen(false);
+    setPendingVendor(null);
+  }, []);
 
-  const updateQuantity = React.useCallback(
+  const handleSwitchVendor = React.useCallback(() => {
+    if (pendingVendor) {
+      const clearedCart = CartService.clearCart();
+      const newCart = CartService.addItem(clearedCart, pendingVendor.newItem);
+      setCart(newCart);
+    }
+    setIsVendorModalOpen(false);
+    setPendingVendor(null);
+  }, [pendingVendor, setCart]);
+
+  const handleCancelVendorModal = React.useCallback(() => {
+    setIsVendorModalOpen(false);
+    setPendingVendor(null);
+  }, []);
+
+  const handleUpdateQuantity = React.useCallback(
     (delta: number) => {
-      setCart((prev) =>
-        prev
-          .map((item) =>
-            item.id === product.id
-              ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-              : item,
-          )
-          .filter((item) => item.quantity > 0),
-      );
+      if (cartItem) {
+        const newQuantity = cartItem.quantity + delta;
+        const newCart = CartService.updateQuantity(
+          cart,
+          cartItem.id,
+          newQuantity,
+        );
+        setCart(newCart);
+      }
     },
-    [product.id, setCart],
+    [cart, cartItem, setCart],
   );
 
   const isDisabled =
     !product.isAvailable ||
     !product.vendor.isActive ||
     isVendorOpen(product.vendor);
+
+  React.useEffect(() => {
+    if (isVendorModalOpen && pendingVendor) {
+      setHasConflict({
+        isOpen: isVendorModalOpen,
+        currentVendor: cart.length > 0 ? cart[0]?.vendorName || null : null,
+        newVendor: pendingVendor?.vendorName || "",
+        onContinueWithCart: handleContinueWithCart,
+        onSwitchVendor: handleSwitchVendor,
+        onCancel: handleCancelVendorModal,
+      });
+    }
+  }, [
+    isVendorModalOpen,
+    pendingVendor,
+    cart,
+    setHasConflict,
+    handleContinueWithCart,
+    handleSwitchVendor,
+    handleCancelVendorModal,
+  ]);
 
   if (quantity > 0) {
     return (
@@ -76,7 +128,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => updateQuantity(-1)}
+              onClick={() => handleUpdateQuantity(-1)}
               disabled={isDisabled}
               className="h-12 w-12 p-0 rounded-full"
             >
@@ -88,7 +140,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => updateQuantity(1)}
+              onClick={() => handleUpdateQuantity(1)}
               disabled={isDisabled}
               className="h-12 w-12 p-0 rounded-full"
             >
@@ -106,6 +158,19 @@ export default function ProductActions({ product }: ProductActionsProps) {
       </div>
     );
   }
+
+  // if (isVendorModalOpen && pendingVendor) {
+  //   return (
+  //     <VendorConflictModal
+  //       isOpen={isVendorModalOpen}
+  //       currentVendor={cart.length > 0 ? cart[0]?.vendorName || null : null}
+  //       newVendor={pendingVendor?.vendorName || ""}
+  //       onContinueWithCart={handleContinueWithCart}
+  //       onSwitchVendor={handleSwitchVendor}
+  //       onCancel={handleCancelVendorModal}
+  //     />
+  //   );
+  // }
 
   return (
     <Button
@@ -131,4 +196,45 @@ export default function ProductActions({ product }: ProductActionsProps) {
       )}
     </Button>
   );
+
+  // return (
+  //   <>
+  //     <Button
+  //       size="lg"
+  //       onClick={addToCart}
+  //       disabled={isDisabled}
+  //       className="w-full h-14 text-lg font-semibold gap-2 transition-all"
+  //     >
+  //       {showAdded ? (
+  //         <>
+  //           <Check className="w-5 h-5" />
+  //           Added to Cart!
+  //         </>
+  //       ) : (
+  //         <>
+  //           <ShoppingCart className="w-5 h-5" />
+  //           {isDisabled
+  //             ? !product.isAvailable
+  //               ? "Out of Stock"
+  //               : "Vendor Closed"
+  //             : "Add to Cart"}
+  //         </>
+  //       )}
+  //     </Button>
+
+  //     {/* Vendor conflict modal */}
+  //     {isVendorModalOpen && pendingVendor && (
+  //       <VendorConflictModal
+  //         isOpen={isVendorModalOpen}
+  //         currentVendor={
+  //           cart.length > 0 ? cart[0]?.vendorName || "Unknown" : "Empty cart"
+  //         }
+  //         newVendor={pendingVendor?.vendorName || ""}
+  //         onContinueWithCart={handleContinueWithCart}
+  //         onSwitchVendor={handleSwitchVendor}
+  //         onCancel={handleCancelVendorModal}
+  //       />
+  //     )}
+  //   </>
+  // );
 }

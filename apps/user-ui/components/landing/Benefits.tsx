@@ -40,7 +40,7 @@ export default function Benefits() {
   ];
 
   return (
-    <section className="w-full px-6 md:px-16 py-16 bg-gray-50">
+    <section id="benefits" className="w-full px-6 md:px-16 py-16 bg-gray-50">
       <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">
         Benefits for Everyone
       </h2>

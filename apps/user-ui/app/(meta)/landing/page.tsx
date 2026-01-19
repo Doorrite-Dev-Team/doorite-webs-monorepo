@@ -6,20 +6,19 @@ import Hero from "@/components/landing/Hero";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Impact from "@/components/landing/Impact";
 import Testimonials from "@/components/landing/Testimonials";
-import Header from "@/components/tab-header";
+// import Header from "@/components/navigations/main-header";
 
 export default function Home() {
   return (
-    <>
-      <Header />
-      <main className="min-h-screen w-full flex flex-col bg-white">
-        <Hero />
+    <div className="w-full">
+      <Hero />
+      <div className="max-w-7xl mx-auto">
         <Benefits />
         <Impact />
         <HowItWorks />
         <Testimonials />
-      </main>
+      </div>
       <Footer />
-    </>
+    </div>
   );
 }

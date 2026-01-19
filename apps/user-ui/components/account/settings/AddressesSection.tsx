@@ -32,7 +32,7 @@ export default function AddressesSection({ addresses }: AddressesSectionProps) {
   const addMutation = useMutation({
     mutationFn: api.addAddress,
     onSuccess: (data) => {
-      queryClient.setQueryData(["user-profile"], (oldData: any) => ({
+      queryClient.setQueryData(["user-profile"], (oldData: User) => ({
         ...oldData,
         address: data.user.address,
       }));
@@ -48,9 +48,9 @@ export default function AddressesSection({ addresses }: AddressesSectionProps) {
   const deleteMutation = useMutation({
     mutationFn: api.deleteAddress,
     onSuccess: (_, variables) => {
-      queryClient.setQueryData(["user-profile"], (oldData: any) => ({
+      queryClient.setQueryData(["user-profile"], (oldData: User) => ({
         ...oldData,
-        address: oldData.address.filter(
+        address: oldData.address?.filter(
           (addr: Address) => addr.address !== variables,
         ),
       }));
@@ -63,20 +63,20 @@ export default function AddressesSection({ addresses }: AddressesSectionProps) {
   });
 
   // Update address mutation
-  const updateMutation = useMutation({
-    mutationFn: api.updateProfile,
-    onSuccess: (data) => {
-      queryClient.setQueryData(["user-profile"], (oldData: any) => ({
-        ...oldData,
-        address: data.user.address,
-      }));
-      setShowAddDialog(false);
-      toast.success("Address Updated successfully");
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to Update address");
-    },
-  });
+  // const updateMutation = useMutation({
+  //   mutationFn: api.updateProfile,
+  //   onSuccess: (data) => {
+  //     queryClient.setQueryData(["user-profile"], (oldData: User) => ({
+  //       ...oldData,
+  //       address: data.user.address,
+  //     }));
+  //     setShowAddDialog(false);
+  //     toast.success("Address Updated successfully");
+  //   },
+  //   onError: (error: Error) => {
+  //     toast.error(error.message || "Failed to Update address");
+  //   },
+  // });
 
   const handleAddAddress = (addressData: DeliveryAddressForm) => {
     addMutation.mutate(addressData);

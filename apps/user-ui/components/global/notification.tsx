@@ -21,7 +21,7 @@ import {
   SheetTrigger,
 } from "@repo/ui/components/sheet";
 import { Bell, X, Check } from "lucide-react";
-import { WithCount } from "./withBadge";
+import { WithCount } from "../ui/withBadge";
 import type { Notification } from "@/types/notification";
 import { toast } from "@repo/ui/components/sonner";
 

@@ -1,6 +1,6 @@
 "use client";
 import { signUpUser } from "@/actions/auth";
-import VerifyOTP from "@/components/verify-otp";
+import VerifyOTP from "@/components/ui/verify-otp";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { toast } from "@repo/ui/components/sonner";

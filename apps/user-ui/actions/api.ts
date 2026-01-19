@@ -1,19 +1,6 @@
 import { apiClient } from "@/libs/api-client";
 import { toast } from "@repo/ui/components/sonner";
 
-// export const api = {
-//   fetchProfile: async () => {
-//     try {
-//       const { data }: SuccessResponse<{ user: User }> =
-//         await apiClient.get(`/users/me`);
-//       return data.user;
-//     } catch (error) {
-//       console.error("Unable to fetch profile:", error);
-//       return null;
-//     }
-//   },
-// };
-
 // src/lib/api.ts (or equivalent)
 
 interface PasswordForm {
@@ -262,8 +249,8 @@ export const api = {
       const {
         data,
       }: SuccessResponse<{ orders: Order[]; pagination: Pagination }> =
-        await apiClient(`/orders?${params}`);
-
+        await apiClient.get(`/users/orders`);
+      console.log(data.orders);
       return {
         orders: data.orders || [],
         pagination: data.pagination,

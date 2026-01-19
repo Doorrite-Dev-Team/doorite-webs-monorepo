@@ -1,6 +1,6 @@
 "use client";
 
-import { MdxClientWrapper } from "@/components/MdxClientWrapper";
+import { MdxClientWrapper } from "@/components/global/MdxClientWrapper";
 import PrivacyContent from "@/legal/privacy.mdx";
 // import * as React from 'react';
 

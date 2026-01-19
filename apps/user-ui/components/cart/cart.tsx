@@ -1,7 +1,6 @@
 // components/CartWidget.tsx
 "use client";
 
-import { useAtom } from "jotai";
 import {
   ShoppingCart,
   Minus,
@@ -12,22 +11,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useMemo, useCallback } from "react";
-import { WithCount } from "../withBadge";
-
-// Store Imports
-import {
-  cartAtom,
-  totalCartAtom,
-  totalPriceAtom,
-  EmptyCartAtom,
-  // type CartItem,
-} from "@/store/cartAtom";
+import { useState } from "react";
+import { WithCount } from "../ui/withBadge";
 
 // UI Imports
-import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
-import { Separator } from "@repo/ui/components/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,10 +26,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@repo/ui/components/alert-dialog";
+import { useCart } from "@/hooks/use-cart";
 
 export default function CartWidget() {
   const [open, setOpen] = useState(false);
-  const [cartCount] = useAtom(totalCartAtom);
+  // const [cartCount] = useAtom(totalCartAtom);
+  const { itemCount } = useCart();
 
   return (
     <>
@@ -52,7 +42,7 @@ export default function CartWidget() {
         aria-expanded={open}
         className="p-2 hover:bg-primary/10 rounded-full bg-transparent border-none cursor-pointer transition-colors relative"
       >
-        <WithCount count={cartCount} Icon={ShoppingCart} />
+        <WithCount count={itemCount} Icon={ShoppingCart} />
       </button>
 
       {/* Drawer Overlay & Panel */}
@@ -65,56 +55,10 @@ export default function CartWidget() {
 
 export function CartDrawer({ onCloseAction }: { onCloseAction: () => void }) {
   const router = useRouter();
-
-  // State
-  const [cart, setCart] = useAtom(cartAtom);
-  const [subtotal] = useAtom(totalPriceAtom);
-  const [, emptyCart] = useAtom(EmptyCartAtom);
-
-  // Local UI State
   const [showClearDialog, setShowClearDialog] = useState(false);
-  const [removingItemId] = useState<string | null>(null);
 
-  // Constants (Matching CartPage)
-  const deliveryFee = cart.length > 0 ? 3.99 : 0;
-  const serviceFee = cart.length > 0 ? 1.99 : 0;
-  const total = subtotal + deliveryFee + serviceFee;
-
-  // --- Logic ---
-
-  // Group items by vendor
-  const groupedByVendor = useMemo(() => {
-    const groups: Record<string, CartItem[]> = {};
-    cart.forEach((item) => {
-      const vendor = item.vendor_name || "Unknown Vendor";
-      if (!groups[vendor]) {
-        groups[vendor] = [];
-      }
-      groups[vendor].push(item);
-    });
-    return groups;
-  }, [cart]);
-
-  const updateQuantity = useCallback(
-    (id: string, delta: number) => {
-      setCart((prev) =>
-        prev
-          .map((item) =>
-            item.id === id
-              ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-              : item,
-          )
-          .filter((item) => item.quantity > 0),
-      );
-    },
-    [setCart],
-  );
-
-  const handleClearCart = useCallback(() => {
-    emptyCart();
-    setShowClearDialog(false);
-    onCloseAction(); // Optional: close drawer on clear
-  }, [emptyCart, onCloseAction]);
+  const { cart, clearCart, updateQuantity, getTotals, getGroupedItems } =
+    useCart();
 
   const handleCheckout = () => {
     onCloseAction();
@@ -141,9 +85,7 @@ export function CartDrawer({ onCloseAction }: { onCloseAction: () => void }) {
           <div className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5 text-primary" />
             <h2 className="font-semibold text-lg">Your Cart</h2>
-            <Badge variant="secondary" className="text-xs ml-1">
-              {cart.length}
-            </Badge>
+            <span className="text-xs ml-1">{cart.length}</span>
           </div>
 
           <div className="flex items-center gap-1">
@@ -188,16 +130,16 @@ export function CartDrawer({ onCloseAction }: { onCloseAction: () => void }) {
             </div>
           ) : (
             <div className="space-y-5">
-              {Object.entries(groupedByVendor).map(([vendorName, items]) => (
+              {Object.entries(getGroupedItems()).map(([vendorId, items]) => (
                 <div
-                  key={vendorName}
+                  key={vendorId}
                   className="bg-white rounded-lg shadow-sm border overflow-hidden"
                 >
                   {/* Vendor Header */}
                   <div className="bg-gray-50/80 border-b px-3 py-2 flex items-center gap-2">
                     <Store className="w-4 h-4 text-primary" />
                     <span className="text-sm font-medium text-gray-900 truncate">
-                      {vendorName}
+                      {vendorId}
                     </span>
                   </div>
 
@@ -206,11 +148,8 @@ export function CartDrawer({ onCloseAction }: { onCloseAction: () => void }) {
                     {items.map((item) => (
                       <div
                         key={item.id}
-                        className={`p-3 transition-all duration-300 ${
-                          removingItemId === item.id
-                            ? "opacity-0 -translate-x-full"
-                            : "opacity-100"
-                        }`}
+                        className={`p-3 transition-all duration-300
+                        `}
                       >
                         <div className="flex gap-3">
                           {/* Details */}
@@ -264,20 +203,22 @@ export function CartDrawer({ onCloseAction }: { onCloseAction: () => void }) {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
-                <span>₦{subtotal.toFixed(2)}</span>
+                <span>₦{getTotals().subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Delivery</span>
-                <span>₦{deliveryFee.toFixed(2)}</span>
+                <span>₦{getTotals().deliveryFee.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Service Fee</span>
-                <span>₦{serviceFee.toFixed(2)}</span>
+                <span>₦{getTotals().serviceFee.toFixed(2)}</span>
               </div>
-              <Separator className="my-2" />
+              <div className="my-2">
+                <div className="w-full h-px bg-gray-200" />
+              </div>
               <div className="flex justify-between font-bold text-lg text-gray-900">
                 <span>Total</span>
-                <span>₦{total.toFixed(2)}</span>
+                <span>₦{getTotals().total.toFixed(2)}</span>
               </div>
             </div>
 
@@ -311,7 +252,7 @@ export function CartDrawer({ onCloseAction }: { onCloseAction: () => void }) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleClearCart}
+              onClick={clearCart}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
               Clear Cart

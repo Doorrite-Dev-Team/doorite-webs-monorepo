@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
       {
         ok: upstreamRes.ok,
         data: upstreamRes.ok ? data : undefined,
-        message: upstreamRes.ok ? undefined : data?.message || "Login failed",
+        message: data?.message || "Login failed",
       },
       { status: upstreamRes.status },
     );

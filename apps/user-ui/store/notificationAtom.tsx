@@ -1,5 +1,5 @@
 // store/notificationAtom.ts
-import { defaultNotifications } from "@/libs/contant";
+// import { defaultNotifications } from "@/libs/contant";
 import { Notification, NotificationState } from "@/types/notification";
 import { toast } from "@repo/ui/components/sonner";
 import { atom } from "jotai";
@@ -9,7 +9,7 @@ import { atomWithStorage } from "jotai/utils";
 export const notificationStateAtom = atomWithStorage<NotificationState>(
   "doorrite-notifications",
   {
-    notifications: defaultNotifications,
+    notifications: [],
     lastSync: null,
     unreadCount: 0,
   },

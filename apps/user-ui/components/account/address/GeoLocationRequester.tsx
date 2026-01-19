@@ -6,7 +6,7 @@ import { Loader2, AlertCircle, Navigation, CheckCircle2 } from "lucide-react";
 
 import { Button } from "@repo/ui/components/button";
 import { toast } from "@repo/ui/components/sonner";
-import { Input } from "@repo/ui/components/input";
+// import { Input } from "@repo/ui/components/input";
 
 interface GeoLocationRequesterProps {
   onAccept: (
@@ -34,7 +34,7 @@ export default function GeoLocationRequester({
 
   const [reverseLoading, setReverseLoading] = React.useState(false);
   const [preview, setPreview] = React.useState<ReverseGeoResult | null>(null);
-  const [displayName, setDisplayName] = React.useState<string>("");
+  // const [displayName, setDisplayName] = React.useState<string>("");
   const [reverseError, setReverseError] = React.useState<string | null>(null);
 
   // Reverse geocode when coordinates are available
@@ -68,7 +68,7 @@ export default function GeoLocationRequester({
           state: address.state || address.region || address.county || "",
           country: address.country || "",
         });
-        setDisplayName(data?.display_name);
+        // setDisplayName(data?.display_name);
       } catch (err) {
         console.warn("Reverse geocode error:", err);
         setReverseError(

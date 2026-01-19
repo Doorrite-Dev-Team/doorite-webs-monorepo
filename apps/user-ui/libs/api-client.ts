@@ -42,32 +42,51 @@ export const apiClient = axios.create({
   withCredentials: true, // Important for cookie propagation
 });
 
-apiClient.interceptors.response.use((res) => {
-  return res.data.data ? res.data : res;
-});
+// apiClient.interceptors.request.use(async (config) => {
+//   if (typeof window === "undefined") {
+//     const { getCookieHeader } = await import("@/libs/api-utils");
+//     const token = await getCookieHeader(true);
+//     if (token) {
+//       config.headers.Authorization = `Bearer ${token}`;
+//     }
+//   }
+//   return config;
+// });
+
+apiClient.interceptors.response.use(
+  (res) => {
+    return res.data.data ? res.data : res;
+  },
+  (err) => handleApiError(err),
+);
 
 /**
  * Type-safe API error handler
  */
-export function handleApiError(error: unknown): string {
+export async function handleApiError(error: unknown) {
+  console.log("Error Occured");
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<{ message?: string }>;
 
     // Handle session expiration
     if (axiosError.response?.status === 401) {
-      // Redirect to login or trigger logout
-      if (window) window.location.href = "/login";
-      return "Session expired. Please log in again.";
+      console.log("Performing Refresh......");
+      // await authService.refresh();
+      if (typeof window !== "undefined") window.location.href = "/login";
+      // return "Session expired. Please log in again.";
+      // return error;
     }
 
-    return (
-      axiosError.response?.data?.message ||
-      axiosError.message ||
-      "An error occurred"
-    );
+    // return (
+    //   axiosError.response?.data?.message ||
+    //   axiosError.message ||
+    //   "An error occurred"
+    // );
+    // return error;
   }
 
-  return "An unexpected error occurred";
+  // return "An unexpected error occurred";
+  return error;
 }
 
 // ============================================================================
@@ -107,7 +126,9 @@ export const authService = {
   },
 
   async refresh() {
-    const response = await axios.post("/api/auth/refresh");
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_VERCEL_URL ?? "http://localhost:3000"}/api/auth/refresh-token`,
+    );
     return response.data;
   },
 };

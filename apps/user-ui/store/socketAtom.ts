@@ -1,51 +1,79 @@
-import { atom, type WritableAtom } from "jotai";
+import { atom } from "jotai";
 import { io, Socket } from "socket.io-client";
-import { clientToken } from "@/libs/utils/client-tokens";
-import { Notification } from "@/types/notification";
 import { addNotificationAtom } from "./notificationAtom";
+import { playSound } from "@/libs/player";
+import { Notification } from "@/types/notification";
 import { toast } from "@repo/ui/components/sonner";
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:4000";
+// Strict Event Types
+interface ServerToClientEvents {
+  // Urgent: Specific event for logic handling
+  // "new-order": (data: Notification) => void;
 
-// 1. The raw atom that holds the socket instance
-const socketBaseAtom = atom<Socket | null>(null);
+  // General: System/Info updates
+  notification: (data: Notification) => void;
+  "pending-notifications": (data: Notification[]) => void;
+  connect: () => void;
+  disconnect: () => void;
+}
 
-// 2. A writable atom to handle initialization and retrieval
-export const socketAtom: WritableAtom<Socket | null, [], void> = atom(
-  (get) => get(socketBaseAtom),
-  (get, set) => {
-    // Prevent re-initialization if already connected
-    if (get(socketBaseAtom)) return;
+interface ClientToServerEvents {
+  "notification-read": (notificationId: string) => void;
+  "join-user-room": (userId: string) => void;
+  // "order-accepted": (orderId: string) => void;
+}
 
-    const token = clientToken.getAccess();
-    const socket = io(WS_URL, {
-      auth: { token },
-      autoConnect: true,
-    });
+type SocketInstance = Socket<ServerToClientEvents, ClientToServerEvents>;
 
-    socket.on("connect", () => {
-      console.log("Client: Connected");
-      // socket.emit("message", { text: "Hello server, I'm here!" });
-    });
+export const socketAtom = atom<SocketInstance | null>(null);
+export const isConnectedAtom = atom(false);
 
-    socket.on("connect_error", (err) => {
-      toast.error("WebSocket Error", { description: err.message });
-      console.warn(err.message);
-    });
+export const initSocketAtom = atom(null, (get, set, token: string) => {
+  if (get(socketAtom)) return;
 
-    socket.on("notification", (data: Notification) => {
-      // Use the other atom's logic to update state
-      set(addNotificationAtom, data);
-      socket.emit("notification-read", data.id);
-    });
+  const WS_URL = process.env.NEXT_PUBLIC_WS_URI;
+  if (!WS_URL) return;
 
-    socket.on("pending-notifications", (data: Notification[]) => {
-      data.forEach((n) => {
-        set(addNotificationAtom, n);
-        socket.emit("notification-read", n.id);
-      });
-    });
+  const socket: SocketInstance = io(WS_URL, {
+    transports: ["websocket"],
+    reconnectionDelayMax: 10000,
+    auth: { token },
+  });
 
-    set(socketBaseAtom, socket);
-  },
-);
+  socket.on("connect", () => {
+    set(isConnectedAtom, true);
+    console.log("🟢 Connected to DoorRite Socket");
+  });
+
+  socket.on("connect_error", (err) => {
+    console.error("Socket Error:", err.message);
+  });
+
+  socket.on("notification", (data) => {
+    playSound("pop");
+    set(addNotificationAtom, data);
+  });
+
+  socket.on("pending-notifications", (data) => {
+    for (const n of data) {
+      set(addNotificationAtom, n);
+      socket.emit("notification-read", n.id);
+    }
+  });
+
+  socket.on("disconnect", () => set(isConnectedAtom, false));
+
+  set(socketAtom, socket);
+});
+
+// New: Disconnect Atom
+export const disconnectSocketAtom = atom(null, (get, set) => {
+  const socket = get(socketAtom);
+  if (socket) {
+    socket.removeAllListeners();
+    socket.disconnect();
+    set(socketAtom, null);
+    set(isConnectedAtom, false);
+    console.log("🔴 Socket Disconnected");
+  }
+});

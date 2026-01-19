@@ -1,16 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { useAtom } from "jotai";
 import { ShoppingCart, Plus, Minus, Search } from "lucide-react";
 import Image from "next/image";
 
-import { cartAtom } from "@/store/cartAtom";
 import { Card, CardContent } from "@repo/ui/components/card";
 import { Button } from "@repo/ui/components/button";
 import { Badge } from "@repo/ui/components/badge";
 import { Input } from "@repo/ui/components/input";
 import { imageBurger as productFallbackImage } from "@repo/ui/assets";
+import { useCart } from "@/hooks/use-cart";
 
 interface VendorMenuSectionProps {
   groupedProducts: Record<string, Product[]>;
@@ -20,11 +19,11 @@ interface VendorMenuSectionProps {
 export default function VendorMenuSection({
   groupedProducts,
 }: VendorMenuSectionProps) {
-  const [cart, setCart] = useAtom(cartAtom);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [activeCategory, setActiveCategory] = React.useState<string | null>(
     null,
   );
+  const { cart, addItem, updateQuantity } = useCart();
 
   const categories = Object.keys(groupedProducts);
 
@@ -53,45 +52,20 @@ export default function VendorMenuSection({
   const addToCart = React.useCallback(
     (product: Product) => {
       const existingItem = cart.find((item) => item.id === product.id);
-
       if (existingItem) {
-        setCart((prev) =>
-          prev.map((item) =>
-            item.id === product.id
-              ? { ...item, quantity: item.quantity + 1 }
-              : item,
-          ),
-        );
+        updateQuantity(existingItem.id, 1);
       } else {
-        setCart((prev) => [
-          ...prev,
-          {
-            id: product.id,
-            name: product.name,
-            description: product.description,
-            price: product.basePrice,
-            quantity: 1,
-            vendor_name: product.vendor.businessName,
-          },
-        ]);
+        addItem({
+          id: product.id,
+          name: product.name,
+          price: product.basePrice,
+          quantity: 1,
+          vendorName: product.vendor.businessName,
+          vendorId: product.vendorId,
+        });
       }
     },
-    [cart, setCart],
-  );
-
-  const updateQuantity = React.useCallback(
-    (productId: string, delta: number) => {
-      setCart((prev) =>
-        prev
-          .map((item) =>
-            item.id === productId
-              ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-              : item,
-          )
-          .filter((item) => item.quantity > 0),
-      );
-    },
-    [setCart],
+    [cart, addItem, updateQuantity],
   );
 
   React.useEffect(() => {

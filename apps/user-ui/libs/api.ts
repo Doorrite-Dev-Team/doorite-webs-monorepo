@@ -2,6 +2,7 @@
 import { toast } from "@repo/ui/components/sonner";
 import Axios from "./Axios"; // Assuming this is your configured Axios instance
 import { cache } from "react";
+import { apiClient } from "./api-client";
 
 interface PasswordForm {
   currentPassword: string;
@@ -204,9 +205,8 @@ export const api = {
   // ---------------- ORDERS ----------------
   fetchRecentOrders: async () => {
     try {
-      const { data }: SuccessResponse<{ orders: Order[] }> = await Axios.get(
-        `/users/orders/?limit=2`,
-      );
+      const { data }: SuccessResponse<{ orders: Order[] }> =
+        await Axios.get(`/orders?limit=2`);
 
       if (!data.ok) return [];
       return data.orders || [];
@@ -242,7 +242,7 @@ export const api = {
       const {
         data,
       }: SuccessResponse<{ orders: Order[]; pagination: Pagination }> =
-        await Axios(`/orders?${params}`);
+        await apiClient.get(`/users/orders?${params}`);
 
       return {
         orders: data.orders || [],

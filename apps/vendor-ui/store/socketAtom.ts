@@ -4,16 +4,11 @@ import { addNotificationAtom, urgentOrderAtom } from "./notificationAtom";
 import { playSound } from "@/libs/player";
 import { Notification } from "@/types/notification";
 import { toast } from "@repo/ui/components/sonner";
-import { error } from "node:console";
 
 // Strict Event Types
 interface ServerToClientEvents {
   // Urgent: Specific event for logic handling
-  "new-order": (data: {
-    orderId: string;
-    amount: number;
-    items: any[];
-  }) => void;
+  "new-order": (data: Notification) => void;
 
   // General: System/Info updates
   notification: (data: Notification) => void;
@@ -59,20 +54,13 @@ export const initSocketAtom = atom(null, (get, set, token: string) => {
     const audio = playSound("new-order"); // Returns audio instance
 
     // 2. Set Urgent State (Opens Dialog)
-    set(urgentOrderAtom, { orderId: data.orderId, audio: audio || undefined });
+    set(urgentOrderAtom, {
+      orderId: data.metadata?.orderId ?? "Not Found",
+      audio: audio || undefined,
+    });
 
     // 3. Add to History
-    set(addNotificationAtom, {
-      id: crypto.randomUUID(),
-      type: "NEW_ORDER",
-      title: "New Order Received!",
-      message: `Order #${data.orderId.slice(-4)} - ₦${data.amount}`,
-      priority: "urgent",
-      read: false,
-      archived: false,
-      timestamp: new Date().toISOString(),
-      metadata: { orderId: data.orderId, amount: data.amount },
-    });
+    set(addNotificationAtom, data);
   });
 
   // --- INFO: General Notification (Toast + Beep) ---

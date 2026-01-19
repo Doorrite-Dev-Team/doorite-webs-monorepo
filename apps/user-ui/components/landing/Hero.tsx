@@ -6,7 +6,10 @@ import { doorriteImage } from "@repo/ui/assets";
 
 export default function Hero() {
   return (
-    <section className="bg-white px-6 md:px-16 py-12 md:py-20 flex flex-col md:flex-row items-center gap-10">
+    <section
+      id="hero"
+      className="bg-white px-6 md:px-16 py-12 md:py-20 flex flex-col md:flex-row items-center gap-10"
+    >
       {/* Illustration */}
       <div className="flex-1 flex justify-center">
         <Image

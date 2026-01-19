@@ -68,20 +68,21 @@ import {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    // const body = await req.json();
     const cookieHeader = await getCookieHeader();
 
-    if (!body.refresh) {
-      return Response.json(
-        {
-          ok: false,
-          message: "Please Provide Refresh Token",
-        },
-        { status: 400 },
-      );
-    }
+    // if (!body.refresh) {
+    //   return Response.json(
+    //     {
+    //       ok: false,
+    //       message: "Please Provide Refresh Token",
+    //     },
+    //     { status: 400 },
+    //   );
+    // }
 
     if (!cookieHeader) {
+      console.log("WHat on Earth is Happening!!!");
       return Response.json(
         {
           ok: false,
@@ -91,6 +92,23 @@ export async function POST(req: NextRequest) {
         { status: 401 },
       );
     }
+
+    const refreshToken = await getCookieHeader(false, true);
+    if (!refreshToken) {
+      console.log("WHat on Earth is Happening!!!");
+      return Response.json(
+        {
+          ok: false,
+          message: "No refresh token found",
+          code: "NO_REFRESH_TOKEN",
+        },
+        { status: 401 },
+      );
+    }
+
+    const body = JSON.stringify({
+      refresh: refreshToken,
+    });
 
     const response = await fetch(
       `${API_CONFIG.baseUrl}/auth/refresh-user-token`,

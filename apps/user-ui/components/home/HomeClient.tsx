@@ -81,7 +81,7 @@ export default function HomeClient({
 
   console.log(topVendors);
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-24 mx-auto">
       {/* Welcome Header */}
       <section className="bg-white shadow-sm">
         <div className="container max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-6">

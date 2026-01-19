@@ -7,22 +7,16 @@ import {
   CarouselItem,
 } from "@repo/ui/components/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import {
-  Card,
-  CardContent,
-} from "@repo/ui/components/card";
+import { Card, CardContent } from "@repo/ui/components/card";
 import { Avatar, AvatarFallback } from "@repo/ui/components/avatar";
 
 export default function Testimonials() {
   return (
-    <section className="w-full px-6 md:px-16 py-16 bg-white">
+    <section id="testimonials" className="w-full px-6 md:px-16 py-16 bg-white">
       <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">
         What People Are Saying
       </h2>
-      <Carousel
-        className="w-full"
-        plugins={[Autoplay({ delay: 4000 })]}
-      >
+      <Carousel className="w-full" plugins={[Autoplay({ delay: 4000 })]}>
         <CarouselContent>
           {REVIEWS.map((review, index) => (
             <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">

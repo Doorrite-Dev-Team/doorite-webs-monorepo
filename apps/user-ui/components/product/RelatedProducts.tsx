@@ -47,7 +47,8 @@ export default function RelatedProducts({ products }: RelatedProductsProps) {
             description: product.description,
             price: product.basePrice,
             quantity: 1,
-            vendor_name: product.vendor.businessName,
+            vendorName: product.vendor.businessName,
+            vendorId: product.vendorId,
           },
         ]);
       }
