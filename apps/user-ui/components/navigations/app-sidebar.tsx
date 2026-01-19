@@ -18,6 +18,7 @@ import {
   Shield,
   Info,
   Rocket,
+  ChevronDown,
 } from "lucide-react";
 import { useAtom, useSetAtom } from "jotai";
 import Image from "next/image";
@@ -35,6 +36,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from "@repo/ui/components/sidebar";
 import {
   Avatar,
@@ -42,13 +46,10 @@ import {
   AvatarImage,
 } from "@repo/ui/components/avatar";
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem as NavItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@repo/ui/components/navigation-menu";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@repo/ui/components/collapsible";
 import { Button } from "@repo/ui/components/button";
 import { cn } from "@repo/ui/lib/utils";
 import { Route } from "next";
@@ -110,6 +111,7 @@ export function AppSidebar() {
   const logout = useSetAtom(logoutAtom);
   const disconect = useSetAtom(disconnectSocketAtom);
   const router = useRouter();
+  const [isLandingOpen, setIsLandingOpen] = React.useState(false);
 
   const signOut = async () => {
     await authService.logout();
@@ -131,7 +133,7 @@ export function AppSidebar() {
               className="hover:bg-transparent"
             >
               <Link href={isLoggedIn ? "/home" : "/landing"}>
-                <div className="flex aspect-square size-9 items-center justify-center rounded-xl shadow-lg shadow-primary/20 text-white">
+                <div className="flex aspect-square size-9 items-center justify-center rounded-xl text-white">
                   <Image
                     src={dooriteLogo}
                     alt="Logo"
@@ -166,45 +168,49 @@ export function AppSidebar() {
                   (item as (typeof publicRoutes)[0]).isDropdown
                 ) {
                   return (
-                    <SidebarMenuItem key={item.href}>
-                      <NavigationMenu className="max-w-full justify-start">
-                        <NavigationMenuList className="flex-col items-start space-x-0">
-                          <NavItem className="w-full">
-                            <NavigationMenuTrigger
+                    <Collapsible
+                      key={item.href}
+                      open={isLandingOpen}
+                      onOpenChange={setIsLandingOpen}
+                      className="group/collapsible"
+                    >
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton
+                            className={cn(
+                              "h-10 px-3 gap-3",
+                              isActive && "bg-primary/5 text-primary",
+                            )}
+                          >
+                            <item.icon className="size-5 shrink-0" />
+                            <span className="font-medium">{item.title}</span>
+                            <ChevronDown
                               className={cn(
-                                "w-full justify-start gap-3 bg-transparent hover:bg-gray-100 h-10 px-3",
-                                isActive && "bg-primary/5 text-primary",
+                                "ml-auto size-4 transition-transform duration-200",
+                                isLandingOpen && "rotate-180",
                               )}
-                            >
-                              <item.icon className="size-5 shrink-0" />
-                              <span className="font-medium">{item.title}</span>
-                            </NavigationMenuTrigger>
-                            <NavigationMenuContent className="flex flex-col p-2 min-w-[240px] gap-1 bg-white/95 backdrop-blur-md">
-                              {landingSections.map((section) => (
-                                <NavigationMenuLink asChild key={section.href}>
+                            />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            {landingSections.map((section) => (
+                              <SidebarMenuSubItem key={section.href}>
+                                <SidebarMenuSubButton asChild>
                                   <a
                                     href={section.href}
-                                    className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group"
+                                    className="flex items-center gap-3"
                                   >
-                                    <div className="p-2 rounded-md bg-gray-100 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                                      <section.icon className="size-4" />
-                                    </div>
-                                    <div className="flex flex-col gap-0.5">
-                                      <span className="text-sm font-semibold">
-                                        {section.title}
-                                      </span>
-                                      <span className="text-[11px] text-muted-foreground line-clamp-1">
-                                        {section.description}
-                                      </span>
-                                    </div>
+                                    <section.icon className="size-4" />
+                                    <span>{section.title}</span>
                                   </a>
-                                </NavigationMenuLink>
-                              ))}
-                            </NavigationMenuContent>
-                          </NavItem>
-                        </NavigationMenuList>
-                      </NavigationMenu>
-                    </SidebarMenuItem>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
                   );
                 }
 
