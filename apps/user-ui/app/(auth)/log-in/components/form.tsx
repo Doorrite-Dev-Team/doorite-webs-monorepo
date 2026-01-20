@@ -4,8 +4,6 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Mail, EyeOff, Eye, Lock, Loader2 } from "lucide-react";
 import React, { useState } from "react";
-// import { loginUser } from "@/actions/auth";
-// import { showToast } from "@/components/Toast";
 import { userAtom } from "@/store/userAtom";
 import { useSetAtom } from "jotai";
 import { useRouter } from "next/navigation";
@@ -18,13 +16,6 @@ type FormData = {
   email: string;
   password: string;
 };
-
-// Use the imported User type for consistency
-// type LoginResponse = {
-//   ok: boolean;
-//   message?: string;
-//   user?: User; // Use the Jotai User type
-// };
 
 const LogingForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -39,22 +30,28 @@ const LogingForm = () => {
     formState: { errors, isSubmitting },
   } = useForm<FormData>();
 
-  const onSubmit = handleSubmit(async (data) => {
+  const onSubmit = handleSubmit(async (data, e) => {
+    e?.preventDefault();
     setErrorMessage(undefined);
     try {
-      const { data: res } = await authService.login(data.email, data.password);
+      const res = await authService.login(data.email, data.password);
       console.log("Login response:", res);
 
-      if (!res || !res.user) {
+      if (!res.data || !res.data.user) {
         const msg = res?.message || "Invalid response from server.";
         setErrorMessage(msg);
         toast.error("Login Failed", { description: msg });
         return;
       }
 
-      setUser(res.user);
-      router.refresh();
-      router.push("/home");
+      if (res.ok) {
+        setUser(res.data.user);
+        toast.success("Redirecting to Home Page...");
+        setTimeout(() => {
+          window.location.href = "/home";
+          router.refresh();
+        }, 500); // Give mobile 500ms to settle the cookie
+      }
     } catch (error) {
       let errMsg = "Cannot login";
       if (isAxiosError(error)) {

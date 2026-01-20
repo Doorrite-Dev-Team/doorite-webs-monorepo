@@ -5,7 +5,7 @@ import { Metadata } from "next";
 
 import ProductPageClient from "@/components/product/ProductPageClient";
 import ProductSkeleton from "@/components/product/ProductSkeleton";
-import { api } from "@/actions/api";
+import { serverApi as api } from "@/libs/api-server";
 
 // Metadata generation for SEO
 export async function generateMetadata({

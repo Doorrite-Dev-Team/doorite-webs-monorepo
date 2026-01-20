@@ -1,7 +1,7 @@
 import { apiClient } from "@/libs/api-client";
 import { toast } from "@repo/ui/components/sonner";
 
-// src/lib/api.ts (or equivalent)
+// actions/api.ts
 
 interface PasswordForm {
   currentPassword: string;
@@ -77,7 +77,7 @@ export const api = {
   fetchProduct: async (id: string) => {
     try {
       const { data }: SuccessResponse<{ product: Product }> =
-        await apiClient.get(`/products/${id}`);
+        await apiClient.get(`/products/${id}`, { withCredentials: true });
       console.log(data);
       return data.product;
     } catch (error) {

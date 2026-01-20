@@ -29,9 +29,19 @@ import { SidebarTrigger } from "@repo/ui/components/sidebar";
 import { cn } from "@repo/ui/lib/utils";
 import { disconnectSocketAtom } from "@/store/socketAtom";
 import { authService } from "@/libs/api-client";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+  BreadcrumbItem,
+  BreadcrumbPage,
+  BreadcrumbLink,
+} from "@repo/ui/components/breadcrumb";
+import { Route } from "next";
+import { usePathname } from "next/navigation";
 
 const Header = () => {
-  // const pathname = usePathname() ?? "/";
+  const pathname = usePathname();
   const router = useRouter();
   const [isLoggedIn] = useAtom(isLoggedInAtom);
   const [user] = useAtom(userAtom);
@@ -59,6 +69,25 @@ const Header = () => {
   // const isPublicPage = ["/landing", "/about", "/privacy", "/terms"].includes(
   //   pathname,
   // );
+  //
+  // Generate breadcrumbs from pathname
+  const generateBreadcrumbs = () => {
+    const paths = pathname.split("/").filter(Boolean);
+    const breadcrumbs = [{ name: "Home", path: "/" }];
+
+    let currentPath = "";
+    paths.forEach((path) => {
+      currentPath += `/${path}`;
+      const name = path.charAt(0).toUpperCase() + path.slice(1);
+      if (name !== "Home") {
+        breadcrumbs.push({ name, path: currentPath });
+      }
+    });
+
+    return breadcrumbs;
+  };
+
+  const breadcrumbs = generateBreadcrumbs();
 
   return (
     <header className="bg-white/80 backdrop-blur-xl border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
@@ -84,10 +113,37 @@ const Header = () => {
               className="w-8 h-8"
               priority
             />
-            <span className="font-bold text-lg sm:text-xl text-primary">
+            <span className="font-bold sm:hidden text-xl text-primary">
               Doorrite
             </span>
           </Link>
+
+          {isLoggedIn && (
+            <div className="hidden lg:block">
+              <Breadcrumb>
+                <BreadcrumbList>
+                  {breadcrumbs.map((crumb, index) => (
+                    <React.Fragment key={crumb.path}>
+                      {index > 0 && <BreadcrumbSeparator />}
+                      <BreadcrumbItem>
+                        {index === breadcrumbs.length - 1 ? (
+                          <BreadcrumbPage className="font-semibold">
+                            {crumb.name}
+                          </BreadcrumbPage>
+                        ) : (
+                          <BreadcrumbLink asChild>
+                            <Link href={crumb.path as Route<string>}>
+                              {crumb.name}
+                            </Link>
+                          </BreadcrumbLink>
+                        )}
+                      </BreadcrumbItem>
+                    </React.Fragment>
+                  ))}
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+          )}
         </div>
 
         {/* Right Section */}
