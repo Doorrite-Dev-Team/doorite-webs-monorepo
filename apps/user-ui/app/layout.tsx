@@ -23,12 +23,12 @@ export const metadata: Metadata = {
   icons: {
     icon: "/icon.ico",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+  // viewport: {
+  //   width: "device-width",
+  //   initialScale: 1,
+  //   maximumScale: 1,
+  //   userScalable: false,
+  // },
 };
 
 export default function RootLayout({

@@ -18,7 +18,7 @@ import CartSummaryFloat from "@/components/cart/CartSummaryFloat";
 import RelatedVendors from "@/components/vendor/RelatedVendors";
 import VendorSkeleton from "@/components/vendor/VendorSkeleton";
 import { Metadata } from "next";
-import { api } from "@/actions/api";
+import { serverApi as api } from "@/libs/api-server";
 import { calculateVendorPriceRange } from "@/libs/helper";
 
 // Metadata generation for SEO
