@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { useAtom } from "jotai";
 import { logoutAtom } from "@/store/userAtom";
 import { logout } from "@/actions/auth";
+import { toast } from "@repo/ui/components/sonner";
 
 // Notifications Settings Dialog
 export const NotificationsDialog = ({
@@ -212,9 +213,15 @@ export const SignOutDialog = () => {
   const logOut = async () => {
     // await tokenManager.clear();
     await logout();
-    await logUserOut();
+
+    setTimeout(() => {
+      toast.success("Successfully logged out!");
+      logUserOut();
+      window.location.href = "/log-in";
+      router.refresh();
+    }, 500);
     ///////////////////////////
-    router.push("/log-in");
+    // router.push("/log-in");
   };
   const router = useRouter();
   return (

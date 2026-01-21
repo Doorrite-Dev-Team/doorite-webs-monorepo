@@ -12,7 +12,7 @@ interface ServerToClientEvents {
 
   // General: System/Info updates
   notification: (data: Notification) => void;
-  "pending-notifications": (data: Notification[]) => void;
+  "pending-notifications": (pending: Notification[]) => void;
   connect: () => void;
   disconnect: () => void;
 }
@@ -50,12 +50,15 @@ export const initSocketAtom = atom(null, (get, set, token: string) => {
   });
 
   socket.on("notification", (data) => {
+    console.log("Notification received:", data);
     playSound("pop");
     set(addNotificationAtom, data);
+    socket.emit("notification-read", data.id);
   });
 
-  socket.on("pending-notifications", (data) => {
-    for (const n of data) {
+  socket.on("pending-notifications", (pending: Notification[]) => {
+    for (const n of pending) {
+      console.log("Pending notification:", n);
       set(addNotificationAtom, n);
       socket.emit("notification-read", n.id);
     }
@@ -68,6 +71,7 @@ export const initSocketAtom = atom(null, (get, set, token: string) => {
 
 // New: Disconnect Atom
 export const disconnectSocketAtom = atom(null, (get, set) => {
+  toast.loading("Disconnecting from DoorRite Socket...", { duration: 2000 });
   const socket = get(socketAtom);
   if (socket) {
     socket.removeAllListeners();

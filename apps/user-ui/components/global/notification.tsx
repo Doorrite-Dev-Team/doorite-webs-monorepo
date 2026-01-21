@@ -127,7 +127,7 @@ export default function NotificationPanel() {
                   Notifications
                 </SheetTitle>
                 <SheetDescription className="text-sm text-gray-600 mt-1">
-                  Orders, payments, and updates
+                  System, Orders, payments, and updates
                 </SheetDescription>
               </div>
             </div>

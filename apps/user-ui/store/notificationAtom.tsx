@@ -111,7 +111,26 @@ export const addNotificationAtom = atom(
   },
 );
 
-// WebSocket connection status atom
-export const wsConnectionAtom = atom<
-  "connected" | "disconnected" | "connecting" | "error"
->("disconnected");
+// Writable atom to handle the "pendingNotifications" logic
+// export const pendingNotificationsAtom = atom(
+//   null,
+//   (get, set, pending: Notification[]) => {
+//     const prev = get(notificationStateAtom);
+
+//     // Check for duplicates
+//     const newNotifications = pending.filter(
+//       (n) => !prev.notifications.some((p) => p.id === n.id),
+//     );
+
+//     const updatedNotifications = [
+//       ...prev.notifications,
+//       ...newNotifications,
+//     ].slice(0, 100);
+
+//     set(notificationStateAtom, {
+//       notifications: updatedNotifications,
+//       lastSync: new Date().toISOString(),
+//       unreadCount: updatedNotifications.filter((n) => !n.read).length,
+//     });
+//   },
+// );

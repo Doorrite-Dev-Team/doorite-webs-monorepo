@@ -8,6 +8,7 @@ import { Button } from "@repo/ui/components/button";
 import { Badge } from "@repo/ui/components/badge";
 import { Route } from "next";
 import { isVendorOpen } from "@/libs/utils";
+import { useCart } from "@/hooks/use-cart";
 
 interface ProductCardProps {
   product: Product;
@@ -15,6 +16,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const lowestPrice = product.basePrice;
+  const { addItem } = useCart();
 
   return (
     <Link href={`/product/${product.id}` as Route<string>}>
@@ -64,7 +66,20 @@ export default function ProductCard({ product }: ProductCardProps) {
               )}
             </div>
 
-            <Button size="sm" className="gap-1">
+            <Button
+              size="sm"
+              className="gap-1"
+              onClick={() =>
+                addItem({
+                  id: product.id,
+                  name: product.name,
+                  price: lowestPrice ?? 0,
+                  vendorId: product.vendorId,
+                  vendorName: product.vendor?.businessName,
+                  quantity: 1,
+                })
+              }
+            >
               <ShoppingCart className="w-4 h-4" />
               Add
             </Button>
