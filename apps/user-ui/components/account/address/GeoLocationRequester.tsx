@@ -14,6 +14,7 @@ interface GeoLocationRequesterProps {
     preview?: { display_name?: string; state?: string; country?: string },
   ) => void;
   onCancel: () => void;
+  showPreview?: boolean;
 }
 
 interface ReverseGeoResult {
@@ -25,6 +26,7 @@ interface ReverseGeoResult {
 export default function GeoLocationRequester({
   onAccept,
   onCancel,
+  showPreview,
 }: GeoLocationRequesterProps) {
   const { error, loading, latitude, longitude } = useGeolocation({
     enableHighAccuracy: true,
@@ -39,6 +41,7 @@ export default function GeoLocationRequester({
 
   // Reverse geocode when coordinates are available
   React.useEffect(() => {
+    if (!showPreview) return;
     if (latitude == null || longitude == null) return;
 
     const fetchReverseGeocode = async () => {
@@ -52,7 +55,7 @@ export default function GeoLocationRequester({
         const response = await fetch(url, {
           headers: {
             Accept: "application/json",
-            "User-Agent": "food-delivery-app/1.0",
+            "User-Agent": "Doorrite:food-delivery-app/1.0",
           },
         });
 
@@ -84,7 +87,7 @@ export default function GeoLocationRequester({
     // Small delay to avoid rate limiting
     const timer = setTimeout(fetchReverseGeocode, 500);
     return () => clearTimeout(timer);
-  }, [latitude, longitude]);
+  }, [latitude, longitude, showPreview]);
 
   const handleAccept = () => {
     if (latitude == null || longitude == null) {
@@ -186,62 +189,62 @@ export default function GeoLocationRequester({
               <p className="text-xs font-mono text-gray-600">
                 {latitude.toFixed(6)}, {longitude.toFixed(6)}
               </p>
-              {/*<div className="w-full flex gap-2 items-center">
-                <Input value={displayName} />
-                <Button onClick={changeDisplayName}>OK</Button>
-              </div>*/}
             </div>
 
-            {/* Reverse geocode status */}
-            {reverseLoading && (
-              <div className="flex items-center gap-2 text-sm text-blue-700 mb-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Fetching address details...
-              </div>
-            )}
+            {showPreview && (
+              <>
+                {/* Reverse geocode status */}
+                {reverseLoading && (
+                  <div className="flex items-center gap-2 text-sm text-blue-700 mb-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Fetching address details...
+                  </div>
+                )}
 
-            {reverseError && (
-              <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800 mb-2">
-                <p className="font-medium">Address preview unavailable</p>
-                <p className="text-xs mt-1">
-                  You can still use the coordinates. {reverseError}
-                </p>
-              </div>
-            )}
+                {reverseError && (
+                  <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800 mb-2">
+                    <p className="font-medium">Address preview unavailable</p>
+                    <p className="text-xs mt-1">
+                      You can still use the coordinates. {reverseError}
+                    </p>
+                  </div>
+                )}
 
-            {preview?.display_name && (
-              <div className="p-3 bg-white border border-green-200 rounded-lg mb-2">
-                <div className="flex items-start gap-2 mb-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm font-medium text-gray-900">
-                    Detected Address:
-                  </p>
-                </div>
-                <p className="text-sm text-gray-700 mb-2 pl-6">
-                  {preview.display_name}
+                {preview?.display_name && (
+                  <div className="p-3 bg-white border border-green-200 rounded-lg mb-2">
+                    <div className="flex items-start gap-2 mb-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm font-medium text-gray-900">
+                        Detected Address:
+                      </p>
+                    </div>
+                    <p className="text-sm text-gray-700 mb-2 pl-6">
+                      {preview.display_name}
+                    </p>
+                    {(preview.state || preview.country) && (
+                      <p className="text-xs text-gray-600 pl-6">
+                        {[preview.state, preview.country]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <p className="text-yellow-400 font-bold text-sm italic">
+                  Always Accept the Detected Address
                 </p>
-                {(preview.state || preview.country) && (
-                  <p className="text-xs text-gray-600 pl-6">
-                    {[preview.state, preview.country]
-                      .filter(Boolean)
-                      .join(", ")}
+                <p className="text-red-500 font-bold text-sm italic">
+                  Please Note: The Detected Address may not be Accurate Hence,
+                  Kindly Change your Address after Acceptance If not Accurate.
+                </p>
+
+                {!reverseLoading && !preview?.display_name && !reverseError && (
+                  <p className="text-sm text-gray-700 mb-2">
+                    Location coordinates captured. You can manually enter the
+                    address details.
                   </p>
                 )}
-              </div>
-            )}
-            <p className="text-yellow-400 font-bold text-sm italic">
-              Always Accept the Detected Address
-            </p>
-            <p className="text-red-500 font-bold text-sm italic">
-              Please Note: The Detected Address may not be Accurate Hence,
-              Kindly Change your Address after Acceptance If not Accurate.
-            </p>
-
-            {!reverseLoading && !preview?.display_name && !reverseError && (
-              <p className="text-sm text-gray-700 mb-2">
-                Location coordinates captured. You can manually enter the
-                address details.
-              </p>
+              </>
             )}
           </div>
         </div>

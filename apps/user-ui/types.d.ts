@@ -5,12 +5,15 @@
 declare type Role = "CUSTOMER" | "ADMIN";
 declare type VehicleType = "MOTORCYCLE" | "BIKE" | "CAR" | "BICYCLE";
 declare type OrderStatus =
+  | "PENDING_PAYMENT"
   | "PENDING"
   | "ACCEPTED"
   | "PREPARING"
+  | "READY_FOR_PICKUP"
   | "OUT_FOR_DELIVERY"
   | "DELIVERED"
   | "CANCELLED";
+
 declare type PaymentStatus = "PENDING" | "SUCCESSFUL" | "FAILED" | "REFUNDED";
 declare type DeliveryStatus =
   | "WAITING_PICKUP"
@@ -184,6 +187,7 @@ declare interface SuccessResponse<T = unknown | Record<string, string>> {
     ok: true;
   } & T;
   message: string; // Added from previous API implementation
+  ok: boolean;
 }
 
 declare interface ClientError {

@@ -226,12 +226,16 @@ export const api = {
       const { data }: SuccessResponse<{ order: Order }> = await apiClient.get(
         `/orders/${id}`,
       );
-
+      console.log(data);
       return data.order;
     } catch (error) {
-      if (typeof window !== "undefined")
-        toast(`Unable to fetch Order: ${(error as Error).message}`);
-      toast(`Unable to fetch Order: ${(error as Error).message}`);
+      // Log errors on the server for debugging
+      console.error(
+        `[Server API] Unable to fetch Order ${id}:`,
+        (error as Error).message,
+      );
+
+      // Return null so the page can call notFound() or show an error state
       return null;
     }
   },
