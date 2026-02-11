@@ -83,10 +83,10 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-32 sm:pb-8">
+    <div className="min-h-screen bg-gray-50 pb-50 sm:pb-8">
       <div className="container max-w-6xl mx-auto px-4 py-6 sm:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between gap-4 mb-6 sm:mb-8">
+        <div className="flex items-center justify-between gap-4 mb-20 sm:mb-8">
           <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/home"

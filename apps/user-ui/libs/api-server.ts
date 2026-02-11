@@ -33,6 +33,7 @@ const serverFetch = async <T>(
 
   // Standardize the response to match your client-side data shape
   return {
+    ok: true,
     data: {
       ok: true,
       ...(json?.data ?? json ?? {}),
@@ -114,7 +115,7 @@ export const serverApi = {
   fetchVendorsProduct: async (id: string, params?: string) => {
     try {
       const res = await serverFetch<{ products: Product[] }>(
-        `/vendors/${id}/products?${params || ""}`,
+        `/vendors/${id}/products/${params || ""}`,
       );
       return res.data.products || [];
     } catch (error) {

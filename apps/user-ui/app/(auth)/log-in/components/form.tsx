@@ -46,7 +46,7 @@ const LogingForm = () => {
 
       if (res.ok) {
         setUser(res.data.user);
-        toast.success("Redirecting to Home Page...");
+        toast.loading("Redirecting to Home Page...");
         setTimeout(() => {
           window.location.href = "/home";
           router.refresh();

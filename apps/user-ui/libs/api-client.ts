@@ -77,11 +77,11 @@ export async function handleApiError(error: unknown) {
       // return error;
     }
 
-    // return (
-    //   axiosError.response?.data?.message ||
-    //   axiosError.message ||
-    //   "An error occurred"
-    // );
+    return (
+      axiosError.response?.data?.message ||
+      axiosError.message ||
+      "An error occurred"
+    );
     // return error;
   }
 

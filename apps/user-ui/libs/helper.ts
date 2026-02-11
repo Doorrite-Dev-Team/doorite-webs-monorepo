@@ -11,49 +11,6 @@ export function humanizePath(pathname: string) {
   return words?.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-// export type status =
-//   | "delivered"
-//   | "preparing"
-//   | "cancelled"
-//   | "incoming"
-//   | "out-for-delivery";
-
-// export const getStatusColor = (status: status) => {
-//   const colors = {
-//     delivered: "bg-green-100 text-green-800 border-green-200",
-//     "out-for-delivery": "bg-blue-100 text-blue-800 border-blue-200",
-//     preparing: "bg-yellow-100 text-yellow-800 border-yellow-200",
-//     cancelled: "bg-red-100 text-red-800 border-red-200",
-//     incoming: "bg-purple-100 text-purple-800 border-purple-200",
-//   };
-//   return colors[status] || "bg-gray-100 text-gray-800 border-gray-200";
-// };
-
-// export const formatTime = (timeString: string) => {
-//   return new Date(timeString).toLocaleTimeString("en-US", {
-//     hour: "numeric",
-//     minute: "2-digit",
-//     hour12: true,
-//   });
-// };
-
-// export const formatDate = (timeString: string) => {
-//   return new Date(timeString).toLocaleDateString("en-US", {
-//     month: "short",
-//     day: "numeric",
-//     year: "numeric",
-//   });
-// };
-
-// export const getInitials = (s: string) => {
-//   const splices = s.split(" ");
-//   let I = "";
-//   for (const splice of splices) {
-//     I += splice[0]?.toUpperCase();
-//   }
-//   return I;
-// };
-
 // Format time from ISO string or Date
 export function formatTime(dateString: string | Date): string {
   const date =
@@ -110,6 +67,8 @@ export function getRelativeTime(dateString: string): string {
 // Get status color class for badges
 export function getStatusColor(status: string): string {
   switch (status) {
+    case "PENDING_PAYMENT":
+      return "bg-yellow-100 text-yellow-700 border-yellow-200";
     case "PENDING":
       return "bg-yellow-100 text-yellow-700 border-yellow-200";
     case "ACCEPTED":
@@ -128,8 +87,10 @@ export function getStatusColor(status: string): string {
 }
 
 // Get human-readable status label
-export function getStatusLabel(status: OrderStatus): string {
+export function getStatusLabel(status: string): string {
   switch (status) {
+    case "PENDING_PAYMENT":
+      return "Awaiting Payment";
     case "PENDING":
       return "Order Placed";
     case "ACCEPTED":
@@ -152,12 +113,16 @@ export function getPaymentStatusLabel(status: PaymentStatus): string {
   switch (status) {
     case "PENDING":
       return "Payment Pending";
+
     case "SUCCESSFUL":
       return "Paid";
+
     case "FAILED":
       return "Payment Failed";
+
     case "REFUNDED":
       return "Refunded";
+
     default:
       return status;
   }
@@ -168,12 +133,16 @@ export function getPaymentStatusColor(status: PaymentStatus): string {
   switch (status) {
     case "PENDING":
       return "bg-yellow-100 text-yellow-700";
+
     case "SUCCESSFUL":
       return "bg-green-100 text-green-700";
+
     case "FAILED":
       return "bg-red-100 text-red-700";
+
     case "REFUNDED":
       return "bg-blue-100 text-blue-700";
+
     default:
       return "bg-gray-100 text-gray-700";
   }
@@ -182,12 +151,14 @@ export function getPaymentStatusColor(status: PaymentStatus): string {
 // Calculate estimated delivery time based on order status
 export function calculateEstimatedDelivery(
   placedAt: string,
-  status: OrderStatus,
+  status: string,
 ): string {
   const placed = new Date(placedAt);
-  let estimatedMinutes = 45; // Default
+  let estimatedMinutes = 45;
 
   switch (status) {
+    case "PENDING_PAYMENT":
+      return "Waiting for payment"; // Overridden for clarity
     case "PENDING":
       estimatedMinutes = 45;
       break;

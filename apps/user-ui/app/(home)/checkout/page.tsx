@@ -1,96 +1,102 @@
 "use client";
 
-import { useAtomValue } from "jotai";
+// import { useAtomValue } from "jotai";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { Route } from "next";
+import { toast } from "@repo/ui/components/sonner";
 
-// Assuming these are defined in your project
 import {
   OrderItemsCard,
   OrderSummaryCard,
   PaymentMethodCard,
 } from "@/components/checkout/cards";
 import { SuccessDialog } from "@/components/checkout/dialogs";
-import { userAtom } from "@/store/userAtom";
-import AddressSelection from "@/components/checkout/AddressSelection";
-import CheckoutAddressDialog from "@/components/checkout/CheckoutAddressDialog";
+import DeliverySelection from "@/components/checkout/InfoSelection";
+import DeliveryDialog from "@/components/checkout/InfoDialog";
+import DeliveryInstructions from "@/components/checkout/Instructions";
+// import { userAtom } from "@/store/userAtom";
 import { useCart } from "@/hooks/use-cart";
-import { Route } from "next";
 import { apiClient } from "@/libs/api-client";
-import { toast } from "@repo/ui/components/sonner";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/actions/api";
+import { useAtomValue } from "jotai";
+import { hasConflict } from "@/store/cartAtom";
 
-// Type definitions for checkout
-interface CheckoutAddressData {
+interface DeliveryData {
   fullName: string;
-  phone: string;
+  phoneNumber: string;
   email: string;
   address: string;
   state: string;
   country: string;
-  coordinates?: Coordinates | null;
+  coordinates: Coordinates | null;
   instructions?: string;
 }
-
-interface CheckoutContactInfo {
-  fullName: string;
-  phone: string;
-  email: string;
-  instructions?: string;
-}
-
-// --- Main Checkout Page Component ---
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const user = useAtomValue(userAtom);
-
-  // Cart hook
+  const vendorConflict = useAtomValue(hasConflict);
+  // const user = useAtomValue(userAtom);
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: api.fetchProfile,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    retry: 2,
+  });
   const { cart, clearCart, getTotals } = useCart();
 
-  // Local state
   const [paymentMethod, setPaymentMethod] =
     React.useState<BackendPaymentMethod | null>(null);
   const [showSuccessDialog, setShowSuccessDialog] = React.useState(false);
-  const [showAddressDialog, setShowAddressDialog] = React.useState(false);
+  const [showDeliveryDialog, setShowDeliveryDialog] = React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
 
-  // Address state
   const [selectedAddress, setSelectedAddress] = React.useState<Address | null>(
     null,
   );
-  const [contactInfo, setContactInfo] = React.useState<{
-    fullName: string;
-    phone: string;
-    email: string;
-    instructions?: string;
-  }>({
-    fullName: user?.fullName || "",
-    phone: user?.phoneNumber || "",
-    email: user?.email || "",
-    instructions: "",
-  });
+  const [deliveryData, setDeliveryData] = React.useState<DeliveryData | null>(
+    null,
+  );
+  const [instructions, setInstructions] = React.useState("");
 
-  const [newAddressData, setNewAddressData] =
-    React.useState<CheckoutAddressData | null>(null);
+  // Redirect if no user or empty cart
+  React.useEffect(() => {
+    if (cart.length === 0 && !showSuccessDialog) {
+      router.push("/cart");
+    }
+  }, [cart.length, router, showSuccessDialog]);
 
-  // Calculate delivery address for API submission
+  const handleAddressSelect = (address: Address) => {
+    setSelectedAddress(address);
+    setDeliveryData(null);
+    setInstructions(""); // Reset instructions when switching addresses
+  };
+
+  const handleNewDelivery = (data: DeliveryData) => {
+    setDeliveryData(data);
+    setSelectedAddress(null);
+    setInstructions(data.instructions || ""); // Use instructions from new delivery data
+    setShowDeliveryDialog(false);
+  };
+
   const getDeliveryAddress = (): Address => {
     if (selectedAddress) {
+      return selectedAddress;
+    }
+    if (deliveryData) {
       return {
-        ...selectedAddress,
-        // Override contact info with current checkout data
-        ...contactInfo,
-      };
-    } else if (newAddressData) {
-      return {
-        address: newAddressData.address,
-        state: newAddressData.state,
-        country: newAddressData.country,
-        coordinates: newAddressData.coordinates || { lat: 0, long: 0 },
+        address: deliveryData.address,
+        state: deliveryData.state,
+        country: deliveryData.country,
+        coordinates: deliveryData.coordinates || { lat: 0, long: 0 },
       };
     }
-    // Fallback - shouldn't happen
     return {
       address: "",
       state: "",
@@ -99,182 +105,158 @@ export default function CheckoutPage() {
     };
   };
 
-  // Get contact info for order submission
-  const getOrderContactInfo = () => {
-    if (newAddressData) {
+  const getContactInfo = () => {
+    if (deliveryData) {
       return {
-        fullName: newAddressData.fullName,
-        phone: newAddressData.phone,
-        email: newAddressData.email,
-        instructions: newAddressData.instructions,
+        fullName: deliveryData.fullName,
+        phoneNumber: deliveryData.phoneNumber,
+        email: deliveryData.email,
+        instructions: instructions, // Use current instructions state
       };
     }
-    return contactInfo;
+    return {
+      fullName: user?.fullName || "",
+      phoneNumber: user?.phoneNumber || "",
+      email: user?.email || "",
+      instructions: instructions, // Use current instructions state
+    };
   };
 
-  // Redirect if cart is empty
-  React.useEffect(() => {
-    if (cart.length === 0 && !showSuccessDialog) {
-      router.push("/cart");
-    }
-  }, [cart.length, router, showSuccessDialog]);
-
-  // Check if user has address data
-  const hasCompleteAddress = selectedAddress || newAddressData;
-
-  // Handle address selection
-  const handleAddressSelect = (
-    address: Address | null,
-    contactInfo?: CheckoutContactInfo,
-  ) => {
-    setSelectedAddress(address);
-    if (address && contactInfo) {
-      setContactInfo(contactInfo);
-    }
-    setNewAddressData(null);
-  };
-
-  // Handle new address submission
-  const handleNewAddress = (addressData: CheckoutAddressData) => {
-    setNewAddressData(addressData);
-    setSelectedAddress(null);
-  };
-
-  /**
-   * REFACTORED: Handles order creation and payment initialization via the backend API.
-   *
-   * 1. POST /api/v1/orders: Creates the Order (PENDING) and gets orderId/nextAction.
-   * 2. If PAYSTACK, POST /api/v1/orders/:id/payments/create-intent: Gets Paystack authorization URL.
-   * 3. Redirects to Paystack (or to order tracking for COD).
-   */
   const handlePlaceOrder = async () => {
-    // 1. Validation
-    const contact = getOrderContactInfo();
+    const contact = getContactInfo();
+    const hasAddress = selectedAddress || deliveryData;
+    let vendorId = vendorConflict?.currentVendor;
+
+    if (!vendorId) {
+      vendorId = cart[0]?.vendorId;
+    }
 
     if (
       !contact.fullName ||
-      !contact.phone ||
+      !contact.phoneNumber ||
       !contact.email ||
-      !hasCompleteAddress
+      !hasAddress ||
+      !vendorId
     ) {
-      toast.error(
-        "Please fill in all required delivery details and select an address",
-      );
-      if (!hasCompleteAddress) {
-        setShowAddressDialog(true);
+      toast.error("Please complete delivery details");
+      if (!hasAddress) setShowDeliveryDialog(true);
+      if (!vendorId) {
+        toast.error("Please try again");
       }
       return;
     }
 
+    if (!paymentMethod) {
+      toast.error("Please select a payment method");
+      return;
+    }
+
     if (cart.length === 0) {
-      alert("Your cart is empty");
+      toast.error("Your cart is empty");
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // const paymentMethodEnum: BackendPaymentMethod =
-      //   paymentMethod === "" || paymentMethod === "card"
-      //     ? "PAYSTACK"
-      //     : "CASH_ON_DELIVERY";
+      const items = cart.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+      }));
 
-      // 1. POST /api/v1/orders - Create Order (and PENDING Payment record)
-      const {
-        data,
-      }: SuccessResponse<{
+      const res: SuccessResponse<{
         message?: string;
         order: { id: string; reference: string };
         nextAction: "ORDER_PLACED_COD" | "INITIALIZE_PAYSTACK_PAYMENT";
-      }> = await apiClient.post("/api/v1/orders", {
-        // The backend should calculate the fees/total based on these inputs
-        items: cart.map((item) => ({
-          productId: item.id,
-          quantity: item.quantity,
-        })),
+      }> = await apiClient.post("/orders", {
+        items,
         deliveryAddress: getDeliveryAddress(),
-        contactInfo: contact,
+        contactInfo: { ...contact, phone: contact.phoneNumber },
         paymentMethod: paymentMethod,
+        vendorId,
       });
 
-      if (!data.ok) {
-        throw new Error(data.message || "Failed to create order");
+      if (!res.ok) {
+        throw new Error(res.message || "Failed to create order");
       }
+
+      clearCart();
+
+      const data = res.data;
 
       const orderId = data.order.id;
       const orderReference = data.order.reference;
 
       if (data.nextAction === "ORDER_PLACED_COD") {
-        // --- CASH ON DELIVERY FLOW ---
-        clearCart();
         setShowSuccessDialog(true);
         setTimeout(() => {
           router.push(`/order/${orderId || orderReference}`);
         }, 3000);
       } else if (data.nextAction === "INITIALIZE_PAYSTACK_PAYMENT") {
-        // --- PAYSTACK FLOW ---
+        const initResponse: SuccessResponse<{
+          message: string;
+          authorization_url: string;
+        }> = await apiClient.post(`/orders/${orderId}/payments/create-intent`);
 
-        // 2. POST /orders/:id/payments/create-intent - Get Paystack URL
-        const {
-          data: initIntentResponse,
-        }: SuccessResponse<{ message: string; authorization_url: string }> =
-          await apiClient.post(
-            `/api/v1/orders/${orderId}/payments/create-intent`,
-          );
-
-        // const initIntentResult = await initIntentResponse.json();
-
-        if (!initIntentResponse.ok) {
-          throw new Error(
-            initIntentResponse.message || "Failed to initialize payment",
-          );
+        console.log(initResponse);
+        if (!initResponse.ok) {
+          toast.error(initResponse.message || "Failed to initialize payment");
         }
 
-        const authUrl = initIntentResponse.authorization_url;
-
-        // 3. Client redirects to Paystack URL
-        router.push(authUrl as Route<string>);
+        router.push(initResponse.data.authorization_url as Route<string>);
       } else {
-        throw new Error(data.message || "Unknown next action from server");
+        throw new Error("Unknown action from server");
       }
     } catch (error) {
-      console.error("Order placement error:", error);
-      alert("An error occurred. Please try again.");
+      console.error("Order error:", error);
+      toast.error("Failed to place order. Please try again.");
       setIsProcessing(false);
     }
   };
 
-  if (cart.length === 0) {
-    return null;
-  }
+  // if (!user && !userLoading) return null;
+  if (cart.length === 0) return null;
+
+  const hasSelectedDelivery = selectedAddress || deliveryData;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-32 sm:pb-8">
-      <div className="container max-w-6xl mx-auto px-4 py-6 sm:py-8">
+      <div className="container max-w-6xl mx-auto px-4 py-4 sm:py-6 lg:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 sm:mb-8">
+        <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Back</span>
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-sm sm:text-base font-medium">Back</span>
           </button>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
             Checkout
           </h1>
-          <div className="w-20" />
+          <div className="w-16 sm:w-20" />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <AddressSelection
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+            <DeliverySelection
+              user={user}
               selectedAddress={selectedAddress}
               onAddressSelect={handleAddressSelect}
-              onNewAddress={handleNewAddress}
-              setShowNewAddressDialog={setShowAddressDialog}
+              onNewAddress={() => setShowDeliveryDialog(true)}
+              isLoading={userLoading}
+              error={userError}
+              setShowNewAddressDialog={setShowDeliveryDialog}
             />
+
+            {/* Show instructions card when delivery is selected */}
+            {hasSelectedDelivery && (
+              <DeliveryInstructions
+                instructions={instructions}
+                onInstructionsChange={setInstructions}
+              />
+            )}
 
             <PaymentMethodCard
               paymentMethod={paymentMethod}
@@ -296,14 +278,11 @@ export default function CheckoutPage() {
       </div>
 
       {/* Modals */}
-      <CheckoutAddressDialog
-        open={showAddressDialog}
-        onOpenChange={setShowAddressDialog}
-        onSubmit={(addressData) => {
-          setNewAddressData(addressData);
-          setSelectedAddress(null);
-          setShowAddressDialog(false);
-        }}
+      <DeliveryDialog
+        open={showDeliveryDialog}
+        onOpenChange={setShowDeliveryDialog}
+        onSubmit={handleNewDelivery}
+        user={user}
       />
 
       <SuccessDialog

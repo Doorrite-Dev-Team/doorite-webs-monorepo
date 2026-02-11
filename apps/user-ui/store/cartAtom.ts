@@ -20,15 +20,6 @@ export const EmptyCartAtom = atom(null, (_, set) => {
 
 export const hasConflict = atom<VendorConflictModalProps | null>(null);
 
-// Interfaces
-// export interface CartItem {
-//   id: string;
-//   name: string;
-//   price: number;
-//   quantity: number;
-//   vendor_name: string;
-// }
-
 export interface VendorConflictModalProps {
   isOpen: boolean;
   currentVendor: string | null;
