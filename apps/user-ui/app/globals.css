@@ -1,0 +1,51 @@
+@import "@repo/ui/globals.css";
+@import "tailwindcss";
+
+/* Add this to your globals.css or app.css file */
+
+/* Custom animations for splash screen */
+@keyframes bounce-slow {
+  0%,
+  100% {
+    transform: translateY(-5%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+/* Animation utilities */
+.animate-bounce-slow {
+  animation: bounce-slow 2s infinite;
+}
+
+.animate-pulse-delay-0 {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-pulse-delay-1 {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) 0.2s infinite;
+}
+
+.animate-pulse-delay-2 {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) 0.4s infinite;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

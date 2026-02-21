@@ -1,0 +1,31 @@
+{
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
+    "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4.1.11",
+    "turbo": "^2.5.5",
+    "typescript": "5.8.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "name": "doorite-webs-monorepo",
+  "packageManager": "pnpm@10.26.1",
+  "private": true,
+  "scripts": {
+    "all": "turbo run dev",
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "dev:rider": "turbo run dev --filter rider-ui",
+    "dev:user": "turbo run dev --filter user-ui",
+    "dev:vendor": "turbo run dev --filter vendor-ui",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}
