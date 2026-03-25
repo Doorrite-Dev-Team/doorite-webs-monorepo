@@ -3,9 +3,9 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 
-import ProductPageClient from "@/components/product/ProductPageClient";
+import ProductPageClient from "./ProductPageClient";
 import ProductSkeleton from "@/components/product/ProductSkeleton";
-import { serverApi as api } from "@/libs/api-server";
+import { serverApi as api } from "@/actions/server";
 
 // Metadata generation for SEO
 export async function generateMetadata({

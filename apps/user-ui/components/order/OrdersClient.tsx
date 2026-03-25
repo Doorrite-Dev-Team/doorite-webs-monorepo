@@ -16,7 +16,7 @@ import {
 } from "@repo/ui/components/select";
 import OrderCard from "@/components/order/OrderCard";
 import OrdersPageSkeleton from "@/components/order/OrdersPageSkeleton";
-import { api } from "@/libs/api";
+import { api } from "@/actions/api";
 
 interface OrdersClientProps {
   initialPage?: number;

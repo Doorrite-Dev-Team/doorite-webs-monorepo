@@ -1,11 +1,12 @@
 "use client";
 
 // import { useAtomValue } from "jotai";
-import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { Route } from "next";
 import { toast } from "@repo/ui/components/sonner";
+
+import { PageHeader } from "@/components/headers/PageHeader";
 
 import {
   OrderItemsCard,
@@ -18,7 +19,7 @@ import DeliveryDialog from "@/components/checkout/InfoDialog";
 import DeliveryInstructions from "@/components/checkout/Instructions";
 // import { userAtom } from "@/store/userAtom";
 import { useCart } from "@/hooks/use-cart";
-import { apiClient } from "@/libs/api-client";
+import { apiClient } from "@/libs/api/api-client";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/actions/api";
 import { useAtomValue } from "jotai";
@@ -221,22 +222,8 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-32 sm:pb-8">
-      <div className="container max-w-6xl mx-auto px-4 py-4 sm:py-6 lg:py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-sm sm:text-base font-medium">Back</span>
-          </button>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
-            Checkout
-          </h1>
-          <div className="w-16 sm:w-20" />
-        </div>
-
+      <PageHeader title="Checkout" />
+      <div className="container max-w-7xl mx-auto px-4 py-4 sm:py-6 lg:py-8">
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">

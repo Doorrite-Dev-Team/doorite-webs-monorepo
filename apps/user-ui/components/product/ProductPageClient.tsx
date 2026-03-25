@@ -4,11 +4,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Store,
   Clock,
-  ArrowLeft,
   Info,
   MapPin,
   ChevronRight,
@@ -23,6 +21,7 @@ import { Card, CardContent } from "@repo/ui/components/card";
 import { Button } from "@repo/ui/components/button";
 import { imageBurger as productFallbackImage } from "@repo/ui/assets";
 
+import { PageHeaderWithActions } from "@/components/headers/PageHeader";
 import ProductActions from "@/components/product/ProductActions";
 import ProductAttributes from "@/components/product/ProductAttributes";
 import RelatedProducts from "@/components/product/RelatedProducts";
@@ -39,7 +38,6 @@ export default function ProductPageClient({
   product,
   relatedProducts,
 }: ProductPageClientProps) {
-  const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
   const isOpen = product.vendor.isActive && isVendorOpen(product.vendor);
 
@@ -67,43 +65,34 @@ export default function ProductPageClient({
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
-      {/* Header */}
-      <div className="sticky top-16 z-20 bg-white/80 backdrop-blur-lg border-b shadow-sm">
-        <div className="container max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => router.back()}
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+      <PageHeaderWithActions
+        title={product.name}
+        sticky
+        actions={
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleFavorite}
+              className="rounded-full"
             >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="font-medium hidden sm:inline">Back</span>
-            </button>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleFavorite}
-                className="rounded-full"
-              >
-                <Heart
-                  className={`w-5 h-5 transition-colors ${
-                    isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"
-                  }`}
-                />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleShare}
-                className="rounded-full"
-              >
-                <Share2 className="w-5 h-5 text-gray-600" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+              <Heart
+                className={`w-5 h-5 transition-colors ${
+                  isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"
+                }`}
+              />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleShare}
+              className="rounded-full"
+            >
+              <Share2 className="w-5 h-5 text-gray-600" />
+            </Button>
+          </>
+        }
+      />
 
       <div className="container max-w-7xl mx-auto px-4 py-6 sm:py-8">
         <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">

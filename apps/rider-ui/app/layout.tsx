@@ -14,12 +14,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Doorite Vendor UI",
-  description: "Vendor interface for Doorite",
+  title: "DoorRite Rider",
+  description: "Rider delivery app for DoorRite",
   icons: {
     icon: "/icon.ico",
   },
 };
+
+import Providers from "@/providers";
+import { Toaster } from "@repo/ui/components/sonner";
 
 export default function RootLayout({
   children,
@@ -31,7 +34,10 @@ export default function RootLayout({
       <body
         className={`${plus_Jakarta_Sans.variable} ${geistMono.variable}`}
       >
-        {children}
+        <Providers>
+          {children}
+          <Toaster richColors position="top-center" />
+        </Providers>
       </body>
     </html>
   );

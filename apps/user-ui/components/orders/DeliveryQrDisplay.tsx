@@ -12,7 +12,7 @@ import { toast } from "@repo/ui/components/sonner";
 // Assuming QRCodeGenerator is located here or in a similar path
 // You MUST ensure the QRCodeGenerator component is imported correctly
 import QRCodeGenerator from "@/components/QrCodeGenerator";
-import { apiClient } from "@/libs/api-client";
+import { apiClient } from "@/libs/api/api-client";
 // import Axios from "@/libs/Axios";
 
 // --- TYPES ---

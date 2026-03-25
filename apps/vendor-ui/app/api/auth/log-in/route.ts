@@ -36,11 +36,15 @@ export async function POST(req: NextRequest) {
 
     const data = await response.json();
 
+    console.log(data);
+
     const nextResponse = NextResponse.json(
       {
         ok: response.ok,
         data: response.ok ? data : undefined,
-        message: response.ok ? undefined : data?.message || "Login failed",
+        message: response.ok
+          ? undefined
+          : data?.message || data?.error || "Login failed",
       },
       { status: response.status },
     );

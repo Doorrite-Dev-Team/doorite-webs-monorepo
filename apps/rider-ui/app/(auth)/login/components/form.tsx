@@ -1,141 +1,145 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { toast } from "@repo/ui/components/sonner";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
 import { Button } from "@repo/ui/components/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@repo/ui/components/form";
 import { Input } from "@repo/ui/components/input";
-import { loginUser } from "@/actions/auth";
+import { Mail, EyeOff, Eye, Lock, Loader2 } from "lucide-react";
+import React, { useState } from "react";
+import { riderAtom } from "@/store/riderAtom";
+import { useSetAtom } from "jotai";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { toast } from "@repo/ui/components/sonner";
+import { isAxiosError } from "axios";
+import { authService } from "@/libs/api-client";
 
-// ✅ Validation schema
-const formSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
+type FormData = {
+  email: string;
+  password: string;
+};
 
-type FormValues = z.infer<typeof formSchema>;
-
-export default function LoginForm() {
+const LoginForm = () => {
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+  const [errorMessage, setErrorMessage] = useState<string>();
+
+  const setRider = useSetAtom(riderAtom);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>();
+
+  const onSubmit = handleSubmit(async (data, e) => {
+    e?.preventDefault();
+    setErrorMessage(undefined);
+    try {
+      const res = await authService.login(data.email, data.password);
+      console.log("Login response:", res);
+
+      // Adjust based on actual API response structure for rider
+      // Assuming res.data.rider or res.data.user
+      const riderData = res.data?.rider || res.data?.user;
+
+      if (!riderData) {
+        const msg = res?.message || "Invalid response from server.";
+        setErrorMessage(msg);
+        toast.error("Login Failed", { description: msg });
+        return;
+      }
+
+      if (res.ok) {
+        setRider(riderData);
+        toast.success("Redirecting to Dashboard...");
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+          // router.refresh();
+        }, 500);
+      }
+    } catch (error) {
+      let errMsg = "Cannot login";
+      if (isAxiosError(error)) {
+        errMsg =
+          (error.response?.data && error.response?.data.message) ||
+          error.message ||
+          errMsg;
+      } else if (error instanceof Error) {
+        errMsg = error.message;
+      }
+      setErrorMessage(errMsg);
+      toast.error("Login Failed", { description: errMsg });
+    }
   });
 
-  const onSubmit = async (values: FormValues) => {
-    try {
-      console.log("🟢 Attempting login with:", values);
-
-      const res = await loginUser(values.email, values.password);
-      console.log("🔵 Login response:", res);
-
-      // ✅ Always show exact backend response
-      toast(res?.ok ? "✅ Success" : "❌ Error", {
-        description: res?.message || "No response message from server.",
-      });
-
-      if (!res || !res.ok) {
-        return;
-      }
-
-      const user = res.data;
-      if (!user) {
-        toast("⚠️ Error", { description: "Invalid response from server." });
-        return;
-      }
-
-      // ✅ Save user data to localStorage
-      localStorage.setItem("user", JSON.stringify(user));
-      console.log("💾 Saved user to localStorage:", user);
-
-      // ✅ Extra detail toast for debugging
-      toast("✅ Login Successful", {
-        description: (
-          <pre className="mt-2 w-[300px] rounded-md bg-slate-950 p-4 overflow-x-auto">
-            <code className="text-white">{JSON.stringify(user, null, 2)}</code>
-          </pre>
-        ),
-      });
-
-      // ✅ Redirect to dashboard
-      router.push("/dashboard");
-    } catch (error: any) {
-      console.error("❌ Login failed:", error);
-
-      // ✅ Show backend/network error via toast
-      toast("⚠️ Error", {
-        description:
-          error?.response?.data?.message ||
-          error.message ||
-          "An unexpected error occurred.",
-      });
-    }
-  };
-
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Email Field */}
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="e.g. johndoe@example.com"
-                  type="email"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>Enter your account email</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+    <>
+      <form onSubmit={onSubmit} className="space-y-5">
+        <Input
+          label="Email Address"
+          leftIcon={<Mail className="w-4 h-4" />}
+          {...register("email", {
+            required: "Email is required",
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+              message: "Please enter a valid email address",
+            },
+          })}
+          error={errors.email?.message}
+          placeholder="rider@example.com"
+          type="email"
         />
 
-        {/* Password Field */}
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input placeholder="***********" type="password" {...field} />
-              </FormControl>
-              <FormDescription>
-                Choose a secure password (8+ characters)
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+        <Input
+          label="Password"
+          leftIcon={<Lock className="w-4 h-4" />}
+          {...register("password", {
+            required: "Password is required",
+            minLength: {
+              value: 8,
+              message: "Password must be at least 8 characters",
+            },
+          })}
+          error={errors.password?.message}
+          type={showPassword ? "text" : "password"}
+          placeholder="Enter your password"
+          rightIcon={
+            <button
+              type="button"
+              className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <Eye className="w-4 h-4 text-muted-foreground" />
+              )}
+            </button>
+          }
         />
 
         <Button
           type="submit"
+          size="lg"
           className="w-full"
-          disabled={form.formState.isSubmitting}
+          disabled={isSubmitting}
         >
-          {form.formState.isSubmitting ? "Logging In..." : "Log In"}
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Logging In...
+            </>
+          ) : (
+            "Log In"
+          )}
         </Button>
       </form>
-    </Form>
+
+      {errorMessage && (
+        <p className="my-4 text-red-500 font-medium text-sm">{errorMessage}</p>
+      )}
+    </>
   );
-}
+};
+
+export default LoginForm;

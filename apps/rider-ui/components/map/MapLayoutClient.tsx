@@ -1,31 +1,17 @@
 "use client";
-import { useState } from "react";
-import Topbar from "@/components/dashboard/Topbar";
-import Sidebar from "@/components/dashboard/Sidebar";
-import Bottombar from "@/components/dashboard/Bottombar";
 
-export default function MapLayoutClient({
-  children,
-}: {
+import React from "react";
+
+interface MapLayoutClientProps {
   children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
+}
 
+export default function MapLayoutClient({ children }: MapLayoutClientProps) {
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <Sidebar open={open} setOpen={setOpen} />
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Topbar with dynamic title */}
-        <Topbar toggleSidebar={() => setOpen(!open)} title="Map" />
-
-        {/* Page body injected here */}
-        <main className="flex-1 p-6 overflow-y-auto">{children}</main>
-
-        {/* Bottombar */}
-        <Bottombar />
+    <div className="h-screen w-full flex flex-col">
+      {/* Map occupies full viewport */}
+      <div className="flex-1 relative">
+        {children}
       </div>
     </div>
   );

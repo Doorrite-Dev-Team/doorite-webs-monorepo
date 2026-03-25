@@ -53,7 +53,7 @@ import {
 import { Button } from "@repo/ui/components/button";
 import { cn } from "@repo/ui/lib/utils";
 import { Route } from "next";
-import { authService } from "@/libs/api-client";
+import { authService } from "@/libs/api/api-client";
 import { useRouter } from "next/navigation";
 import { disconnectSocketAtom } from "@/store/socketAtom";
 

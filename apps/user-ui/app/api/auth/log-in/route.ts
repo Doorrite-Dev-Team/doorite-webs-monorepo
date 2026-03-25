@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       {
         ok: upstreamRes.ok,
         data: upstreamRes.ok ? data : undefined,
-        message: data?.message || "Login failed",
+        message: data?.message || data?.error || "Login failed",
       },
       { status: upstreamRes.status },
     );

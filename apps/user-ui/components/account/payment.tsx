@@ -23,7 +23,7 @@ import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { CreditCard, Plus, Trash2, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "@repo/ui/components/sonner";
-import { api } from "@/libs/api";
+import { api } from "@/actions/api";
 
 interface AddCardForm {
   cardNumber: string;

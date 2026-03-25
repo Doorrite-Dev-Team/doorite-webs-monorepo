@@ -16,13 +16,13 @@ export default function SearchBar({
 }: SearchBarProps) {
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
       <Input
         type="text"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder={placeholder || "Search products, vendors..."}
         className="pl-10 pr-10 h-12 text-base rounded-xl border-gray-200 focus:border-primary shadow-sm"
+        leftIcon={<Search size={20} />}
       />
       {search && (
         <button

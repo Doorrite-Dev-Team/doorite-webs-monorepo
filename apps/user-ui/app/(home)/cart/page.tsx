@@ -2,14 +2,12 @@
 
 import {
   AlertCircle,
-  ArrowLeft,
   Minus,
   Plus,
   ShoppingCart,
   Store,
   Trash2,
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import {
@@ -26,6 +24,7 @@ import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import { Card, CardContent } from "@repo/ui/components/card";
 import { Separator } from "@repo/ui/components/separator";
+import { PageHeader } from "@/components/headers/PageHeader";
 import { useCart } from "@/hooks/use-cart";
 
 export default function CartPage() {
@@ -45,17 +44,8 @@ export default function CartPage() {
   if (cart.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="container max-w-4xl mx-auto px-4 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <Link
-              href="/explore"
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="font-medium">Continue Exploring</span>
-            </Link>
-          </div>
-
+        <PageHeader title="Your Cart" showBackButton={false} />
+        <div className="container max-w-7xl mx-auto px-4 py-8">
           <Card className="border-0 shadow-lg">
             <CardContent className="p-12 text-center">
               <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-100 mb-6">
@@ -69,7 +59,7 @@ export default function CartPage() {
               </p>
               <Button
                 size="lg"
-                onClick={() => router.push("/vendor")}
+                onClick={() => router.push("/explore")}
                 className="gap-2"
               >
                 <Store className="w-5 h-5" />
@@ -84,26 +74,10 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-50 sm:pb-8">
-      <div className="container max-w-6xl mx-auto px-4 py-6 sm:py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4 mb-20 sm:mb-8">
-          <div className="flex items-center gap-3 min-w-0">
-            <Link
-              href="/home"
-              className="shrink-0 flex items-center gap-2 text-gray-600 hover:text-gray-900"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="hidden sm:inline font-medium">Back</span>
-            </Link>
-            <Separator orientation="vertical" className="h-6 hidden sm:block" />
-            <h1 className="text-xl sm:text-3xl font-bold text-gray-900 truncate">
-              Your Cart
-            </h1>
-            <Badge variant="secondary" className="shrink-0">
-              {itemCount}
-            </Badge>
-          </div>
-
+      <PageHeader
+        title="Your Cart"
+        badge={itemCount}
+        rightContent={
           <Button
             variant="outline"
             size="sm"
@@ -113,8 +87,9 @@ export default function CartPage() {
             <Trash2 className="w-4 h-4" />
             <span className="hidden sm:inline">Clear</span>
           </Button>
-        </div>
-
+        }
+      />
+      <div className="container max-w-7xl mx-auto px-4 py-6 sm:py-8">
         <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-6 min-w-0">

@@ -230,13 +230,6 @@ export default function GeoLocationRequester({
                     )}
                   </div>
                 )}
-                <p className="text-yellow-400 font-bold text-sm italic">
-                  Always Accept the Detected Address
-                </p>
-                <p className="text-red-500 font-bold text-sm italic">
-                  Please Note: The Detected Address may not be Accurate Hence,
-                  Kindly Change your Address after Acceptance If not Accurate.
-                </p>
 
                 {!reverseLoading && !preview?.display_name && !reverseError && (
                   <p className="text-sm text-gray-700 mb-2">

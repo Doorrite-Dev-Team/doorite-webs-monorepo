@@ -1,7 +1,7 @@
 // import Axios from "@/libs/Axios";
 //
 
-import { apiClient } from "@/libs/api-client";
+import { apiClient } from "@/libs/api/api-client";
 
 export const useUser = async () => {
   try {

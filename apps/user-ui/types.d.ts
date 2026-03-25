@@ -73,6 +73,8 @@ declare interface Vendor {
   category: string;
   address: Address; // Vendor only has one embedded Address
   avrgPreparationTime: string;
+  deliveryTime: string;
+  deliveryFee: number;
 
   // Frontend/Derived fields (not directly in DB, but necessary for UI lists)
   isOpen?: boolean;

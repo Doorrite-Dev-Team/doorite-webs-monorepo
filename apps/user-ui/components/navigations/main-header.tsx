@@ -28,7 +28,7 @@ import {
 import { SidebarTrigger } from "@repo/ui/components/sidebar";
 import { cn } from "@repo/ui/lib/utils";
 import { disconnectSocketAtom } from "@/store/socketAtom";
-import { authService } from "@/libs/api-client";
+import { authService } from "@/libs/api/api-client";
 import {
   Breadcrumb,
   BreadcrumbList,

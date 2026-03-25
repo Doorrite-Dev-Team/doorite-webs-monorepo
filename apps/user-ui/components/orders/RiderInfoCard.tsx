@@ -10,7 +10,7 @@ import {
   AvatarImage,
 } from "@repo/ui/components/avatar";
 import { Skeleton } from "@repo/ui/components/skeleton";
-import { api } from "@/libs/api";
+import { api } from "@/actions/api";
 
 interface RiderInfoCardProps {
   orderId: string;

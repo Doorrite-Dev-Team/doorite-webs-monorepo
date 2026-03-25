@@ -62,22 +62,6 @@ export default function AddressesSection({ addresses }: AddressesSectionProps) {
     },
   });
 
-  // Update address mutation
-  // const updateMutation = useMutation({
-  //   mutationFn: api.updateProfile,
-  //   onSuccess: (data) => {
-  //     queryClient.setQueryData(["user-profile"], (oldData: User) => ({
-  //       ...oldData,
-  //       address: data.user.address,
-  //     }));
-  //     setShowAddDialog(false);
-  //     toast.success("Address Updated successfully");
-  //   },
-  //   onError: (error: Error) => {
-  //     toast.error(error.message || "Failed to Update address");
-  //   },
-  // });
-
   const handleAddAddress = (addressData: DeliveryAddressForm) => {
     addMutation.mutate(addressData);
   };

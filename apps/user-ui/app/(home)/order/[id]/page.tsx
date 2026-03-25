@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import OrderTrackingClient from "@/components/orders/OrderTrackingClient";
 import OrderTrackingSkeleton from "@/components/orders/OrderTrackingSkeleton";
 import { Metadata } from "next";
-import { serverApi } from "@/libs/api-server";
+import { serverApi } from "@/actions/server";
 
 // Metadata generation for SEO
 export async function generateMetadata({

@@ -15,6 +15,13 @@ interface ServerToClientEvents {
   "pending-notifications": (pending: Notification[]) => void;
   connect: () => void;
   disconnect: () => void;
+
+  // Rider location tracking events (dynamic event names)
+  // Format: rider:${riderId}-order:${orderId}
+  [event: `rider:${string}-order:${string}`]: (coord: {
+    lat: number;
+    long: number;
+  }) => void;
 }
 
 interface ClientToServerEvents {

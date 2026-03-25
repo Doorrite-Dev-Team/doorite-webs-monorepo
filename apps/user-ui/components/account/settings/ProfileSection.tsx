@@ -16,23 +16,30 @@ import {
   DialogTitle,
 } from "@repo/ui/components/dialog";
 import { toast } from "@repo/ui/components/sonner";
-import { api } from "@/libs/api";
+import { api } from "@/actions/api";
+import { ProfileImageUpload } from "@/components/ProfileImageUpload";
+// import { deleteImage } from "@/actions/uploadThing";
+import { useRef } from "react";
+import Image from "next/image";
 
 interface ProfileSectionProps {
-  profile: User;
+  profile: any;
 }
 
 interface ProfileFormData {
   fullName: string;
   phoneNumber: string;
+  profileImageUrl?: string;
 }
 
 export default function ProfileSection({ profile }: ProfileSectionProps) {
   const queryClient = useQueryClient();
+  const profileImageRef = useRef<any>(null);
   const [showDialog, setShowDialog] = React.useState(false);
   const [formData, setFormData] = React.useState<ProfileFormData>({
     fullName: profile.fullName,
     phoneNumber: profile.phoneNumber,
+    profileImageUrl: profile.profileImageUrl,
   });
   const [errors, setErrors] = React.useState<Partial<ProfileFormData>>({});
 
@@ -50,7 +57,15 @@ export default function ProfileSection({ profile }: ProfileSectionProps) {
       setShowDialog(false);
       toast.success("Profile updated successfully");
     },
-    onError: (error: Error) => {
+    onError: async (error: Error) => {
+      // Rollback image upload if profile update fails
+      if (profileImageRef.current && formData.profileImageUrl) {
+        try {
+          await profileImageRef.current.rollback();
+        } catch (rollbackError) {
+          console.error("Failed to rollback image:", rollbackError);
+        }
+      }
       toast.error(error.message || "Failed to update profile");
     },
   });
@@ -61,6 +76,7 @@ export default function ProfileSection({ profile }: ProfileSectionProps) {
       setFormData({
         fullName: profile.fullName,
         phoneNumber: profile.phoneNumber,
+        profileImageUrl: profile.profileImageUrl,
       });
       setErrors({});
     }
@@ -85,6 +101,11 @@ export default function ProfileSection({ profile }: ProfileSectionProps) {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  // const handleImageRemove = async (url: string) => {
+  //   "use server";
+  //   await deleteImage(url);
+  // };
 
   const handleSubmit = () => {
     if (!validateForm()) return;
@@ -113,6 +134,23 @@ export default function ProfileSection({ profile }: ProfileSectionProps) {
         </div>
 
         <div className="space-y-3 rounded-lg border p-4">
+          {profile.profileImageUrl && (
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                <Image
+                  src={profile.profileImageUrl as string}
+                  alt="Profile"
+                  fill
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-600">Profile Picture</p>
+                <p className="text-xs text-gray-500">Current profile image</p>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center gap-3">
             <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
             <div className="flex-1 min-w-0">
@@ -154,6 +192,21 @@ export default function ProfileSection({ profile }: ProfileSectionProps) {
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Profile Picture</Label>
+              <ProfileImageUpload
+                ref={profileImageRef}
+                value={formData.profileImageUrl}
+                onChange={(url) =>
+                  setFormData({
+                    ...formData,
+                    profileImageUrl: url || undefined,
+                  })
+                }
+                // onRemove={handleImageRemove}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="fullName">
                 Full Name <span className="text-red-500">*</span>

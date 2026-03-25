@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { toast } from "@repo/ui/components/sonner";
-import { authService } from "@/libs/api-client";
+import { authService } from "@/libs/api/api-client";
 import { extractErrorMessage } from "./_utils";
 
 export type SignUpFormData = {
