@@ -1,4 +1,4 @@
-import { ChartLineIcon } from 'lucide-react'
+import { ChartLineIcon } from "lucide-react";
 
 export default function ShiftSummary() {
   return (
@@ -7,7 +7,7 @@ export default function ShiftSummary() {
         <div className="flex justify-between items-center">
           <div>
             <p className="text-xs uppercase text-gray-500">Today's Shift</p>
-            <p className="text-2xl font-bold">$45.50</p>
+            <p className="text-2xl font-bold">₦45,500</p>
             <p className="text-sm text-gray-500">5 deliveries</p>
           </div>
           <button className="h-12 w-12 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">

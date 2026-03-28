@@ -26,7 +26,7 @@ export default function PriorityDeliveryCard() {
             <p className="text-sm text-gray-500">Starbucks • 2 items</p>
           </div>
           <div className="text-right">
-            <p className="text-primary text-xl font-bold">$8.50</p>
+            <p className="text-primary text-xl font-bold">₦8,500</p>
             <p className="text-xs text-red-500 flex items-center gap-1">
               <Timer size={14} /> 12 min left
             </p>
@@ -37,7 +37,9 @@ export default function PriorityDeliveryCard() {
           <div className="flex gap-2">
             <Store size={18} className="text-gray-400" />
             <div>
-              <p className="text-xs uppercase text-gray-400 font-bold">Pickup</p>
+              <p className="text-xs uppercase text-gray-400 font-bold">
+                Pickup
+              </p>
               <p className="text-sm">Starbucks Coffee</p>
             </div>
           </div>

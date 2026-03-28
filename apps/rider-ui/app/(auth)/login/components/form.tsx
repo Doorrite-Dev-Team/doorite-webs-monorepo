@@ -52,8 +52,7 @@ const LoginForm = () => {
         setRider(riderData);
         toast.success("Redirecting to Dashboard...");
         setTimeout(() => {
-          window.location.href = "/dashboard";
-          // router.refresh();
+          router.push("/dashboard");
         }, 500);
       }
     } catch (error) {

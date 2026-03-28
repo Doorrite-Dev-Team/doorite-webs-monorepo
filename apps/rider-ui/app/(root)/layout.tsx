@@ -1,23 +1,49 @@
 import { SocketProvider } from "@/providers/socket";
-import { cookies } from "next/headers";
+import {
+  AppSidebar,
+  RiderBottomNav,
+  RiderHeader,
+} from "@/components/navigations";
+import { getCookieHeader } from "@/libs/api-utils";
+import { SidebarInset } from "@repo/ui/components/sidebar";
 import { redirect } from "next/navigation";
-import { COOKIE_NAME } from "@/libs/api-utils";
+import React from "react";
 
-export default async function RootLayout({
-    children,
-}: Readonly<{
-    children: React.ReactNode;
-}>) {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(COOKIE_NAME.ACCESS)?.value;
+export default async function AuthenticatedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const token = await getCookieHeader(true);
 
-    if (!token) {
-        redirect("/login");
-    }
+  if (!token) {
+    redirect("/login");
+  }
 
-    return (
-        <SocketProvider token={token}>
-            {children}
-        </SocketProvider>
-    );
+  return (
+    <SocketProvider token={token}>
+      <div className="flex min-h-screen w-full">
+        {/* Desktop Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block">
+          <AppSidebar />
+        </div>
+
+        {/* Main Content Area */}
+        <SidebarInset className="flex-1 flex flex-col">
+          {/* Header */}
+          <RiderHeader />
+
+          {/* Main Content */}
+          <main className="flex-1 w-full overflow-x-hidden">
+            <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6">
+              {children}
+            </div>
+          </main>
+
+          {/* Mobile Bottom Navigation */}
+          <RiderBottomNav />
+        </SidebarInset>
+      </div>
+    </SocketProvider>
+  );
 }

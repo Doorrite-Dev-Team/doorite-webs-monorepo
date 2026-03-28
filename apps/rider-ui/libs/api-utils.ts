@@ -1,19 +1,45 @@
 // libs/api-utils.ts
 import { cookies } from "next/headers";
 
+export const RIDER_COOKIES = {
+  ACCESS: "access_token_rider",
+  REFRESH: "refresh_token_rider",
+} as const;
+
+export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: "/auth/login-rider",
+    LOGOUT: "/auth/logout",
+    REFRESH: "/auth/refresh-token",
+    REGISTER: "/auth/register-rider",
+  },
+  RIDERS: {
+    PROFILE: "/riders/profile",
+    UPDATE_LOCATION: "/riders/update-location",
+    AVAILABILITY: "/riders/availability",
+  },
+  ORDERS: {
+    LIST: "/orders",
+    DETAILS: "/orders/:id",
+    ACCEPT: "/orders/:id/accept",
+    COMPLETE: "/orders/:id/complete",
+    CANCEL: "/orders/:id/cancel",
+  },
+  EARNINGS: {
+    SUMMARY: "/earnings/summary",
+    TRANSACTIONS: "/earnings/transactions",
+  },
+} as const;
+
+export { RIDER_COOKIES as COOKIE_NAME };
+
 export const API_CONFIG = {
-  baseUrl: process.env.NEXT_PUBLIC_API_URI ?? "https://doorrite-api.onrender.com/api/v1",
+  baseUrl:
+    process.env.NEXT_PUBLIC_API_URI ??
+    "https://doorrite-api.onrender.com/api/v1",
   timeout: 30000,
   retryAttempts: 1,
 } as const;
-
-const ACCESS = "access_token_rider";
-const REFRESH = "refresh_token_rider";
-
-export const COOKIE_NAME = {
-  ACCESS,
-  REFRESH,
-};
 
 /**
  * Builds cookie header from Next.js cookie store
@@ -26,11 +52,11 @@ export async function getCookieHeader(
   const cookieStore = await cookies();
 
   if (access) {
-    return cookieStore.get(ACCESS)?.value ?? null;
+    return cookieStore.get(RIDER_COOKIES.ACCESS)?.value ?? null;
   }
 
   if (refresh) {
-    return cookieStore.get(REFRESH)?.value ?? null;
+    return cookieStore.get(RIDER_COOKIES.REFRESH)?.value ?? null;
   }
 
   return cookieStore
