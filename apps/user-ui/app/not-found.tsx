@@ -47,7 +47,7 @@ export default function NotFound() {
             Looking for something?
           </p>
           <div className="flex flex-wrap justify-center gap-4 text-sm">
-            <Link href="/vendor" className="text-primary hover:underline">
+            <Link href="/explore" className="text-primary hover:underline">
               Browse Restaurants
             </Link>
             <Link href="/order" className="text-primary hover:underline">

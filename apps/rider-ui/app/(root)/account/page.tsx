@@ -3,261 +3,237 @@
 import { useState } from "react";
 import { useAtom } from "jotai";
 import { riderAtom } from "@/store/riderAtom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/ui/components/card";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { Switch } from "@repo/ui/components/switch";
 import { Separator } from "@repo/ui/components/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
+import { Avatar, AvatarFallback } from "@repo/ui/components/avatar";
 import { Badge } from "@repo/ui/components/badge";
 import {
   User,
   Mail,
   Phone,
-  MapPin,
   Bike,
   Camera,
-  Settings,
-  LogOut,
   Bell,
   Moon,
-  Globe
+  Globe,
+  Package,
+  Star,
 } from "lucide-react";
 import { toast } from "@repo/ui/components/sonner";
 
 export default function AccountPage() {
-  const [rider, setRider] = useAtom(riderAtom);
+  const [rider] = useAtom(riderAtom);
   const [isAvailable, setIsAvailable] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
 
   const handleAvailabilityToggle = (checked: boolean) => {
     setIsAvailable(checked);
-    toast.success(checked ? "You are now available for deliveries" : "You are now offline");
-  };
-
-  const handleLogout = () => {
-    // TODO: Implement logout functionality
-    toast.info("Logging out...");
+    toast.success(
+      checked ? "You are now available for deliveries" : "You are now offline",
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Account</h1>
-            <p className="text-gray-600 mt-1">Manage your profile and settings</p>
-          </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
-        </div>
-
-        {/* Profile Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-            <CardDescription>Your personal details and verification status</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Avatar Section */}
-            <div className="flex items-center gap-6">
-              <div className="relative">
-                <Avatar className="w-24 h-24">
-                  <AvatarImage src={rider?.profileImage} />
-                  <AvatarFallback className="text-2xl bg-blue-100 text-blue-600">
-                    {rider?.name?.charAt(0).toUpperCase() || "R"}
-                  </AvatarFallback>
-                </Avatar>
-                <Button
-                  size="sm"
-                  className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 p-0"
+    <div className="space-y-6">
+      {/* Profile Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile Information</CardTitle>
+          <CardDescription>Your personal details</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="w-16 h-16 md:w-20 md:h-20">
+              <AvatarFallback className="text-2xl bg-green-100 text-green-600">
+                {rider?.name?.charAt(0).toUpperCase() || "R"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <h3 className="text-lg font-bold">
+                {rider?.name || rider?.fullName || "Rider Name"}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {rider?.email || "rider@example.com"}
+              </p>
+              <div className="flex gap-2 mt-2">
+                <Badge
+                  variant="secondary"
+                  className="bg-green-100 text-green-700"
                 >
-                  <Camera className="w-4 h-4" />
-                </Button>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold">{rider?.name || rider?.fullName || "Rider Name"}</h3>
-                <p className="text-sm text-gray-600">{rider?.email || "rider@example.com"}</p>
-                <div className="flex gap-2 mt-2">
-                  <Badge variant="secondary" className="bg-green-100 text-green-700">
-                    ✓ Verified
-                  </Badge>
-                  <Badge variant="secondary">
-                    {rider?.vehicleType || "Bike"}
-                  </Badge>
-                </div>
+                  Verified
+                </Badge>
+                <Badge variant="secondary">
+                  {rider?.vehicleType || "Bike"}
+                </Badge>
               </div>
             </div>
-
-            <Separator />
-
-            {/* Contact Information */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <div className="flex gap-2">
-                  <User className="w-5 h-5 text-gray-400 mt-2" />
-                  <Input
-                    id="name"
-                    defaultValue={rider?.name || rider?.fullName || ""}
-                    disabled
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <div className="flex gap-2">
-                  <Mail className="w-5 h-5 text-gray-400 mt-2" />
-                  <Input
-                    id="email"
-                    type="email"
-                    defaultValue={rider?.email || ""}
-                    disabled
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <div className="flex gap-2">
-                  <Phone className="w-5 h-5 text-gray-400 mt-2" />
-                  <Input
-                    id="phone"
-                    defaultValue={rider?.phone || rider?.phoneNumber || "+1 (XXX) XXX-XXXX"}
-                    disabled
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="vehicle">Vehicle Type</Label>
-                <div className="flex gap-2">
-                  <Bike className="w-5 h-5 text-gray-400 mt-2" />
-                  <Input
-                    id="vehicle"
-                    defaultValue={rider?.vehicleType || "Bike"}
-                    disabled
-                  />
-                </div>
-              </div>
-            </div>
-
-            <Button className="w-full md:w-auto">
-              Edit Profile
+            <Button size="sm" variant="outline">
+              <Camera className="w-4 h-4 mr-2" />
+              Edit
             </Button>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Availability Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Availability</CardTitle>
-            <CardDescription>Control when you receive delivery requests</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <h4 className="font-semibold text-gray-900">Available for Deliveries</h4>
-                <p className="text-sm text-gray-600">
-                  {isAvailable
-                    ? "You will receive new delivery requests"
-                    : "You won't receive any delivery requests"}
-                </p>
-              </div>
-              <Switch
-                checked={isAvailable}
-                onCheckedChange={handleAvailabilityToggle}
-                className="data-[state=checked]:bg-green-600"
-              />
-            </div>
-          </CardContent>
-        </Card>
+          <Separator />
 
-        {/* Settings Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Preferences</CardTitle>
-            <CardDescription>Customize your app experience</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex gap-3">
-                <Bell className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-gray-900">Push Notifications</h4>
-                  <p className="text-sm text-gray-600">Receive alerts for new orders</p>
-                </div>
-              </div>
-              <Switch
-                checked={notificationsEnabled}
-                onCheckedChange={setNotificationsEnabled}
-              />
-            </div>
-
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <div className="flex gap-3">
-                <Moon className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-gray-900">Dark Mode</h4>
-                  <p className="text-sm text-gray-600">Switch to dark theme</p>
-                </div>
-              </div>
-              <Switch
-                checked={darkMode}
-                onCheckedChange={setDarkMode}
-              />
-            </div>
-
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <div className="flex gap-3">
-                <Globe className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-gray-900">Language</h4>
-                  <p className="text-sm text-gray-600">English (US)</p>
-                </div>
-              </div>
-              <Button variant="outline" size="sm">
-                Change
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Statistics Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Statistics</CardTitle>
-            <CardDescription>Your delivery performance</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-3xl font-bold text-blue-600">127</p>
-                <p className="text-sm text-gray-600 mt-1">Total Deliveries</p>
-              </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <p className="text-3xl font-bold text-green-600">4.8</p>
-                <p className="text-sm text-gray-600 mt-1">Rating</p>
-              </div>
-              <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                <p className="text-3xl font-bold text-yellow-600">$2,340</p>
-                <p className="text-sm text-gray-600 mt-1">Total Earnings</p>
-              </div>
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <p className="text-3xl font-bold text-purple-600">98%</p>
-                <p className="text-sm text-gray-600 mt-1">Completion Rate</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm text-gray-600">Full Name</Label>
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-gray-400" />
+                <Input
+                  defaultValue={rider?.name || rider?.fullName || ""}
+                  disabled
+                />
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="space-y-2">
+              <Label className="text-sm text-gray-600">Email</Label>
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-gray-400" />
+                <Input
+                  type="email"
+                  defaultValue={rider?.email || ""}
+                  disabled
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm text-gray-600">Phone</Label>
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-gray-400" />
+                <Input
+                  defaultValue={
+                    rider?.phone || rider?.phoneNumber || "+1 (XXX) XXX-XXXX"
+                  }
+                  disabled
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm text-gray-600">Vehicle</Label>
+              <div className="flex items-center gap-2">
+                <Bike className="w-4 h-4 text-gray-400" />
+                <Input defaultValue={rider?.vehicleType || "Bike"} disabled />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Availability Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Availability</CardTitle>
+          <CardDescription>Control when you receive orders</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-semibold">Available for Deliveries</h4>
+              <p className="text-sm text-gray-600">
+                {isAvailable
+                  ? "You will receive new orders"
+                  : "You are offline"}
+              </p>
+            </div>
+            <Switch
+              checked={isAvailable}
+              onCheckedChange={handleAvailabilityToggle}
+              className="data-[state=checked]:bg-green-600"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Settings Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Preferences</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Bell className="w-5 h-5 text-gray-400" />
+              <div>
+                <h4 className="font-medium">Push Notifications</h4>
+                <p className="text-xs text-gray-600">Receive order alerts</p>
+              </div>
+            </div>
+            <Switch
+              checked={notificationsEnabled}
+              onCheckedChange={setNotificationsEnabled}
+            />
+          </div>
+
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Moon className="w-5 h-5 text-gray-400" />
+              <div>
+                <h4 className="font-medium">Dark Mode</h4>
+                <p className="text-xs text-gray-600">Switch to dark theme</p>
+              </div>
+            </div>
+            <Switch checked={darkMode} onCheckedChange={setDarkMode} />
+          </div>
+
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Globe className="w-5 h-5 text-gray-400" />
+              <div>
+                <h4 className="font-medium">Language</h4>
+                <p className="text-xs text-gray-600">English (US)</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm">
+              Change
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Statistics Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Statistics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <Package className="w-5 h-5 mx-auto text-blue-600 mb-1" />
+              <p className="text-xl font-bold text-blue-600">127</p>
+              <p className="text-xs text-gray-600">Deliveries</p>
+            </div>
+            <div className="text-center p-3 bg-green-50 rounded-lg">
+              <Star className="w-5 h-5 mx-auto text-green-600 mb-1" />
+              <p className="text-xl font-bold text-green-600">4.8</p>
+              <p className="text-xs text-gray-600">Rating</p>
+            </div>
+            <div className="text-center p-3 bg-yellow-50 rounded-lg">
+              <p className="text-xl font-bold text-yellow-600">₦230k</p>
+              <p className="text-xs text-gray-600">Earned</p>
+            </div>
+            <div className="text-center p-3 bg-purple-50 rounded-lg">
+              <p className="text-xl font-bold text-purple-600">98%</p>
+              <p className="text-xs text-gray-600">Completion</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

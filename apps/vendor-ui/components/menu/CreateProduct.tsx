@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { z } from "zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,8 +30,10 @@ import {
 import { ScrollArea } from "@repo/ui/components/scroll-area";
 import { Separator } from "@repo/ui/components/separator";
 import { X, Plus, Loader2, Package } from "lucide-react";
-import { ImageUpload } from "@/components/ImageUpload";
+import { ImageUpload, ImageUploadRef } from "@/components/ImageUpload";
 import { deriveError } from "@/libs/utils/errorHandler";
+import { deleteImage } from "@/actions/uploadThing";
+import AttachModifiersSection from "./AttachModifiersSection";
 
 // Zod v4 compatible schema
 const ProductFormSchema = z.object({
@@ -71,6 +73,7 @@ const ProductFormSchema = z.object({
       }),
     )
     .optional(),
+  modifierGroups: z.array(z.string()).optional(),
 });
 
 type ProductFormValues = z.infer<typeof ProductFormSchema>;
@@ -89,6 +92,7 @@ export default function CreateProductSheet({
   onSuccessAction,
 }: Props) {
   const [loading, setLoading] = useState(false);
+  const imageRef = useRef<ImageUploadRef>(null); // ✅ Initialize Ref
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(ProductFormSchema),
@@ -101,6 +105,7 @@ export default function CreateProductSheet({
       attributes: [],
       variants: [],
       imageUrl: null,
+      modifierGroups: [],
     },
   });
 
@@ -159,6 +164,12 @@ export default function CreateProductSheet({
     } catch (err) {
       const errorMessage = deriveError(err) || "Failed to create product";
 
+      // ✅ ACID: Rollback image if API request fails
+      if (data.imageUrl) {
+        console.error("API failed, rolling back image...");
+        await imageRef.current?.rollback();
+      }
+
       toast.error("Failed to create product", {
         description: errorMessage,
       });
@@ -201,8 +212,10 @@ export default function CreateProductSheet({
                       <FormLabel>Product Image</FormLabel>
                       <FormControl>
                         <ImageUpload
+                          ref={imageRef} // ✅ Attach Ref
                           value={field.value ?? null}
                           onChange={field.onChange}
+                          onRemove={deleteImage} // ✅ Pass deletion logic
                         />
                       </FormControl>
                       <FormDescription>
@@ -546,6 +559,25 @@ export default function CreateProductSheet({
                     </div>
                   )}
                 </div>
+
+                <Separator />
+
+                {/* Modifiers Section */}
+                <FormField
+                  control={form.control}
+                  name="modifierGroups"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <AttachModifiersSection
+                          selectedModifiers={field.value || []}
+                          onModifiersChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </ScrollArea>
 

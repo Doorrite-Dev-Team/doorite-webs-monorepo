@@ -7,6 +7,13 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/components/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -33,6 +40,11 @@ interface AddressFormData {
   coordinates?: Coordinates | null;
 }
 
+// Hardcoded options for high accuracy
+const COUNTRY_OPTIONS = [{ value: "Nigeria", label: "Nigeria" }];
+
+const STATE_OPTIONS = [{ value: "Kwara", label: "Kwara" }];
+
 export default function UpdateAddressDialog({
   open,
   onOpenChange,
@@ -42,7 +54,7 @@ export default function UpdateAddressDialog({
 }: UpdateAddressDialogProps) {
   const [formData, setFormData] = React.useState<AddressFormData>({
     address: data.address ?? "",
-    state: data.state ?? "",
+    state: data.state ?? "Kwara",
     country: data.country ?? "Nigeria",
     coordinates: data.coordinates ?? null,
   });
@@ -53,15 +65,15 @@ export default function UpdateAddressDialog({
   React.useEffect(() => {
     if (open) {
       setFormData({
-        address: "",
-        state: "",
-        country: "Nigeria",
-        coordinates: null,
+        address: data.address ?? "",
+        state: data.state ?? "Kwara",
+        country: data.country ?? "Nigeria",
+        coordinates: data.coordinates ?? null,
       });
       setErrors({});
       setShowGeoRequester(false);
     }
-  }, [open]);
+  }, [open, data]);
 
   // Validate form
   const validateForm = (): boolean => {
@@ -73,14 +85,6 @@ export default function UpdateAddressDialog({
       newErrors.address = "Please enter a more detailed address";
     }
 
-    if (!formData.state.trim()) {
-      newErrors.state = "State is required";
-    }
-
-    if (!formData.country.trim()) {
-      newErrors.country = "Country is required";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -90,8 +94,8 @@ export default function UpdateAddressDialog({
 
     const payload: AddressFormData = {
       address: formData.address.trim(),
-      state: formData.state.trim(),
-      country: formData.country.trim(),
+      state: formData.state,
+      country: formData.country,
     };
 
     // Include coordinates if available
@@ -116,8 +120,6 @@ export default function UpdateAddressDialog({
       coordinates: { lat: coords.latitude, long: coords.longitude },
       // Auto-fill from reverse geocode if available and fields are empty
       address: prev.address || preview?.display_name || prev.address,
-      state: prev.state || preview?.state || prev.state,
-      country: prev.country || preview?.country || prev.country,
     }));
     setShowGeoRequester(false);
     toast.success("Location added! You can edit the details before saving.");
@@ -154,44 +156,50 @@ export default function UpdateAddressDialog({
             )}
           </div>
 
-          {/* State and Country */}
+          {/* State and Country - Select Dropdowns for High Accuracy */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="state">
-                State <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="state"
-                placeholder="Lagos"
+              <Label htmlFor="state">State</Label>
+              <Select
                 value={formData.state}
-                onChange={(e) =>
-                  setFormData({ ...formData, state: e.target.value })
+                onValueChange={(value) =>
+                  setFormData({ ...formData, state: value })
                 }
-                className={errors.state ? "border-red-500" : ""}
                 disabled={isLoading}
-              />
-              {errors.state && (
-                <p className="text-sm text-red-600">{errors.state}</p>
-              )}
+              >
+                <SelectTrigger id="state" className="w-full">
+                  <SelectValue placeholder="Select state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="country">
-                Country <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="country"
-                placeholder="Nigeria"
+              <Label htmlFor="country">Country</Label>
+              <Select
                 value={formData.country}
-                onChange={(e) =>
-                  setFormData({ ...formData, country: e.target.value })
+                onValueChange={(value) =>
+                  setFormData({ ...formData, country: value })
                 }
-                className={errors.country ? "border-red-500" : ""}
                 disabled={isLoading}
-              />
-              {errors.country && (
-                <p className="text-sm text-red-600">{errors.country}</p>
-              )}
+              >
+                <SelectTrigger id="country" className="w-full">
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUNTRY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

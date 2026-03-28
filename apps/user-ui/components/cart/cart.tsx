@@ -198,7 +198,7 @@ export function CartDrawer({ onCloseAction }: { onCloseAction: () => void }) {
 
         {/* FOOTER */}
         {cart.length > 0 && (
-          <footer className="bg-white border-t p-4 space-y-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] shrink-0 z-20">
+          <footer className="bg-white mb-20 border-t p-4 space-y-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] shrink-0 z-20">
             {/* Summary Breakdown */}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">

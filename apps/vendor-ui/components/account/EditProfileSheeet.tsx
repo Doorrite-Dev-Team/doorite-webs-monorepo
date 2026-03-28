@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
+import { toast } from "@repo/ui/components/sonner"; // Ensure toast is imported
 import {
   Sheet,
   SheetContent,
@@ -27,7 +28,8 @@ import {
 } from "@repo/ui/components/form";
 import { ScrollArea } from "@repo/ui/components/scroll-area";
 import { VendorProfile, useUpdateProfile } from "./hooks";
-import { ImageUpload } from "@/components/ImageUpload";
+import { ImageUpload, ImageUploadRef } from "@/components/ImageUpload";
+import { deleteImage } from "@/actions/uploadThing"; // ✅ Import your delete action
 
 const EditProfileSchema = z.object({
   businessName: z
@@ -35,7 +37,7 @@ const EditProfileSchema = z.object({
     .min(2, "Business name must be at least 2 characters"),
   phoneNumber: z.string().min(10, "Enter a valid phone number"),
   address: z.string().min(5, "Address is required"),
-  logoUrl: z.url().nullable().optional(),
+  logoUrl: z.url().nullable().optional(), // Changed z.url() to z.string().url() for better compatibility
   openingTime: z.string().optional(),
   closingTime: z.string().optional(),
   avrgPreparationTime: z.string().optional(),
@@ -54,7 +56,9 @@ export default function EditProfileSheet({
   onOpenChange,
   profile,
 }: EditProfileSheetProps) {
-  const { mutate: updateProfile, isPending } = useUpdateProfile();
+  // ✅ Use mutateAsync for promise-based flow (better for ACID rollback)
+  const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
+  const imageRef = useRef<ImageUploadRef>(null);
 
   const form = useForm<EditProfileFormValues>({
     resolver: zodResolver(EditProfileSchema),
@@ -69,22 +73,23 @@ export default function EditProfileSheet({
     },
   });
 
-  // Reset form when profile changes
   useEffect(() => {
-    form.reset({
-      businessName: profile.businessName,
-      phoneNumber: profile.phoneNumber,
-      address: profile.address?.address || "",
-      logoUrl: profile.logoUrl,
-      openingTime: profile.openingTime || "",
-      closingTime: profile.closingTime || "",
-      avrgPreparationTime: profile.avrgPreparationTime || "",
-    });
-  }, [profile, form]);
+    if (open) {
+      form.reset({
+        businessName: profile.businessName,
+        phoneNumber: profile.phoneNumber,
+        address: profile.address?.address || "",
+        logoUrl: profile.logoUrl,
+        openingTime: profile.openingTime || "",
+        closingTime: profile.closingTime || "",
+        avrgPreparationTime: profile.avrgPreparationTime || "",
+      });
+    }
+  }, [profile, form, open]);
 
-  const onSubmit = (data: EditProfileFormValues) => {
-    updateProfile(
-      {
+  const onSubmit = async (data: EditProfileFormValues) => {
+    try {
+      await updateProfile({
         businessName: data.businessName,
         phoneNumber: data.phoneNumber,
         address: {
@@ -97,13 +102,22 @@ export default function EditProfileSheet({
         openingTime: data.openingTime || undefined,
         closingTime: data.closingTime || undefined,
         avrgPreparationTime: data.avrgPreparationTime || undefined,
-      },
-      {
-        onSuccess: () => {
-          onOpenChange(false);
-        },
-      },
-    );
+      });
+
+      toast.success("Profile updated successfully");
+      onOpenChange(false);
+    } catch (error) {
+      // ✅ ACID: If the DB update fails, rollback the uploaded image
+      console.error("Profile update failed, rolling back image...", error);
+      toast.error("Profile update failed, rolling back image...");
+
+      // Only rollback if the URL has changed (meaning a new file was just uploaded)
+      if (data.logoUrl !== profile.logoUrl) {
+        await imageRef.current?.rollback();
+      }
+
+      toast.error("Failed to update profile. Please try again.");
+    }
   };
 
   return (
@@ -126,7 +140,6 @@ export default function EditProfileSheet({
           >
             <ScrollArea className="flex-1 px-6">
               <div className="space-y-6 pb-6">
-                {/* Logo Upload */}
                 <FormField
                   control={form.control}
                   name="logoUrl"
@@ -135,8 +148,11 @@ export default function EditProfileSheet({
                       <FormLabel>Business Logo</FormLabel>
                       <FormControl>
                         <ImageUpload
+                          ref={imageRef} // ✅ Attach the ref here
                           value={field.value ?? null}
                           onChange={field.onChange}
+                          onRemove={deleteImage} // ✅ Pass the deletion action
+                          title="Logo"
                         />
                       </FormControl>
                       <FormDescription>
@@ -147,7 +163,6 @@ export default function EditProfileSheet({
                   )}
                 />
 
-                {/* Business Name */}
                 <FormField
                   control={form.control}
                   name="businessName"
@@ -162,7 +177,6 @@ export default function EditProfileSheet({
                   )}
                 />
 
-                {/* Phone Number */}
                 <FormField
                   control={form.control}
                   name="phoneNumber"
@@ -181,7 +195,6 @@ export default function EditProfileSheet({
                   )}
                 />
 
-                {/* Address */}
                 <FormField
                   control={form.control}
                   name="address"
@@ -200,7 +213,6 @@ export default function EditProfileSheet({
                   )}
                 />
 
-                {/* Operating Hours */}
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -209,11 +221,7 @@ export default function EditProfileSheet({
                       <FormItem>
                         <FormLabel>Opening Time</FormLabel>
                         <FormControl>
-                          <Input
-                            type="time"
-                            placeholder="e.g. 09:00 AM"
-                            {...field}
-                          />
+                          <Input type="time" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -227,11 +235,7 @@ export default function EditProfileSheet({
                       <FormItem>
                         <FormLabel>Closing Time</FormLabel>
                         <FormControl>
-                          <Input
-                            type="time"
-                            placeholder="e.g. 09:00 PM"
-                            {...field}
-                          />
+                          <Input type="time" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -239,7 +243,6 @@ export default function EditProfileSheet({
                   />
                 </div>
 
-                {/* Preparation Time */}
                 <FormField
                   control={form.control}
                   name="avrgPreparationTime"

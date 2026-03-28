@@ -10,7 +10,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "@repo/ui/components/sonner";
 import { isAxiosError } from "axios";
-import { authService } from "@/libs/api-client";
+import { authService } from "@/libs/api/api-client";
+import { useSearchParams } from "next/navigation";
 
 type FormData = {
   email: string;
@@ -21,6 +22,7 @@ const LogingForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string>();
+  const searchParams = useSearchParams();
 
   const setUser = useSetAtom(userAtom);
 
@@ -46,9 +48,10 @@ const LogingForm = () => {
 
       if (res.ok) {
         setUser(res.data.user);
-        toast.success("Redirecting to Home Page...");
+        const callback = searchParams.get("callbackUrl") ?? "/home";
+        toast.loading(`Redirecting to ${callback} Page...`);
         setTimeout(() => {
-          window.location.href = "/home";
+          window.location.href = callback;
           router.refresh();
         }, 500); // Give mobile 500ms to settle the cookie
       }

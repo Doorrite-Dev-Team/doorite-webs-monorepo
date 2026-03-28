@@ -1,6 +1,7 @@
 "use client";
 
 // components/ProductCard.tsx
+import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
@@ -14,20 +15,20 @@ interface ProductCardProps {
   product: Product;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+function ProductCard({ product }: ProductCardProps) {
   const lowestPrice = product.basePrice;
   const { addItem } = useCart();
 
   return (
     <Link href={`/product/${product.id}` as Route<string>}>
-      <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group">
+      <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 active:scale-[0.98] touch-manipulation will-change-transform transform-gpu">
         {/* Image */}
         <div className="relative h-48 bg-gray-100 overflow-hidden">
           <Image
             src={product.imageUrl || "/no-image.png"}
             alt={product.name}
             fill
-            className="object-cover group-hover:scale-110 transition-transform duration-300"
+            className="object-cover"
           />
           {!isVendorOpen(product.vendor) && (
             <Badge className="absolute top-2 right-2 bg-red-500">Closed</Badge>
@@ -36,7 +37,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Content */}
         <div className="p-4 space-y-2">
-          <h3 className="font-semibold text-gray-900 line-clamp-1 group-hover:text-primary transition-colors">
+          <h3 className="font-semibold text-gray-900 line-clamp-1">
             {product.name}
           </h3>
 
@@ -89,3 +90,5 @@ export default function ProductCard({ product }: ProductCardProps) {
     </Link>
   );
 }
+
+export default memo(ProductCard);

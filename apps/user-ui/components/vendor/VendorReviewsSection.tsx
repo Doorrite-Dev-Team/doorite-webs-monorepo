@@ -20,7 +20,7 @@ import {
 import { Button } from "@repo/ui/components/button";
 import { Progress } from "@repo/ui/components/progress";
 import { Skeleton } from "@repo/ui/components/skeleton"; // Use a real skeleton if available
-import { api } from "@/libs/api";
+import { api } from "@/actions/api";
 
 interface ReviewsData {
   averageRating: number;

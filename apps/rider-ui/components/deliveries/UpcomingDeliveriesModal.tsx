@@ -78,7 +78,7 @@ export default function UpcomingDeliveriesModal({
   onClose,
 }: UpcomingDeliveriesModalProps) {
   const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(
-    null
+    null,
   );
   const [showDetails, setShowDetails] = useState(false);
 
@@ -154,7 +154,7 @@ export default function UpcomingDeliveriesModal({
                             </div>
                           </div>
                           <p className="font-semibold">
-                            ${d.amount.toFixed(2)}
+                            ₦{d.amount.toFixed(2)}
                           </p>
                         </div>
                       ))}

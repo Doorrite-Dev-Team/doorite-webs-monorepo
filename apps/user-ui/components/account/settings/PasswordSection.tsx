@@ -23,7 +23,7 @@ import {
   DialogTitle,
 } from "@repo/ui/components/dialog";
 import { toast } from "@repo/ui/components/sonner";
-import { api } from "@/libs/api";
+import { api } from "@/actions/api";
 
 interface PasswordFormData {
   currentPassword: string;

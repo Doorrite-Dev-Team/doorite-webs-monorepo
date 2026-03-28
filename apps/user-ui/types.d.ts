@@ -5,12 +5,15 @@
 declare type Role = "CUSTOMER" | "ADMIN";
 declare type VehicleType = "MOTORCYCLE" | "BIKE" | "CAR" | "BICYCLE";
 declare type OrderStatus =
+  | "PENDING_PAYMENT"
   | "PENDING"
   | "ACCEPTED"
   | "PREPARING"
+  | "READY_FOR_PICKUP"
   | "OUT_FOR_DELIVERY"
   | "DELIVERED"
   | "CANCELLED";
+
 declare type PaymentStatus = "PENDING" | "SUCCESSFUL" | "FAILED" | "REFUNDED";
 declare type DeliveryStatus =
   | "WAITING_PICKUP"
@@ -70,6 +73,8 @@ declare interface Vendor {
   category: string;
   address: Address; // Vendor only has one embedded Address
   avrgPreparationTime: string;
+  deliveryTime: string;
+  deliveryFee: number;
 
   // Frontend/Derived fields (not directly in DB, but necessary for UI lists)
   isOpen?: boolean;
@@ -184,6 +189,7 @@ declare interface SuccessResponse<T = unknown | Record<string, string>> {
     ok: true;
   } & T;
   message: string; // Added from previous API implementation
+  ok: boolean;
 }
 
 declare interface ClientError {

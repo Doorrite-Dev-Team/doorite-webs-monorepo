@@ -29,11 +29,17 @@ interface CheckoutAddressDialogProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: CheckoutAddressData) => void;
   isLoading?: boolean;
+  defaultUser: {
+    fullName: string;
+    phoneNumber: string;
+    email: string;
+    address: Address | null;
+  };
 }
 
 interface CheckoutAddressData {
   fullName: string;
-  phone: string;
+  phoneNumber: string;
   email: string;
   address: string;
   state: string;
@@ -46,16 +52,17 @@ export default function CheckoutAddressDialog({
   open,
   onOpenChange,
   onSubmit,
+  defaultUser,
   isLoading = false,
 }: CheckoutAddressDialogProps) {
   const [formData, setFormData] = React.useState<CheckoutAddressData>({
-    fullName: "",
-    phone: "",
-    email: "",
-    address: "",
-    state: "",
-    country: "Nigeria",
-    coordinates: null,
+    fullName: defaultUser.fullName,
+    phoneNumber: defaultUser.phoneNumber,
+    email: defaultUser.email,
+    address: defaultUser.address?.state || "",
+    state: defaultUser.address?.state || "Kwara",
+    country: defaultUser.address?.state || "Nigeria",
+    coordinates: defaultUser.address?.coordinates || null,
     instructions: "",
   });
   const [errors, setErrors] = React.useState<Partial<CheckoutAddressData>>({});
@@ -66,13 +73,13 @@ export default function CheckoutAddressDialog({
     if (open) {
       setFormData({
         fullName: "",
-        phone: "",
+        phoneNumber: "",
         email: "",
         address: "",
         state: "",
         country: "Nigeria",
         coordinates: null,
-        instructions: "",
+        // instructions: "",
       });
       setErrors({});
       setShowGeoRequester(false);
@@ -87,10 +94,10 @@ export default function CheckoutAddressDialog({
       newErrors.fullName = "Full name is required";
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    } else if (!/^\+?[\d\s\-()]+$/.test(formData.phone.trim())) {
-      newErrors.phone = "Please enter a valid phone number";
+    if (!formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = "Phone number is required";
+    } else if (!/^\+?[\d\s\-()]+$/.test(formData.phoneNumber.trim())) {
+      newErrors.phoneNumber = "Please enter a valid phone number";
     }
 
     if (!formData.email.trim()) {
@@ -129,7 +136,7 @@ export default function CheckoutAddressDialog({
 
     const payload: CheckoutAddressData = {
       fullName: formData.fullName.trim(),
-      phone: formData.phone.trim(),
+      phoneNumber: formData.phoneNumber.trim(),
       email: formData.email.trim(),
       address: formData.address.trim(),
       state: formData.state.trim(),
@@ -152,15 +159,15 @@ export default function CheckoutAddressDialog({
 
   const handleLocationAccepted = (
     coords: { latitude: number; longitude: number },
-    preview?: { display_name?: string; state?: string; country?: string },
+    // preview?: { display_name?: string; state?: string; country?: string },
   ) => {
     setFormData((prev) => ({
       ...prev,
       coordinates: { lat: coords.latitude, long: coords.longitude },
       // Auto-fill from reverse geocode if available and fields are empty
-      address: prev.address || preview?.display_name || prev.address,
-      state: prev.state || preview?.state || prev.state,
-      country: prev.country || preview?.country || prev.country,
+      // address: prev.address || preview?.display_name || prev.address,
+      // state: prev.state || preview?.state || prev.state,
+      // country: prev.country || preview?.country || prev.country,
     }));
     setShowGeoRequester(false);
     toast.success(
@@ -237,15 +244,15 @@ export default function CheckoutAddressDialog({
                 id="phone"
                 type="tel"
                 placeholder="+234 800 000 0000"
-                value={formData.phone}
+                value={formData.phoneNumber}
                 onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
+                  setFormData({ ...formData, phoneNumber: e.target.value })
                 }
-                className={errors.phone ? "border-red-500" : ""}
+                className={errors.phoneNumber ? "border-red-500" : ""}
                 disabled={isLoading}
               />
-              {errors.phone && (
-                <p className="text-sm text-red-600">{errors.phone}</p>
+              {errors.phoneNumber && (
+                <p className="text-sm text-red-600">{errors.phoneNumber}</p>
               )}
             </div>
 
@@ -356,7 +363,7 @@ export default function CheckoutAddressDialog({
                 <MapPin className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-green-900">
-                    ✓ Location coordinates captured
+                    ✓ GeoLocation Detected
                   </p>
                   <p className="text-xs text-green-700 mt-1">
                     Lat: {formData.coordinates.lat.toFixed(6)}, Long:{" "}
@@ -368,28 +375,30 @@ export default function CheckoutAddressDialog({
           )}
 
           {/* Geolocation UI */}
-          <div className="pt-2 border-t">
-            {!showGeoRequester ? (
-              <Button
-                type="button"
-                variant={formData.coordinates ? "default" : "outline"}
-                onClick={() => setShowGeoRequester(true)}
-                size="sm"
-                className="w-full gap-2"
-                disabled={isLoading}
-              >
-                <MapPin className="w-4 h-4" />
-                {formData.coordinates
-                  ? "Update Location"
-                  : "📍 Use My Current Location (Recommended)"}
-              </Button>
-            ) : (
-              <GeoLocationRequester
-                onAccept={handleLocationAccepted}
-                onCancel={() => setShowGeoRequester(false)}
-              />
-            )}
-          </div>
+          {!defaultUser.address?.coordinates && (
+            <div className="pt-2 border-t">
+              {!showGeoRequester ? (
+                <Button
+                  type="button"
+                  variant={formData.coordinates ? "default" : "outline"}
+                  onClick={() => setShowGeoRequester(true)}
+                  size="sm"
+                  className="w-full gap-2"
+                  disabled={isLoading}
+                >
+                  <MapPin className="w-4 h-4" />
+                  {formData.coordinates
+                    ? "Update Location"
+                    : "📍 Use My Current Location (Recommended)"}
+                </Button>
+              ) : (
+                <GeoLocationRequester
+                  onAccept={handleLocationAccepted}
+                  onCancel={() => setShowGeoRequester(false)}
+                />
+              )}
+            </div>
+          )}
         </div>
 
         <DialogFooter>

@@ -1,6 +1,6 @@
 "use client";
 
-import { apiClient } from "@/libs/api-client";
+import { apiClient } from "@/libs/api/api-client";
 // import { SuccessResponse, Vendor } from "@/types";
 import { useState } from "react";
 import { Button } from "@repo/ui/components/button";

@@ -34,10 +34,27 @@ async function forwardRequest(
     const accessToken = await getCookieHeader(true);
 
     // Prepare request body (only for mutations)
-    const body =
-      req.method !== "GET" && req.method !== "HEAD"
-        ? await req.text()
-        : undefined;
+    // const body =
+    //   req.method !== "GET" && req.method !== "HEAD"
+    //     ? await req.json()
+    //     : undefined;
+
+    // console.log(body);
+    // Replace your current body extraction with this:
+    // const contentType = req.headers.get("content-type");
+    let body = undefined;
+
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      // Only try to parse if there's actually a body and it's JSON
+      const rawBody = await req.text();
+      if (rawBody) {
+        try {
+          body = JSON.parse(rawBody);
+        } catch (e) {
+          console.warn("[Proxy] Body exists but is not valid JSON", e);
+        }
+      }
+    }
 
     // Forward request with timeout
     const controller = new AbortController();
@@ -45,15 +62,16 @@ async function forwardRequest(
 
     const response = await fetch(targetUrl, {
       method: req.method,
-      body: JSON.stringify(body),
+      body: JSON.stringify(body), // ✅ FORWARD RAW BODY
       headers: {
-        "content-type": req.headers.get("content-type") || "application/json",
+        ...(req.headers.get("content-type")
+          ? { "content-type": req.headers.get("content-type")! }
+          : {}),
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        ...(cookieHeader && { cookie: cookieHeader }),
-        // Forward relevant headers
-        ...(req.headers.get("accept") && {
-          accept: req.headers.get("accept")!,
-        }),
+        ...(cookieHeader ? { cookie: cookieHeader } : {}),
+        ...(req.headers.get("accept")
+          ? { accept: req.headers.get("accept")! }
+          : {}),
       },
       credentials: "include",
       signal: controller.signal,

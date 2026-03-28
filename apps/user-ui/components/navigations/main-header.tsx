@@ -28,7 +28,7 @@ import {
 import { SidebarTrigger } from "@repo/ui/components/sidebar";
 import { cn } from "@repo/ui/lib/utils";
 import { disconnectSocketAtom } from "@/store/socketAtom";
-import { authService } from "@/libs/api-client";
+import { authService } from "@/libs/api/api-client";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -63,13 +63,14 @@ const Header = () => {
     logout();
     disconect();
     router.push("/log-in");
+    window.location.href = "/log-in";
   };
 
   // Check if we're on a public page
-  // const isPublicPage = ["/landing", "/about", "/privacy", "/terms"].includes(
-  //   pathname,
-  // );
-  //
+  const isPublicPage = ["/landing", "/about", "/privacy", "/terms"].includes(
+    pathname,
+  );
+
   // Generate breadcrumbs from pathname
   const generateBreadcrumbs = () => {
     const paths = pathname.split("/").filter(Boolean);
@@ -148,7 +149,7 @@ const Header = () => {
 
         {/* Right Section */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {isLoggedIn ? (
+          {isLoggedIn && !isPublicPage ? (
             <>
               <NotificationPanel />
               <CartDrawer />

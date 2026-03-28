@@ -1,171 +1,196 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Map, { Marker } from "react-map-gl/mapbox"; // Changed import to standard 'react-map-gl
-import type { ViewState } from "react-map-gl";
-import { DeckGL } from "@deck.gl/react";
-import { PathLayer } from "@deck.gl/layers";
-import { type ViewStateChangeParameters } from "@deck.gl/core"; // Import DeckGL core types
-import { Navigation, MapPin, Package } from "lucide-react";
+import { Map, Marker } from "@maptiler/sdk";
+import { Package } from "lucide-react";
 import { useRiderLocation } from "@/hooks/use-rider-location";
+import { maptilerConfig } from "@/libs/maptiler";
 
 import { Card, CardContent } from "@repo/ui/components/card";
 import { Button } from "@repo/ui/components/button";
 import { Badge } from "@repo/ui/components/badge";
 import { getStatusLabel, formatTime } from "@/libs/helper";
 
-import "mapbox-gl/dist/mapbox-gl.css";
-
-// --- Type Definitions ---
-// interface Coordinates {
-//   lat: number;
-//   long: number;
-// }
-
-// interface Order {
-//   id: string;
-//   status: string;
-//   estimatedDelivery: string | null;
-//   totalAmount: number;
-//   items: unknown[];
-//   deliveryAddress: {
-//     coordinates: Coordinates | null;
-//   };
-// }
+// import "@maptiler/sdk/dist/maptiler-sdk.css";
 
 interface ActiveOrderTrackerProps {
   order: Order;
 }
 
-// Define the custom ViewState which extends the core DeckGL ViewState
-interface CustomViewState extends ViewState {
-  longitude: number;
-  latitude: number;
-  zoom: number;
-  pitch?: number;
-  bearing?: number;
-}
-
 export default function ActiveOrderTracker({ order }: ActiveOrderTrackerProps) {
   const router = useRouter();
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<Map | null>(null);
+  const riderMarkerRef = useRef<Marker | null>(null);
+  const destinationMarkerRef = useRef<Marker | null>(null);
+  const routeLineRef = useRef<ReturnType<Map["getSource"]> | null>(null);
 
-  // Using the custom hook to manage rider location
-  const riderLocation = useRiderLocation(order.id);
+  // Track rider location via WebSocket
+  const riderLocation = useRiderLocation(order.riderId, order.id);
 
-  const [viewState, setViewState] = React.useState<CustomViewState>({
-    longitude: order.deliveryAddress.coordinates?.long || 3.3792,
-    latitude: order.deliveryAddress.coordinates?.lat || 6.5244,
-    zoom: 13,
-    pitch: 0,
-    bearing: 0,
-  });
+  const [isMapReady, setIsMapReady] = useState(false);
 
-  // FIX: Correctly type the event handler for DeckGL
-  const handleViewStateChange = ({ viewState }: ViewStateChangeParameters) => {
-    setViewState(viewState);
-  };
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainer.current || mapRef.current) return;
 
-  // Update viewport to center between rider and destination
-  React.useEffect(() => {
+    const center: [number, number] = order.deliveryAddress.coordinates
+      ? [
+          order.deliveryAddress.coordinates.long,
+          order.deliveryAddress.coordinates.lat,
+        ]
+      : [3.3792, 6.5244]; // Lagos default
+
+    const map = new Map({
+      container: mapContainer.current,
+      style: "https://api.maptiler.com/maps/streets-v2/style.json",
+      center,
+      zoom: 13,
+      apiKey: maptilerConfig.apiKey || "",
+    });
+
+    map.on("load", () => {
+      setIsMapReady(true);
+
+      // Add route line source and layer
+      map.addSource("route", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "LineString",
+            coordinates: [],
+          },
+        },
+      });
+
+      map.addLayer({
+        id: "route-line",
+        type: "line",
+        source: "route",
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+        paint: {
+          "line-color": "#3b82f6",
+          "line-width": 4,
+          "line-dasharray": [2, 1],
+        },
+      });
+
+      routeLineRef.current = map.getSource("route");
+    });
+
+    mapRef.current = map;
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+    };
+  }, []);
+
+  // Add/update destination marker
+  useEffect(() => {
+    if (!mapRef.current || !isMapReady) return;
+
+    if (order.deliveryAddress.coordinates) {
+      if (destinationMarkerRef.current) {
+        destinationMarkerRef.current.setLngLat([
+          order.deliveryAddress.coordinates.long,
+          order.deliveryAddress.coordinates.lat,
+        ]);
+      } else {
+        const el = document.createElement("div");
+        el.innerHTML = `
+          <div class="relative">
+            <div class="absolute inset-0 animate-ping bg-red-500 rounded-full opacity-75 w-8 h-8 -translate-x-4 -translate-y-4"></div>
+            <svg class="w-10 h-10 text-red-600 drop-shadow-lg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+          </div>
+        `;
+        const marker = new Marker({ element: el })
+          .setLngLat([
+            order.deliveryAddress.coordinates.long,
+            order.deliveryAddress.coordinates.lat,
+          ])
+          .addTo(mapRef.current);
+        destinationMarkerRef.current = marker;
+      }
+    }
+  }, [order.deliveryAddress.coordinates, isMapReady]);
+
+  // Add/update rider marker
+  useEffect(() => {
+    if (!mapRef.current || !isMapReady || !riderLocation) return;
+
+    if (riderMarkerRef.current) {
+      riderMarkerRef.current.setLngLat([riderLocation.long, riderLocation.lat]);
+    } else {
+      const el = document.createElement("div");
+      el.innerHTML = `
+        <div class="relative">
+          <div class="absolute inset-0 animate-pulse bg-blue-500 rounded-full opacity-75"></div>
+          <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 22 12 18 22 22 12 2"/>
+            </svg>
+          </div>
+        </div>
+      `;
+      const marker = new Marker({ element: el })
+        .setLngLat([riderLocation.long, riderLocation.lat])
+        .addTo(mapRef.current);
+      riderMarkerRef.current = marker;
+    }
+  }, [riderLocation, isMapReady]);
+
+  // Update route line and center map
+  useEffect(() => {
+    if (!mapRef.current || !isMapReady) return;
+
     if (riderLocation && order.deliveryAddress.coordinates) {
+      // Update route line
+      if (routeLineRef.current) {
+        (routeLineRef.current as unknown as mapboxgl.GeoJSONSource).setData({
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [riderLocation.long, riderLocation.lat],
+              [
+                order.deliveryAddress.coordinates.long,
+                order.deliveryAddress.coordinates.lat,
+              ],
+            ],
+          },
+        });
+      }
+
+      // Center map between rider and destination
       const centerLat =
         (riderLocation.lat + order.deliveryAddress.coordinates.lat) / 2;
       const centerLong =
         (riderLocation.long + order.deliveryAddress.coordinates.long) / 2;
 
-      setViewState((prev) => ({
-        ...prev,
-        longitude: centerLong,
-        latitude: centerLat,
-      }));
+      mapRef.current.flyTo({
+        center: [centerLong, centerLat],
+        zoom: 13,
+        duration: 1000,
+      });
     }
-  }, [riderLocation, order.deliveryAddress.coordinates]);
-
-  // deck.gl layers for the route path
-  const deckLayers = React.useMemo(() => {
-    const layers = [];
-
-    // Route path layer (using PathLayer from DeckGL)
-    if (riderLocation && order.deliveryAddress.coordinates) {
-      layers.push(
-        new PathLayer({
-          id: "route-path",
-          data: [
-            {
-              path: [
-                [riderLocation.long, riderLocation.lat],
-                [
-                  order.deliveryAddress.coordinates.long,
-                  order.deliveryAddress.coordinates.lat,
-                ],
-              ],
-              color: [59, 130, 246], // Blue
-            },
-          ],
-          getPath: (d) => d.path,
-          getColor: (d) => d.color,
-          getWidth: 5,
-          widthMinPixels: 3,
-          getDashArray: [3, 2],
-          dashJustified: true,
-          opacity: 0.7,
-        }),
-      );
-    }
-
-    return layers;
-  }, [riderLocation, order.deliveryAddress.coordinates]);
+  }, [riderLocation, order.deliveryAddress.coordinates, isMapReady]);
 
   return (
     <Card className="border-0 shadow-lg overflow-hidden">
       <CardContent className="p-0">
         <div className="relative h-64 sm:h-80">
-          <DeckGL
-            viewState={viewState}
-            onViewStateChange={handleViewStateChange}
-            controller={true}
-            layers={deckLayers}
-            style={{ position: "relative", width: "100%", height: "100%" }}
-          >
-            {/* The Map component receives the synchronized viewState implicitly from DeckGL */}
-            <Map
-              mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN!}
-              mapStyle="mapbox://styles/mapbox/streets-v12"
-              attributionControl={false}
-              // Do not pass {...viewState} to Map here. DeckGL handles synchronization.
-            >
-              {/* Destination marker */}
-              {order.deliveryAddress.coordinates && (
-                <Marker
-                  longitude={order.deliveryAddress.coordinates.long}
-                  latitude={order.deliveryAddress.coordinates.lat}
-                  anchor="bottom"
-                >
-                  <div className="relative">
-                    <div className="absolute inset-0 animate-ping bg-red-500 rounded-full opacity-75 w-8 h-8 -translate-x-4 -translate-y-4" />
-                    <MapPin className="w-10 h-10 text-red-600 fill-red-500 drop-shadow-lg" />
-                  </div>
-                </Marker>
-              )}
-
-              {/* Rider location marker */}
-              {riderLocation && (
-                <Marker
-                  longitude={riderLocation.long}
-                  latitude={riderLocation.lat}
-                  anchor="center"
-                >
-                  <div className="relative">
-                    <div className="absolute inset-0 animate-pulse bg-blue-500 rounded-full opacity-75" />
-                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
-                      <Navigation className="w-6 h-6 text-white" />
-                    </div>
-                  </div>
-                </Marker>
-              )}
-            </Map>
-          </DeckGL>
+          {/* Map Container */}
+          <div ref={mapContainer} className="w-full h-full" />
 
           {/* Map overlay info */}
           <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
@@ -208,7 +233,7 @@ export default function ActiveOrderTracker({ order }: ActiveOrderTrackerProps) {
           </div>
 
           <p className="text-sm text-gray-700">
-            {order.items.length} item{order.items.length !== 1 ? "s" : ""} •{" "}
+            {order.items.length} item{order.items.length !== 1 ? "s" : ""} ·{" "}
             <span className="font-semibold">
               ${order.totalAmount.toFixed(2)}
             </span>
@@ -218,3 +243,70 @@ export default function ActiveOrderTracker({ order }: ActiveOrderTrackerProps) {
     </Card>
   );
 }
+
+/*
+// ============================================================================
+// DECK.GL APPROACH (Preserved for reference)
+// ============================================================================
+// This approach uses deck.gl for advanced route visualization with animated
+// dashed lines and smoother interactions.
+//
+// Pros:
+// - Better performance for complex visualizations
+// - Built-in animation support
+// - Advanced layer system
+//
+// Cons:
+// - Additional dependencies (deck.gl, react-map-gl)
+// - More complex setup
+// - Larger bundle size
+//
+// Dependencies needed:
+// npm install deck.gl react-map-gl/maplibre
+//
+// Example implementation:
+//
+// import { DeckGL } from "@deck.gl/react";
+// import { PathLayer } from "@deck.gl/layers";
+// import { type ViewStateChangeParameters } from "@deck.gl/core";
+// import Map, { Marker } from "react-map-gl/maplibre";
+//
+// const deckLayers = React.useMemo(() => {
+//   if (riderLocation && order.deliveryAddress.coordinates) {
+//     return [
+//       new PathLayer({
+//         id: "route-path",
+//         data: [{
+//           path: [
+//             [riderLocation.long, riderLocation.lat],
+//             [order.deliveryAddress.coordinates.long, order.deliveryAddress.coordinates.lat],
+//           ],
+//           color: [59, 130, 246],
+//         }],
+//         getPath: (d) => d.path,
+//         getColor: (d) => d.color,
+//         getWidth: 5,
+//         widthMinPixels: 3,
+//         getDashArray: [3, 2],
+//         dashJustified: true,
+//         opacity: 0.7,
+//       }),
+//     ];
+//   }
+//   return [];
+// }, [riderLocation, order.deliveryAddress.coordinates]);
+//
+// <DeckGL
+//   viewState={viewState}
+//   onViewStateChange={handleViewStateChange}
+//   controller={true}
+//   layers={deckLayers}
+// >
+//   <Map
+//     mapStyle={`https://api.maptiler.com/maps/streets-v2/style.json?key=${maptilerConfig.apiKey}`}
+//   >
+//     // Markers here
+//   </Map>
+// </DeckGL>
+// ============================================================================
+*/

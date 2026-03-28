@@ -24,14 +24,14 @@ interface AddressSelectionProps {
 
 interface CheckoutContactInfo {
   fullName: string;
-  phone: string;
+  phoneNumber: string;
   email: string;
   instructions?: string;
 }
 
 interface CheckoutAddressData {
   fullName: string;
-  phone: string;
+  phoneNumber: string;
   email: string;
   address: string;
   state: string;
@@ -48,6 +48,7 @@ export default function AddressSelection({
 }: AddressSelectionProps) {
   // const [showNewAddressDialog, setShowNewAddressDialog] = React.useState(false);
   const [selectedAddressId, setSelectedAddressId] = React.useState<string>("");
+  // const [selectedUserInfo, ]
 
   // Fetch user profile with addresses
   const {
@@ -70,7 +71,11 @@ export default function AddressSelection({
       (addr: Address) => addr.address === addressId,
     );
     if (selected) {
-      onAddressSelect(selected);
+      onAddressSelect(selected, {
+        fullName: (profile as User)?.fullName,
+        phoneNumber: (profile as User)?.phoneNumber,
+        email: (profile as User)?.email,
+      });
     }
   };
 
@@ -212,7 +217,7 @@ export default function AddressSelection({
                               .join(", ")}
                           </p>
 
-                          {address.coordinates && (
+                          {/*{address.coordinates && (
                             <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
                               <MapPin className="w-3 h-3" />
                               <span>
@@ -220,7 +225,7 @@ export default function AddressSelection({
                                 {address.coordinates.long.toFixed(4)}
                               </span>
                             </div>
-                          )}
+                          )}*/}
                         </div>
                       </div>
                     </div>

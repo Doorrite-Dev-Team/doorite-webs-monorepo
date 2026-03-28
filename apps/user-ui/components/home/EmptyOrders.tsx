@@ -14,7 +14,7 @@ export function EmptyOrders() {
         <p className="text-gray-600 mb-6">
           Start ordering from your favorite restaurants
         </p>
-        <Link href="/vendor">
+        <Link href="/explore">
           <Button>Browse Restaurants</Button>
         </Link>
       </CardContent>

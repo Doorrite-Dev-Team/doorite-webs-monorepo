@@ -66,7 +66,8 @@ import {
   API_CONFIG,
 } from "@/libs/api-utils";
 
-export async function POST(req: NextRequest) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function POST(_req: NextRequest) {
   try {
     // const body = await req.json();
     const cookieHeader = await getCookieHeader();

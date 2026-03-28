@@ -13,7 +13,7 @@ export default function ActiveDeliveryCard({ variant = "waiting" }: Props) {
           </p>
         </div>
         <div className="text-right">
-          <p className="text-primary font-bold">$5.20</p>
+          <p className="text-primary font-bold">₦5,200</p>
           <p className="text-xs text-gray-500">25 min left</p>
         </div>
       </div>

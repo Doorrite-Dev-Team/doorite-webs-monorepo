@@ -1,4 +1,4 @@
-import { apiClient } from "@/libs/api-client";
+import { apiClient } from "@/libs/api/api-client";
 import { toast } from "@repo/ui/components/sonner";
 
 // actions/api.ts
@@ -49,28 +49,68 @@ interface ReviewsData {
   }>;
 }
 
+export interface GroupedSearchResult {
+  vendor: Vendor;
+  products: Product[];
+  matchCount: number;
+}
+
+export interface ProductSearchResponse {
+  query: string;
+  groupedResults: GroupedSearchResult[];
+  totalVendors: number;
+  totalProducts: number;
+}
+export interface CuisinesResponse {
+  ok: boolean;
+  categories: string[];
+  keys: string[];
+}
+
 // ========================================================
 // CLIENT API (apiClient + toast)
 // ========================================================
 
 export const api = {
+  // searchProducts: async (params: {
+  //   q: string;
+  //   lat?: number;
+  //   lng?: number;
+  // }): Promise<ProductSearchResponse> => {
+  //   const searchParams = new URLSearchParams();
+  //   searchParams.append("q", params.q);
+  //   if (params.lat) searchParams.append("lat", params.lat.toString());
+  //   if (params.lng) searchParams.append("lng", params.lng.toString());
+
+  //   const { data } = await apiClient.get<ProductSearchResponse>(
+  //     `/products?${searchParams.toString()}`,
+  //   );
+  //   return data;
+  // },
+
+  getCuisines: async (): Promise<string[]> => {
+    const { data } =
+      await apiClient.get<CuisinesResponse>("/vendor-categories");
+    return data.categories;
+  },
   // ---------------- PRODUCTS ----------------
-  fetchProducts: async (params: Record<string, string>) => {
+  fetchProducts: async (params: string): Promise<ProductSearchResponse> => {
     try {
-      const qs = new URLSearchParams(params).toString();
-      const url = `/products${qs ? `?${qs}` : ""}`;
+      const { data } = await apiClient.get<ProductSearchResponse>(
+        `/products?${params.toString()}`,
+      );
 
-      const res: SuccessResponse<{
-        products: Product[];
-        pagination: Pagination;
-      }> = await apiClient.get(url);
-
-      return res.data.products || [];
+      return data;
     } catch (error) {
-      if (window)
+      if (typeof window !== "undefined")
         toast(`Unable to fetch Products: ${(error as Error).message}`);
-      console.warn(`Unable to fetch Order: ${(error as Error).message}`);
-      return [];
+      console.warn(`Unable to fetch Products: ${(error as Error).message}`);
+      return {
+        query: "",
+        groupedResults: [],
+        totalVendors: 0,
+        totalProducts: 0,
+      };
     }
   },
 
@@ -96,12 +136,18 @@ export const api = {
         pagination: Pagination;
       }> = await apiClient.get(`/vendors?${params || ""}`);
 
-      return res.data.vendors || [];
+      return {
+        vendors: res.data.vendors || [],
+        pagination: res.data.pagination,
+      };
     } catch (error) {
       if (typeof window !== "undefined")
         toast(`Unable to fetch Vendors: ${(error as Error).message}`);
-      console.warn(`Unable to fetch Order: ${(error as Error).message}`);
-      return [];
+      console.warn(`Unable to fetch Vendors: ${(error as Error).message}`);
+      return {
+        vendors: [],
+        pagination: { page: 1, limit: 20, total: 0, pages: 0 },
+      };
     }
   },
 
@@ -127,12 +173,46 @@ export const api = {
         pagination: Pagination;
       }> = await apiClient.get(`/vendors/${id}/products?${params || ""}`);
 
-      return res.data.products || [];
+      return {
+        products: res.data.products || [],
+        pagination: res.data.pagination,
+      };
     } catch (error) {
       if (typeof window !== "undefined")
         toast(`Unable to fetch vendor products: ${(error as Error).message}`);
-      console.warn(`Unable to fetch Order: ${(error as Error).message}`);
-      return [];
+      console.warn(
+        `Unable to fetch vendor products: ${(error as Error).message}`,
+      );
+      return {
+        products: [],
+        pagination: { page: 1, limit: 20, total: 0, pages: 0 },
+      };
+    }
+  },
+
+  searchProducts: async (
+    query: string,
+    params?: { lat?: number; lng?: number },
+  ) => {
+    try {
+      const queryString = new URLSearchParams({ q: query });
+      if (params?.lat) queryString.append("lat", params.lat.toString());
+      if (params?.lng) queryString.append("lng", params.lng.toString());
+
+      const res: SuccessResponse<{
+        groupedResults: Array<{
+          vendor: Vendor;
+          products: Product[];
+          matchCount: number;
+        }>;
+      }> = await apiClient.get(`/search/products?${queryString.toString()}`);
+
+      return { groupedResults: res.data.groupedResults || [], query };
+    } catch (error) {
+      if (typeof window !== "undefined")
+        toast(`Unable to search products: ${(error as Error).message}`);
+      console.warn(`Unable to search products: ${(error as Error).message}`);
+      return { groupedResults: [], query };
     }
   },
 
@@ -153,9 +233,10 @@ export const api = {
   // ---------------- USER PROFILE ----------------
   fetchProfile: async () => {
     try {
-      const { data }: SuccessResponse<{ user: User }> =
+      const res: SuccessResponse<{ user: User }> =
         await apiClient.get(`/users/me`);
-      return data.user;
+      console.log(res);
+      return res.data.user;
     } catch (error) {
       console.error("Unable to fetch profile:", error);
       return null;
@@ -226,12 +307,16 @@ export const api = {
       const { data }: SuccessResponse<{ order: Order }> = await apiClient.get(
         `/orders/${id}`,
       );
-
+      console.log(data);
       return data.order;
     } catch (error) {
-      if (typeof window !== "undefined")
-        toast(`Unable to fetch Order: ${(error as Error).message}`);
-      toast(`Unable to fetch Order: ${(error as Error).message}`);
+      // Log errors on the server for debugging
+      console.error(
+        `[Server API] Unable to fetch Order ${id}:`,
+        (error as Error).message,
+      );
+
+      // Return null so the page can call notFound() or show an error state
       return null;
     }
   },

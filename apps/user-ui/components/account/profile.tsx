@@ -39,7 +39,7 @@ export default function ProfileSection() {
               className="mt-2 border-primary/20 text-primary bg-primary/10"
               variant="outline"
             >
-              {user ? "member" : "Guest"}
+              {user ? "online" : "Guest"}
             </Badge>
           </div>
         </div>

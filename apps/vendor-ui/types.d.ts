@@ -105,6 +105,13 @@ declare interface Product {
 
   // Relations (required for frontend display)
   variants: ProductVariant[];
+  modifierGroups?: Array<{
+    id: string;
+    name: string;
+    isRequired: boolean;
+    minSelect: number;
+    maxSelect: number;
+  }>;
   vendor: {
     // Simplified relation data for product card view
     id: string;

@@ -44,6 +44,10 @@ export function middleware(req: NextRequest) {
 
   // 2. Redirect Authenticated Users AWAY from Auth Pages (Login/Signup)
   if (isAuthenticated && authPaths.includes(pathname)) {
+    // const redirectUrl = searchParams.get("callbackUrl");
+    // if (redirectUrl) {
+    //   return NextResponse.redirect(new URL(redirectUrl, req.url));
+    // }
     return NextResponse.redirect(new URL("/home", req.url));
   }
 
