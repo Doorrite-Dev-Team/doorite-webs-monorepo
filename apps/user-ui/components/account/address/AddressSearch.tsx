@@ -65,6 +65,7 @@ export default function AddressSearch({
 
         if (data.features && data.features.length > 0) {
           const formattedResults: GeocodingResult[] = data.features.map(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (feature: any) => ({
               id: feature.id,
               name: feature.place_name,

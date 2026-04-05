@@ -29,8 +29,7 @@ const getApiBaseUrl = () => {
 
 /**
  * Pre-configured Axios instance
- * - No token management
- * - No interceptors
+ * - Token management via interceptors
  * - Cookies handled automatically via proxy
  */
 export const apiClient = axios.create({
@@ -42,22 +41,50 @@ export const apiClient = axios.create({
   withCredentials: true, // Important for cookie propagation
 });
 
-// apiClient.interceptors.request.use(async (config) => {
-//   if (typeof window === "undefined") {
-//     const { getCookieHeader } = await import("@/libs/api-utils");
-//     const token = await getCookieHeader(true);
-//     if (token) {
-//       config.headers.Authorization = `Bearer ${token}`;
-//     }
-//   }
-//   return config;
-// });
+// Request interceptor to add auth token
+apiClient.interceptors.request.use(
+  async (config) => {
+    // The token is handled via cookies by the proxy, so we don't need to manually add it
+    // But we can add it here if needed for direct API calls
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
 
+// Response interceptor
 apiClient.interceptors.response.use(
   (res) => {
     return res.data.data ? res.data : res;
   },
-  (err) => handleApiError(err),
+  async (err) => {
+    // Handle 401 errors (token expired)
+    if (err.response?.status === 401) {
+      // Try to refresh token
+      try {
+        const originalRequest = err.config;
+        // Prevent infinite loops
+        if (!originalRequest._retry) {
+          originalRequest._retry = true;
+
+          // Attempt to refresh token
+          await authService.refresh();
+
+          // Retry the original request
+          return apiClient(originalRequest);
+        }
+      } catch (refreshError) {
+        // If refresh fails, redirect to login
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return handleApiError(err);
+  },
 );
 
 /**
@@ -71,10 +98,24 @@ export async function handleApiError(error: unknown) {
     // Handle session expiration
     if (axiosError.response?.status === 401) {
       console.log("Performing Refresh......");
-      // await authService.refresh();
-      if (typeof window !== "undefined") window.location.href = "/login";
-      // return "Session expired. Please log in again.";
-      // return error;
+      try {
+        await authService.refresh();
+        // If refresh succeeds, we retry the original request
+        // The interceptor will retry it automatically
+        throw error; // Re-throw to trigger retry
+      } catch (refreshError) {
+        // If refresh fails, redirect to login
+        console.log("Refresh failed, redirecting to login");
+        if (typeof window !== "undefined") window.location.href = "/login";
+        const axiosRefreshError = refreshError as AxiosError<{
+          message?: string;
+        }>;
+        return (
+          axiosRefreshError.response?.data?.message ||
+          axiosRefreshError.message ||
+          "Session expired. Please log in again."
+        );
+      }
     }
 
     return (
@@ -82,7 +123,6 @@ export async function handleApiError(error: unknown) {
       axiosError.message ||
       "An error occurred"
     );
-    // return error;
   }
 
   // return "An unexpected error occurred";
@@ -127,7 +167,7 @@ export const authService = {
 
   async refresh() {
     const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_VERCEL_URL ?? "http://localhost:3000"}/api/auth/refresh-token`,
+      `${process.env.NEXT_PUBLIC_VERCEL_URL ?? "http://localhost:3000"}/api/v1/auth/refresh-user-token`,
     );
     return response.data;
   },

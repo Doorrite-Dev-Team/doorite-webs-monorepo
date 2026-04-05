@@ -175,13 +175,18 @@ export const OrderItemsCard = ({ cart }: OrderItemsCardProps) => (
           >
             <div className="flex-1">
               <p className="font-medium text-gray-900">{item.name}</p>
+              {item.modifiers && item.modifiers.length > 0 && (
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  + {item.modifiers.map((m) => m.name).join(", ")}
+                </p>
+              )}
               <p className="text-sm text-gray-600">{item.vendorName}</p>
               <p className="text-sm text-gray-500 mt-1">
-                ₦{item.price.toFixed(2)} × {item.quantity}
+                ₦{item.price.toLocaleString("en-NG")} × {item.quantity}
               </p>
             </div>
             <span className="font-semibold text-gray-900">
-              ₦{(item.price * item.quantity).toFixed(2)}
+              ₦{(item.price * item.quantity).toLocaleString("en-NG")}
             </span>
           </div>
         ))}
@@ -195,7 +200,7 @@ interface OrderSummaryCardProps {
   fee: {
     subtotal: number;
     deliveryFee: number;
-    serviceFee: number;
+    smallOrderFee: number;
     total: number;
   };
   isProcessing: boolean;
@@ -214,23 +219,31 @@ export const OrderSummaryCard = ({
         <div className="space-y-3">
           <div className="flex justify-between text-gray-700">
             <span>Subtotal</span>
-            <span className="font-medium">₦{fee.subtotal.toFixed(2)}</span>
+            <span className="font-medium">
+              ₦{fee.subtotal.toLocaleString("en-NG")}
+            </span>
           </div>
           <div className="flex justify-between text-gray-700">
             <span>Delivery Fee</span>
-            <span className="font-medium">₦{fee.deliveryFee.toFixed(2)}</span>
+            <span className="font-medium">
+              ₦{fee.deliveryFee.toLocaleString("en-NG")}
+            </span>
           </div>
-          <div className="flex justify-between text-gray-700">
-            <span>Service Fee</span>
-            <span className="font-medium">₦{fee.serviceFee.toFixed(2)}</span>
-          </div>
+          {fee.smallOrderFee > 0 && (
+            <div className="flex justify-between text-gray-700">
+              <span>Small Order Fee</span>
+              <span className="font-medium">
+                ₦{fee.smallOrderFee.toLocaleString("en-NG")}
+              </span>
+            </div>
+          )}
 
           <Separator />
 
           <div className="flex justify-between items-baseline">
             <span className="text-lg font-semibold text-gray-900">Total</span>
             <span className="text-2xl font-bold text-primary">
-              ${fee.total.toFixed(2)}
+              ₦{fee.total.toLocaleString("en-NG")}
             </span>
           </div>
         </div>

@@ -33,6 +33,7 @@ export default function AddressMapSelector({
   const markerRef = useRef<Marker | null>(null);
 
   const [query, setQuery] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [results, setResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -191,6 +192,7 @@ export default function AddressMapSelector({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSelectResult = (result: any) => {
     const [lon, lat] = result.geometry.coordinates;
     setCoordinates({ lat, long: lon });

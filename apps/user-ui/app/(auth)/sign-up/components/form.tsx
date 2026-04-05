@@ -5,7 +5,7 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { toast } from "@repo/ui/components/sonner";
 import { User, Mail, EyeOff, Eye, Phone } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Page } from "../../forgot-password/components/form";
@@ -25,6 +25,7 @@ const SignUpForm = () => {
   const [errorMessage, setErrorMessage] = useState<string>();
   const [showOTP, setShowOtp] = useState<Page>(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const {
     register,
@@ -73,13 +74,17 @@ const SignUpForm = () => {
     }
   });
 
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/home";
+
   // After registration, show Verify OTP screen
   if (showOTP)
     return (
       <VerifyOTP
         email={userEmail}
         verificationType="email"
-        onVerifySuccess={() => router.push("/log-in")}
+        onVerifySuccess={() =>
+          router.push(`/log-in?callbackUrl=${encodeURIComponent(callbackUrl)}`)
+        }
         setToSignUp={setShowOtp}
       />
     );

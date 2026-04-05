@@ -62,6 +62,7 @@ export default function VendorMenuSection({
           quantity: 1,
           vendorName: product.vendor.businessName,
           vendorId: product.vendorId,
+          vendorDeliveryFee: product.vendor.deliveryFee ?? 0,
         });
       }
     },

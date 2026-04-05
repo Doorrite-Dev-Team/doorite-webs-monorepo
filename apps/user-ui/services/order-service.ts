@@ -5,6 +5,7 @@ export interface OrderRequest {
     productId: string;
     variantId?: string;
     quantity: number;
+    modifiers?: { modifierOptionId: string; quantity: number }[];
   }[];
   deliveryAddress: {
     address: string;

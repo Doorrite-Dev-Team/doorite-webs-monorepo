@@ -11,24 +11,38 @@ import type { GroupedSearchResult } from "@/actions/api";
 interface ProductSearchResultsProps {
   results: GroupedSearchResult[];
   searchQuery: string;
+  message?: string;
 }
 
 export default function ProductSearchResults({
   results,
   searchQuery,
+  message,
 }: ProductSearchResultsProps) {
+  const isStateMessage = message && message.includes("not yet available");
+
   if (results.length === 0) {
     return (
       <Card className="border-dashed">
         <CardContent className="flex flex-col items-center justify-center py-16">
           <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
-            <span className="text-3xl">🔍</span>
+            {isStateMessage ? (
+              <span className="text-3xl">🚚</span>
+            ) : (
+              <span className="text-3xl">🔍</span>
+            )}
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            No results for "{searchQuery}"
+            {isStateMessage
+              ? "Coming Soon to Your Area"
+              : `No results for "${searchQuery}"`}
           </h3>
           <p className="text-sm text-gray-500 text-center max-w-sm">
-            Try adjusting your search or browse our vendors
+            {isStateMessage ? (
+              <span className="text-amber-600 font-medium">{message}</span>
+            ) : (
+              "Try adjusting your search or browse our vendors"
+            )}
           </p>
         </CardContent>
       </Card>

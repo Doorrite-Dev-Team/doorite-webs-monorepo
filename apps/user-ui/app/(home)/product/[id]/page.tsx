@@ -42,13 +42,8 @@ export default async function ProductPage({
 }) {
   const { id } = await params;
 
-  // Fetch data in parallel
-  const [product, relatedProducts] = await Promise.all([
-    api.fetchProduct(id),
-    api
-      .fetchProduct(id)
-      .then((p) => (p ? api.fetchVendorsProduct(p.vendorId, p.id) : [])),
-  ]);
+  // Fetch product only (related products will be fetched client-side)
+  const product = await api.fetchProduct(id);
 
   if (!product) {
     notFound();
@@ -56,7 +51,7 @@ export default async function ProductPage({
 
   return (
     <Suspense fallback={<ProductSkeleton />}>
-      <ProductPageClient product={product} relatedProducts={relatedProducts} />
+      <ProductPageClient product={product} />
     </Suspense>
   );
 }

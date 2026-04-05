@@ -23,6 +23,7 @@ import { useRef } from "react";
 import Image from "next/image";
 
 interface ProfileSectionProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   profile: any;
 }
 
@@ -34,6 +35,7 @@ interface ProfileFormData {
 
 export default function ProfileSection({ profile }: ProfileSectionProps) {
   const queryClient = useQueryClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const profileImageRef = useRef<any>(null);
   const [showDialog, setShowDialog] = React.useState(false);
   const [formData, setFormData] = React.useState<ProfileFormData>({

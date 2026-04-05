@@ -11,13 +11,18 @@ import {
 } from "@repo/ui/components/avatar";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { api } from "@/actions/api";
+import { ChatDialog } from "./ChatDialog";
 
 interface RiderInfoCardProps {
   orderId: string;
   riderId: string;
 }
 
-export default function RiderInfoCard({ riderId }: RiderInfoCardProps) {
+export default function RiderInfoCard({
+  orderId,
+  riderId,
+}: RiderInfoCardProps) {
+  const [showChat, setShowChat] = React.useState(false);
   const { data: rider, isLoading } = useQuery({
     queryKey: ["rider", riderId],
     queryFn: () => api.fetchRider(riderId),
@@ -107,12 +112,25 @@ export default function RiderInfoCard({ riderId }: RiderInfoCardProps) {
           </Button>
         </a>
 
-        <Button variant="outline" className="w-full gap-2" size="sm">
+        <Button
+          variant="outline"
+          className="w-full gap-2"
+          size="sm"
+          onClick={() => setShowChat(true)}
+        >
           <MessageCircle className="w-4 h-4" />
           <span className="hidden sm:inline">Message</span>
           <span className="sm:hidden">Chat</span>
         </Button>
       </div>
+
+      <ChatDialog
+        open={showChat}
+        onOpenChange={setShowChat}
+        orderId={orderId}
+        riderName={rider?.fullName}
+        riderImage={rider?.profileImageUrl}
+      />
     </div>
   );
 }

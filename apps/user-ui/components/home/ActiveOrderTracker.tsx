@@ -90,6 +90,7 @@ export default function ActiveOrderTracker({ order }: ActiveOrderTrackerProps) {
       map.remove();
       mapRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Add/update destination marker

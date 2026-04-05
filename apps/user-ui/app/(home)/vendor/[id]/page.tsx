@@ -43,12 +43,6 @@ export default async function VendorPage({ params }: VendorPageProps) {
     notFound();
   }
 
-  // Fetch related vendors
-  const relatedVendors = await serverApi.fetchRelatedVendors(
-    vendor.category || "",
-    id,
-  );
-
   return (
     <Suspense
       fallback={
@@ -57,11 +51,7 @@ export default async function VendorPage({ params }: VendorPageProps) {
         </div>
       }
     >
-      <VendorPageClient
-        vendorId={id}
-        initialVendor={vendor}
-        relatedVendors={relatedVendors}
-      />
+      <VendorPageClient vendor={vendor} />
     </Suspense>
   );
 }

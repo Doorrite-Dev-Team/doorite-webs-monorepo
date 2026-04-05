@@ -2,13 +2,7 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Star,
-  ThumbsUp,
-  ThumbsDown,
-  User,
-  MessageSquareOff,
-} from "lucide-react";
+import { Star, User, MessageSquareOff } from "lucide-react";
 import { formatDistanceToNow } from "date-fns"; // Added date-fns
 
 import { Card, CardContent } from "@repo/ui/components/card";
@@ -22,13 +16,6 @@ import { Progress } from "@repo/ui/components/progress";
 import { Skeleton } from "@repo/ui/components/skeleton"; // Use a real skeleton if available
 import { api } from "@/actions/api";
 
-interface ReviewsData {
-  averageRating: number;
-  totalReviews: number;
-  ratingDistribution: { stars: number; count: number; percentage: number }[];
-  reviews: Review[];
-}
-
 interface VendorReviewsSectionProps {
   vendorId: string;
 }
@@ -36,16 +23,14 @@ interface VendorReviewsSectionProps {
 export default function VendorReviewsSection({
   vendorId,
 }: VendorReviewsSectionProps) {
-  const { data, isLoading, error, refetch } = useQuery<ReviewsData>({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["vendor-reviews", vendorId],
     queryFn: async () => {
-      const response = await api.fetchReviews(vendorId);
-      // FIX: Ensure we never return undefined
-      if (!response) {
+      const response = await api.fetchVendorReviews(vendorId, 1, 20);
+      if (!response?.reviewsData) {
         throw new Error("No data received from server");
       }
-
-      return response;
+      return response.reviewsData;
     },
     staleTime: 5 * 60 * 1000,
     retry: 1,
@@ -170,23 +155,6 @@ export default function VendorReviewsSection({
                     <p className="mt-4 text-gray-600 text-sm leading-relaxed">
                       {review.comment}
                     </p>
-
-                    <div className="flex items-center gap-2 mt-5">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="h-8 rounded-full px-3 text-xs gap-2"
-                      >
-                        <ThumbsUp className="w-3.5 h-3.5" /> {review.likes}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 rounded-full px-3 text-xs gap-2"
-                      >
-                        <ThumbsDown className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
                   </div>
                 </div>
               </CardContent>

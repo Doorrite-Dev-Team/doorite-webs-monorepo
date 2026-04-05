@@ -34,22 +34,34 @@ export function useCart() {
     }
   };
 
-  const updateQuantity = (itemId: string, delta: number) => {
-    const item = cart.find((item) => item.id === itemId);
+  const updateQuantity = (
+    itemId: string,
+    delta: number,
+    variantId?: string,
+  ) => {
+    const item = cart.find(
+      (item) =>
+        item.id === itemId && (variantId ? item.variantId === variantId : true),
+    );
     if (item) {
       const newQuantity = item.quantity + delta;
 
       if (newQuantity < 1) {
-        const newCart = CartService.removeItem(cart, itemId);
+        const newCart = CartService.removeItem(cart, itemId, variantId);
         setCart(newCart);
       }
-      const newCart = CartService.updateQuantity(cart, itemId, newQuantity);
+      const newCart = CartService.updateQuantity(
+        cart,
+        itemId,
+        newQuantity,
+        variantId,
+      );
       setCart(newCart);
     }
   };
 
-  const removeItem = (itemId: string) => {
-    const newCart = CartService.removeItem(cart, itemId);
+  const removeItem = (itemId: string, variantId?: string) => {
+    const newCart = CartService.removeItem(cart, itemId, variantId);
     setCart(newCart);
   };
 

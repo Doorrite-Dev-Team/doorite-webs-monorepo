@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -33,12 +33,47 @@ export function HeroBanner({
   const router = useRouter();
   const firstName = getUserFirstName(user);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+        setShowTooltip(false);
+      }
+    };
+
+    if (showDropdown || showTooltip) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showDropdown, showTooltip]);
+
+  const handleAddressClick = () => {
+    if ("ontouchstart" in window) {
+      setShowTooltip(!showTooltip);
+    }
+  };
+
+  const getCurrentAddress = () => {
+    return (
+      selectedAddress ||
+      sessionAddress ||
+      addresses?.[0]?.address ||
+      "Select address"
+    );
+  };
 
   return (
-    <section className="relative overflow-hidden bg-[var(--hero-bg)] min-h-[240px] sm:min-h-[280px]">
+    <section className="relative bg-[var(--hero-bg)] min-h-[240px] sm:min-h-[280px]">
       {/* Background texture layer */}
       <div
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 opacity-30 overflow-hidden"
         style={{
           backgroundImage: `radial-gradient(ellipse at 20% 50%, var(--hero-accent-1) 0%, transparent 60%),
                             radial-gradient(ellipse at 80% 20%, var(--hero-accent-2) 0%, transparent 50%)`,
@@ -122,25 +157,42 @@ export function HeroBanner({
         {/* Location pill - always show dropdown when addresses.length > 1 */}
         {/* Priority: addresses dropdown > user.address[0] > add address button > guest location */}
         {addresses && addresses.length > 1 ? (
-          <div className="relative mt-3">
-            <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center gap-1.5 px-1 hover:opacity-80 transition-opacity"
-            >
-              <MapPin className="w-3.5 h-3.5 text-green-400/70 shrink-0" />
-              <p className="text-white/40 text-xs truncate">
-                Delivering to{" "}
-                <span className="text-white/70 font-medium">
-                  {selectedAddress ||
-                    sessionAddress ||
-                    addresses[0]?.address ||
-                    "Select address"}
-                </span>
-              </p>
-              <ChevronDown className="w-3 h-3 text-green-400/70 shrink-0" />
-            </button>
+          <div ref={dropdownRef} className="relative mt-3">
+            {/* Address on left, dropdown button on right */}
+            <div className="flex items-center justify-between gap-2">
+              <div
+                className="flex items-center gap-1.5 cursor-pointer"
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+                onClick={handleAddressClick}
+              >
+                <MapPin className="w-3.5 h-3.5 text-green-400/70 shrink-0" />
+                <p className="text-white/40 text-xs truncate max-w-[200px]">
+                  <span className="text-white/70 font-medium">
+                    {getCurrentAddress()}
+                  </span>
+                </p>
+              </div>
+
+              {/* Dropdown button */}
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="p-1 hover:bg-white/10 rounded-lg transition-opacity shrink-0"
+              >
+                <ChevronDown className="w-4 h-4 text-green-400/70" />
+              </button>
+            </div>
+
+            {/* Tooltip showing full address - use fixed on mobile, absolute on desktop */}
+            {showTooltip && (
+              <div className="fixed left-4 right-4 mt-1 px-3 py-2 bg-gray-900/95 backdrop-blur-md text-white text-xs rounded-lg shadow-xl z-[200] sm:absolute sm:left-0 sm:right-auto sm:mt-2 sm:max-w-[280px] whitespace-normal break-words pointer-events-none">
+                {getCurrentAddress()}
+              </div>
+            )}
+
+            {/* Dropdown menu - opens below the button */}
             {showDropdown && (
-              <div className="absolute top-full left-0 mt-1 w-64 bg-[#1a0a00] border border-green-500/30 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+              <div className="fixed left-4 right-4 mt-1 bg-white/95 backdrop-blur-md border border-gray-200 rounded-xl shadow-xl z-[200] max-h-[60vh] overflow-y-auto sm:absolute sm:top-full sm:left-0 sm:right-auto sm:mt-2 sm:max-h-48 sm:w-64 overflow-hidden">
                 {addresses.map((addr, idx) => {
                   const displayAddr =
                     addr.address ||
@@ -152,7 +204,7 @@ export function HeroBanner({
                         onSelectAddress?.(addr);
                         setShowDropdown(false);
                       }}
-                      className="w-full text-left px-3 py-2 text-xs text-green-100 hover:bg-green-900/50 border-b border-green-800/30 last:border-b-0"
+                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-green-50 border-b border-gray-100 last:border-b-0"
                     >
                       {displayAddr}
                     </button>
@@ -163,9 +215,9 @@ export function HeroBanner({
                     onAddAddress?.();
                     setShowDropdown(false);
                   }}
-                  className="w-full text-left px-3 py-2 text-xs text-green-400 hover:bg-green-900/50 flex items-center gap-1 border-t border-green-800/30"
+                  className="w-full text-left px-4 py-3 text-sm text-green-600 hover:bg-green-50 flex items-center gap-2 border-t border-gray-200"
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-4 h-4" />
                   Add new address
                 </button>
               </div>
