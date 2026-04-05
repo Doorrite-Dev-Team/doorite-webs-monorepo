@@ -14,6 +14,7 @@ import LocationConsent from "@/components/explore/LocationConsent";
 import { Button } from "@repo/ui/components/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import SavedAddressPicker from "@/components/explore/SavedAddressPicker";
+import { cn } from "@repo/ui/lib/utils";
 
 const SESSION_LOCATION_KEY = "session_location_data";
 
@@ -25,11 +26,13 @@ type LocationData =
 interface ExplorePageClientProps {
   initialVendors?: Vendor[];
   initialTotal?: number;
+  initialMessage?: string;
 }
 
 export default function ExplorePageClient({
   initialVendors = [],
   initialTotal = 0,
+  initialMessage,
 }: ExplorePageClientProps) {
   const [user] = useAtom(userAtom);
   const [userCoords, setUserCoords] = useState<{
@@ -47,7 +50,7 @@ export default function ExplorePageClient({
     hasActiveFilters,
     vendorsQuery,
     productsQuery,
-    // cuisinesQuery,
+    cuisinesQuery,
     setParams,
     clearFilters,
     handleQuickFilterToggle,
@@ -138,6 +141,7 @@ export default function ExplorePageClient({
   const vendors = vendorsQuery.data?.vendors || initialVendors;
   const pagination = vendorsQuery.data?.pagination;
   const productResults = productsQuery.data?.groupedResults || [];
+  const Cruisines = cuisinesQuery.data || [];
 
   return (
     <div className="space-y-6 p-4">
@@ -161,6 +165,23 @@ export default function ExplorePageClient({
         search={state.q}
         setSearch={(q) => setParams({ q, page: 1 })}
       />
+      <div className="flex gap-2 overflow-x-auto scrollbar-none px-4 sm:px-6 -mx-0 py-1">
+        {Cruisines.map((c) => (
+          <Button
+            key={c}
+            variant="outline"
+            onClick={() => setParams({ cuisine: c })}
+            className={cn(
+              "shrink-0 px-4 py-2 rounded-full bg-white border border-gray-100 shadow-sm",
+              "text-sm font-medium text-gray-700 whitespace-nowrap",
+              "hover:border-green-400 hover:bg-green-50 hover:text-green-800",
+              "active:scale-95 transition-all duration-150 touch-manipulation",
+            )}
+          >
+            {c}
+          </Button>
+        ))}
+      </div>
 
       {!isProductSearch && (
         <>
@@ -177,7 +198,7 @@ export default function ExplorePageClient({
         <div className="flex items-center gap-4">
           <p className="text-sm font-medium">
             {isProductSearch
-              ? `${productsQuery.data?.totalProducts || 0} products found`
+              ? `${productsQuery.data?.pagination?.total || 0} products found`
               : `${pagination?.total || initialTotal} vendors found`}
           </p>
           {hasActiveFilters && (
@@ -222,6 +243,7 @@ export default function ExplorePageClient({
           <ProductSearchResults
             results={productResults}
             searchQuery={debouncedQ}
+            message={productsQuery.data?.message}
           />
         )
       ) : (
@@ -244,6 +266,7 @@ export default function ExplorePageClient({
                 hasSearch={!!state.q}
                 searchTerm={state.q}
                 onClear={clearFilters}
+                message={vendorsQuery.data?.message || initialMessage}
               />
             </div>
           )}

@@ -88,7 +88,7 @@ export default function OrdersClient({
   // Show loading skeleton on initial load
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-8">
+      <div className="min-h-screen bg-background pb-8">
         <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-6">
           <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
@@ -106,7 +106,7 @@ export default function OrdersClient({
   const pagination = data?.pagination || { page: 1, pages: 1, total: 0 };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
+    <div className="min-h-screen bg-background pb-8">
       <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-6">
         {/* Header */}
         <div className="mb-6">

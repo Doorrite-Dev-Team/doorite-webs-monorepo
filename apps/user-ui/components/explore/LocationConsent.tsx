@@ -58,7 +58,7 @@ export default function LocationConsent({
 
         <div className="flex gap-3 mt-4">
           <Button variant="outline" onClick={onDeny} className="flex-1">
-            Not Now
+            Select Address
           </Button>
           <Button onClick={handleAccept} className="flex-1 gap-2">
             <Navigation className="w-4 h-4" />

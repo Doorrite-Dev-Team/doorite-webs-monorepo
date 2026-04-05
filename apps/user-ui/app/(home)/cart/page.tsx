@@ -43,7 +43,7 @@ export default function CartPage() {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <PageHeader title="Your Cart" showBackButton={false} />
         <div className="container max-w-7xl mx-auto px-4 py-8">
           <Card className="border-0 shadow-lg">
@@ -73,7 +73,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-50 sm:pb-8">
+    <div className="min-h-screen bg-background pb-50 sm:pb-8">
       <PageHeader
         title="Your Cart"
         badge={itemCount}
@@ -122,8 +122,13 @@ export default function CartPage() {
                             <h4 className="font-semibold text-gray-900 mb-1 break-words">
                               {item.name}
                             </h4>
+                            {item.modifiers && item.modifiers.length > 0 && (
+                              <p className="text-sm text-muted-foreground mb-2">
+                                + {item.modifiers.map((m) => m.name).join(", ")}
+                              </p>
+                            )}
 
-                            <div className="flex items-center justify-between gap-4 flex-wrap mt-4">
+                            <div className="flex items-center justify-between gap-4 flex-wrap mt-2">
                               <div className="flex items-baseline gap-1.5 shrink-0">
                                 <span className="text-lg font-bold text-gray-900">
                                   ₦{item.price.toLocaleString()}
@@ -201,7 +206,14 @@ export default function CartPage() {
                         value: getTotals().subtotal,
                       },
                       { label: "Delivery Fee", value: getTotals().deliveryFee },
-                      { label: "Service Fee", value: getTotals().serviceFee },
+                      ...(getTotals().smallOrderFee > 0
+                        ? [
+                            {
+                              label: "Small Order Fee",
+                              value: getTotals().smallOrderFee,
+                            },
+                          ]
+                        : []),
                     ].map((row) => (
                       <div
                         key={row.label}
@@ -233,6 +245,16 @@ export default function CartPage() {
                   >
                     Checkout Now
                   </Button>
+
+                  {getTotals().smallOrderFee > 0 && (
+                    <div className="flex gap-3 text-xs text-amber-700 bg-amber-50/50 border border-amber-100 rounded-xl p-4">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <p className="leading-relaxed">
+                        Add ₦{(2000 - getTotals().subtotal).toLocaleString()}{" "}
+                        more to avoid small order fee
+                      </p>
+                    </div>
+                  )}
 
                   <div className="flex gap-3 text-xs text-blue-700 bg-blue-50/50 border border-blue-100 rounded-xl p-4">
                     <AlertCircle className="w-4 h-4 shrink-0" />

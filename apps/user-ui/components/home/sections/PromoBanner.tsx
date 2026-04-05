@@ -12,9 +12,9 @@ export function PromoBanner() {
         href={"/explore?top_rated=true" as Route}
         className={cn(
           "flex items-center justify-between",
-          "bg-gradient-to-r from-amber-500 to-orange-600",
-          "rounded-2xl px-5 py-4 shadow-md shadow-amber-200/60",
-          "hover:shadow-lg hover:shadow-amber-200/80 active:scale-[0.98]",
+          "bg-gradient-to-r from-green-600 to-green-700",
+          "rounded-2xl px-5 py-4 shadow-md shadow-green-200/60",
+          "hover:shadow-lg hover:shadow-green-200/80 active:scale-[0.98]",
           "transition-all duration-200 touch-manipulation",
         )}
       >

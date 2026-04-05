@@ -3,7 +3,7 @@ import { Card, CardContent } from "@repo/ui/components/card";
 
 export default function HomePageSkeleton() {
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header Skeleton */}
       <section className="bg-white shadow-sm">
         <div className="container max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-6">

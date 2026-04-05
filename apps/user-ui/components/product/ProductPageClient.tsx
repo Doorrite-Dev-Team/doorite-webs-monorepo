@@ -1,7 +1,7 @@
 // components/product/ProductPageClient.tsx (Client Component)
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -28,6 +28,7 @@ import RelatedProducts from "@/components/product/RelatedProducts";
 import CartSummaryFloat from "@/components/cart/CartSummaryFloat";
 import { isVendorOpen } from "@/libs/utils";
 import { toast } from "@repo/ui/components/sonner";
+import { api } from "@/actions/api";
 
 interface ProductPageClientProps {
   product: Product;
@@ -39,7 +40,64 @@ export default function ProductPageClient({
   relatedProducts,
 }: ProductPageClientProps) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [, setIsLoadingFavorite] = useState(true);
   const isOpen = product.vendor.isActive && isVendorOpen(product.vendor);
+
+  // Load user's favorites on mount
+  useEffect(() => {
+    const loadFavorites = async () => {
+      try {
+        const result = await api.fetchFavorites();
+        if (result.success) {
+          const isFav = result.favorites.some((fav) => fav.id === product.id);
+          setIsFavorite(isFav);
+        }
+      } catch (error) {
+        console.error("Failed to load favorites:", error);
+      } finally {
+        setIsLoadingFavorite(false);
+      }
+    };
+
+    loadFavorites();
+  }, [product.id]);
+
+  const handleFavorite = async () => {
+    setIsFavorite((prev) => {
+      const newState = !prev;
+      // Optimistically update UI
+      setIsFavorite(newState);
+      return newState;
+    });
+
+    try {
+      if (isFavorite) {
+        // Remove from favorites
+        const result = await api.removeFromFavorites(product.id);
+        if (!result.success) {
+          // Revert on failure
+          setIsFavorite(!isFavorite);
+          toast.error(result.error || "Failed to remove from favorites");
+        } else {
+          toast.success("Removed from favorites");
+        }
+      } else {
+        // Add to favorites
+        const result = await api.addToFavorites(product.id);
+        if (!result.success) {
+          // Revert on failure
+          setIsFavorite(!isFavorite);
+          toast.error(result.error || "Failed to add to favorites");
+        } else {
+          toast.success("Added to favorites");
+        }
+      }
+    } catch {
+      // Revert on error
+      setIsFavorite(!isFavorite);
+      toast.error("Failed to update favorites");
+    }
+  };
 
   const handleShare = async () => {
     try {
@@ -58,13 +116,8 @@ export default function ProductPageClient({
     }
   };
 
-  const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    toast.success(isFavorite ? "Removed from favorites" : "Added to favorites");
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+    <div className="min-h-screen bg-background pb-24 sm:pb-8">
       <PageHeaderWithActions
         title={product.name}
         sticky
@@ -141,11 +194,12 @@ export default function ProductPageClient({
                         <span className="font-bold text-gray-900">
                           {product.rating.toFixed(1)}
                         </span>
-                        {product.reviewCount > 0 && (
-                          <span className="text-sm text-gray-500">
-                            ({product.reviewCount})
-                          </span>
-                        )}
+                        {product.reviewCount != null &&
+                          product.reviewCount > 0 && (
+                            <span className="text-sm text-gray-500">
+                              ({product.reviewCount})
+                            </span>
+                          )}
                       </div>
                     </div>
                   )}
