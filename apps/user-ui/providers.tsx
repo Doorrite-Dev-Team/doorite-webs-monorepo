@@ -5,6 +5,27 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { SidebarProvider } from "@repo/ui/components/sidebar";
+import { useReviewTrigger } from "@/hooks/use-review-trigger";
+import { ReviewModal } from "@/components/reviews/ReviewModal";
+
+function ReviewTrigger() {
+  const {
+    modalOpen,
+    currentOrder,
+    pendingOrders,
+    handleOpenChange,
+    handleSuccess,
+  } = useReviewTrigger();
+
+  return (
+    <ReviewModal
+      open={modalOpen}
+      onOpenChange={handleOpenChange}
+      order={currentOrder}
+      onSuccess={handleSuccess}
+    />
+  );
+}
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -14,8 +35,7 @@ const Providers = ({ children }: ProvidersProps) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        // Default query options
-        staleTime: 60 * 1000, // 1 minute
+        staleTime: 60 * 1000,
         refetchOnWindowFocus: false,
         retry: 1,
       },
@@ -27,9 +47,9 @@ const Providers = ({ children }: ProvidersProps) => {
         <QueryClientProvider client={queryClient}>
           <NuqsAdapter>
             {children}
+            <ReviewTrigger />
             <ReactQueryDevtools initialIsOpen={false} />
           </NuqsAdapter>
-          {/* The rest of your application */}
         </QueryClientProvider>
       </Provider>
     </SidebarProvider>

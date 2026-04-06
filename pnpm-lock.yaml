@@ -54,9 +54,6 @@ importers:
       '@tanstack/react-query-devtools':
         specifier: ^5.91.1
         version: 5.91.1(@tanstack/react-query@5.90.11(react@19.2.3))(react@19.2.3)
-      '@types/react-map-gl':
-        specifier: ^6.1.7
-        version: 6.1.7
       axios:
         specifier: ^1.11.0
         version: 1.11.0
@@ -66,9 +63,6 @@ importers:
       lucide-react:
         specifier: ^0.536.0
         version: 0.536.0(react@19.2.3)
-      mapbox-gl:
-        specifier: ^3.18.1
-        version: 3.20.0
       next:
         specifier: 15.5.9
         version: 15.5.9(@babel/core@7.28.4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -84,9 +78,6 @@ importers:
       react-hook-form:
         specifier: ^7.62.0
         version: 7.62.0(react@19.2.3)
-      react-map-gl:
-        specifier: ^8.1.0
-        version: 8.1.0(mapbox-gl@3.20.0)(maplibre-gl@5.16.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       socket.io-client:
         specifier: ^4.8.1
         version: 4.8.1
@@ -6464,7 +6455,8 @@ snapshots:
 
   '@mapbox/jsonlint-lines-primitives@2.0.2': {}
 
-  '@mapbox/mapbox-gl-supported@3.0.0': {}
+  '@mapbox/mapbox-gl-supported@3.0.0':
+    optional: true
 
   '@mapbox/point-geometry@1.1.0': {}
 
@@ -7712,7 +7704,8 @@ snapshots:
 
   '@types/offscreencanvas@2019.7.3': {}
 
-  '@types/pbf@3.0.5': {}
+  '@types/pbf@3.0.5':
+    optional: true
 
   '@types/react-dom@19.1.1(@types/react@19.1.0)':
     dependencies:
@@ -8243,7 +8236,8 @@ snapshots:
 
   character-reference-invalid@2.0.1: {}
 
-  cheap-ruler@4.0.0: {}
+  cheap-ruler@4.0.0:
+    optional: true
 
   chownr@3.0.0: {}
 
@@ -8334,7 +8328,8 @@ snapshots:
 
   css-what@6.2.2: {}
 
-  csscolorparser@1.0.3: {}
+  csscolorparser@1.0.3:
+    optional: true
 
   csso@5.0.5:
     dependencies:
@@ -9097,7 +9092,8 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  grid-index@1.1.0: {}
+  grid-index@1.1.0:
+    optional: true
 
   has-bigints@1.1.0: {}
 
@@ -9515,6 +9511,7 @@ snapshots:
       quickselect: 3.0.0
       supercluster: 8.0.1
       tinyqueue: 3.0.0
+    optional: true
 
   maplibre-gl@5.16.0:
     dependencies:
@@ -9549,6 +9546,7 @@ snapshots:
       robust-predicates: 2.0.4
       splaytree: 0.1.4
       tinyqueue: 3.0.0
+    optional: true
 
   math-intrinsics@1.1.0: {}
 
@@ -10374,7 +10372,8 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  robust-predicates@2.0.4: {}
+  robust-predicates@2.0.4:
+    optional: true
 
   run-parallel@1.2.0:
     dependencies:
@@ -10557,7 +10556,8 @@ snapshots:
 
   splaytree-ts@1.0.2: {}
 
-  splaytree@0.1.4: {}
+  splaytree@0.1.4:
+    optional: true
 
   split-string@3.1.0:
     dependencies:

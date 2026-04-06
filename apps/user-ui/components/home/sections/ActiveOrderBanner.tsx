@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@repo/ui/lib/utils";
-import { getActiveOrderStatusColor } from "@/lib/home";
+import { getActiveOrderStatusColor } from "@/libs/home";
 
 interface ActiveOrderBannerProps {
   order: Order;

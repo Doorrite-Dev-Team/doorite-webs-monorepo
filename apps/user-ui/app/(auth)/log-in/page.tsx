@@ -2,6 +2,7 @@ import { logoFull } from "@repo/ui/assets";
 import Image from "next/image";
 import Link from "next/link";
 import LoginForm from "./components/form";
+import { Suspense } from "react";
 
 export default function Login() {
   return (
@@ -28,7 +29,9 @@ export default function Login() {
 
         {/* Form Area */}
         <div>
-          <LoginForm />
+          <Suspense fallback={<div>Loading...</div>}>
+            <LoginForm />
+          </Suspense>
 
           {/* Forgot Password - Placed immediately for quick access */}
           <div className="mt-4 text-right">

@@ -6,6 +6,14 @@ import { Notification } from "@/types/notification";
 import { toast } from "@repo/ui/components/sonner";
 
 // Strict Event Types
+interface ChatMessage {
+  id: string;
+  content: string;
+  senderType: "customer" | "rider" | "vendor";
+  senderId: string;
+  createdAt: string;
+}
+
 interface ServerToClientEvents {
   // Urgent: Specific event for logic handling
   // "new-order": (data: Notification) => void;
@@ -22,12 +30,20 @@ interface ServerToClientEvents {
     lat: number;
     long: number;
   }) => void;
+
+  // Chat events
+  new_message: (message: ChatMessage) => void;
 }
 
 interface ClientToServerEvents {
   "notification-read": (notificationId: string) => void;
   "join-user-room": (userId: string) => void;
   // "order-accepted": (orderId: string) => void;
+
+  // Chat events
+  join_order: (orderId: string) => void;
+  leave_order: (orderId: string) => void;
+  send_message: (data: { orderId: string; content: string }) => void;
 }
 
 type SocketInstance = Socket<ServerToClientEvents, ClientToServerEvents>;

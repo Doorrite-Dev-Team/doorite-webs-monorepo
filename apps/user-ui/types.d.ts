@@ -63,11 +63,13 @@ declare interface Vendor {
   businessName: string;
   phoneNumber: string;
   logoUrl?: string;
+  bannerUrl?: string;
   rating?: number; // Prisma Float to number
+  reviewCount?: number;
   isActive: boolean;
   isVerified: boolean;
   isApproved: boolean;
-  description?: sting;
+  description?: string;
   openingTime: string;
   closingTime: string;
   category: string;
@@ -79,7 +81,11 @@ declare interface Vendor {
   // Frontend/Derived fields (not directly in DB, but necessary for UI lists)
   isOpen?: boolean;
   distance?: number;
-  // avrgPreparationTime?: string; // Derived info
+
+  // Frontend-specific fields
+  products?: Product[];
+  reviews?: ReviewItem[];
+  stats?: ProductStats;
 }
 
 interface Rider {
@@ -100,6 +106,48 @@ declare interface ProductVariant {
   isAvailable: boolean;
 }
 
+declare interface ModifierOption {
+  id: string;
+  name: string;
+  priceAdjustment: number;
+  isAvailable?: boolean;
+}
+
+declare interface RatingDist {
+  stars: number;
+  count: number;
+  percentage: number;
+}
+
+declare interface ProductStats {
+  averageRating: number;
+  totalReviews: number;
+  ratingDistribution: RatingDist[];
+}
+
+declare interface ReviewItem {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  likes?: number;
+  dislikes?: number;
+}
+
+declare type SortOption = "newest" | "oldest" | "highest" | "lowest";
+
+declare interface ModifierGroup {
+  id: string;
+  name: string;
+  isRequired: boolean;
+  minSelect: number;
+  maxSelect: number;
+  options: ModifierOption[];
+}
+
 declare interface Product {
   id: string;
   vendorId: string;
@@ -110,12 +158,14 @@ declare interface Product {
   attributes?: Attributes; // Prisma Json to Record<string, any>
   isAvailable: boolean;
   imageUrl: string;
-  rating: number;
-  reviewCount: number;
-  orderCount: number;
+  rating?: number;
+  reviewCount?: number;
+  orderCount?: number;
+  category?: string; // Added: Product category for grouping
 
   // Relations (required for frontend display)
   variants: ProductVariant[];
+  modifierGroups?: ModifierGroup[];
   vendor: {
     // Simplified relation data for product card view
     id: string;
@@ -123,11 +173,20 @@ declare interface Product {
     logoUrl?: string;
     isOpen?: boolean;
     isActive: boolean;
+    isVerified?: boolean;
     openingTime: string;
     closingTime: string;
     deliveryTime: string;
     address?: Address; // Derived from Vendor.address
+    avrgPreparationTime?: string;
+    deliveryFee?: number;
+    deliveryTime?: string;
+    distance?: number;
   };
+
+  // Frontend-specific fields
+  stats?: ProductStats;
+  reviews?: ReviewItem[];
 }
 
 declare interface OrderItem {
@@ -140,6 +199,13 @@ declare interface OrderItem {
   // Denormalized fields for simple display:
   name: string; // Product/Variant name
   description?: string;
+  imageUrl?: string;
+  modifiers?: {
+    modifierGroupId: string;
+    modifierOptionId: string;
+    name: string;
+    price: number;
+  }[];
 }
 
 declare interface OrderHistory {
@@ -171,6 +237,8 @@ declare interface Order {
   orderTime: string; // Alias placedAt for display
   estimatedDelivery?: string; // Derived
   tracking: OrderHistory[]; // Alias history for tracking
+  vendorName?: string;
+  vendorLogoUrl?: string;
 }
 
 // ===============================
@@ -208,10 +276,40 @@ declare interface CartItem {
   quantity: number;
   vendorName: string;
   vendorId: string;
+  imageUrl?: string;
+  vendorDeliveryFee: number;
 
   // IDs required by OrderItem model:
-  // productId: string;
   variantId?: string;
+  variantName?: string;
+  modifiers?: {
+    modifierGroupId: string;
+    modifierOptionId: string;
+    name: string;
+    price: number;
+  }[];
+}
+
+// Input format when adding to cart (from product page)
+declare interface AddToCartInput {
+  productId: string;
+  productName: string;
+  basePrice: number;
+  imageUrl?: string;
+  vendorId: string;
+  vendorName: string;
+  vendorDeliveryFee: number;
+  variantId?: string;
+  variantName?: string;
+  quantity: number;
+  modifiers?: Array<{
+    modifierGroupId: string;
+    selectedOptions: Array<{
+      modifierOptionId: string;
+      name: string;
+      priceAdjustment: number;
+    }>;
+  }>;
 }
 
 // Form model for Checkout page, includes User contact details not in DB Address type

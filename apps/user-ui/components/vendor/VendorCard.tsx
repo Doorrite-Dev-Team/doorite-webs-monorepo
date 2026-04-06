@@ -63,7 +63,7 @@ function toDisplay(raw: string) {
 function RatingBadge({ rating }: { rating: number }) {
   return (
     <span className="inline-flex items-center gap-0.5 shrink-0">
-      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
       <span className="text-xs font-bold text-gray-900 tabular-nums">
         {rating.toFixed(1)}
       </span>

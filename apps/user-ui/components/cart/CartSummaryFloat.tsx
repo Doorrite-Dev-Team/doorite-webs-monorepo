@@ -144,6 +144,18 @@ export default function CartSummaryFloat() {
                           </Badge>
                           <span className="text-gray-700 truncate">
                             {item.name}
+                            {item.variantName && (
+                              <span className="text-gray-500">
+                                {" "}
+                                ({item.variantName})
+                              </span>
+                            )}
+                            {item.modifiers && item.modifiers.length > 0 && (
+                              <span className="text-gray-500">
+                                {" "}
+                                ({item.modifiers.map((m) => m.name).join(", ")})
+                              </span>
+                            )}
                           </span>
                         </div>
                         <span className="font-semibold text-gray-900 ml-2 whitespace-nowrap">

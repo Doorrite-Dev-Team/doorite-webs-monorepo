@@ -24,6 +24,8 @@ const LogingForm = () => {
   const [errorMessage, setErrorMessage] = useState<string>();
   const searchParams = useSearchParams();
 
+  const capiTal = (a: string) => a.charAt(0).toUpperCase() + a.slice(1);
+
   const setUser = useSetAtom(userAtom);
 
   const {
@@ -48,7 +50,9 @@ const LogingForm = () => {
 
       if (res.ok) {
         setUser(res.data.user);
-        const callback = searchParams.get("callbackUrl") ?? "/home";
+        const callback = capiTal(
+          (searchParams.get("callbackUrl") ?? "/home").slice(1),
+        );
         toast.loading(`Redirecting to ${callback} Page...`);
         setTimeout(() => {
           window.location.href = callback;

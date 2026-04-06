@@ -14,7 +14,7 @@ export function CategoryPills() {
           className={cn(
             "shrink-0 px-4 py-2 rounded-full bg-white border border-gray-100 shadow-sm",
             "text-sm font-medium text-gray-700 whitespace-nowrap",
-            "hover:border-amber-300 hover:bg-amber-50 hover:text-amber-800",
+            "hover:border-green-400 hover:bg-green-50 hover:text-green-800",
             "active:scale-95 transition-all duration-150 touch-manipulation",
           )}
         >

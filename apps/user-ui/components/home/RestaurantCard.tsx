@@ -22,7 +22,7 @@ export function RestaurantCard({ r }: { r: Restaurant }) {
       <Card className="border-0 bg-white shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer relative overflow-hidden">
         <CardContent className="p-4">
           {r.trending && (
-            <Badge className="absolute top-3 right-3 bg-orange-500 text-white text-xs">
+            <Badge className="absolute top-3 right-3 bg-green-600 text-white text-xs">
               <TrendingUp size={10} className="mr-1 inline-block" />
               Trending
             </Badge>

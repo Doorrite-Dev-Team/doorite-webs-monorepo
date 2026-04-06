@@ -76,7 +76,8 @@ function ProductCard({ product }: ProductCardProps) {
                   name: product.name,
                   price: lowestPrice ?? 0,
                   vendorId: product.vendorId,
-                  vendorName: product.vendor?.businessName,
+                  vendorName: product.vendor?.businessName ?? "",
+                  vendorDeliveryFee: product.vendor?.deliveryFee ?? 0,
                   quantity: 1,
                 })
               }

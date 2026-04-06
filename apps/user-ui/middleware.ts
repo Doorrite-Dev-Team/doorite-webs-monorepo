@@ -63,7 +63,7 @@ export function middleware(req: NextRequest) {
 
   // 4. Protect Private Routes
   if (!isAuthenticated && !isPublicOrAuth) {
-    const url = new URL("/sign-up", req.url);
+    const url = new URL("/log-in", req.url);
     url.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(url);
   }

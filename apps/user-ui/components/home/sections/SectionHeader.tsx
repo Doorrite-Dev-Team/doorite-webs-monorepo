@@ -22,7 +22,7 @@ export function SectionHeader({
       </h2>
       <Link
         href={href as Route}
-        className="flex items-center gap-1 text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+        className="flex items-center gap-1 text-sm font-semibold text-green-600 hover:text-green-700 transition-colors"
       >
         {label}
         <ChevronRight className="w-4 h-4" />

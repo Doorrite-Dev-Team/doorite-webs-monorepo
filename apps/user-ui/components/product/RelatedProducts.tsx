@@ -44,11 +44,11 @@ export default function RelatedProducts({ products }: RelatedProductsProps) {
           {
             id: product.id,
             name: product.name,
-            description: product.description,
             price: product.basePrice,
             quantity: 1,
             vendorName: product.vendor.businessName,
             vendorId: product.vendorId,
+            vendorDeliveryFee: product.vendor.deliveryFee ?? 0,
           },
         ]);
       }

@@ -39,27 +39,37 @@ interface AddCardForm {
   cardholderName: string;
 }
 interface ReviewsData {
-  reviews: Review[];
+  reviews: ReviewItem[];
   averageRating: number;
   totalReviews: number;
-  ratingDistribution: Array<{
-    stars: number;
-    count: number;
-    percentage: number;
-  }>;
+  ratingDistribution: RatingDist[];
 }
 
 export interface GroupedSearchResult {
   vendor: Vendor;
   products: Product[];
   matchCount: number;
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 export interface ProductSearchResponse {
   query: string;
   groupedResults: GroupedSearchResult[];
-  totalVendors: number;
-  totalProducts: number;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    total: number;
+    limit: number;
+  };
+  message?: string;
+}
+
+export interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
 }
 export interface CuisinesResponse {
   ok: boolean;
@@ -72,25 +82,10 @@ export interface CuisinesResponse {
 // ========================================================
 
 export const api = {
-  // searchProducts: async (params: {
-  //   q: string;
-  //   lat?: number;
-  //   lng?: number;
-  // }): Promise<ProductSearchResponse> => {
-  //   const searchParams = new URLSearchParams();
-  //   searchParams.append("q", params.q);
-  //   if (params.lat) searchParams.append("lat", params.lat.toString());
-  //   if (params.lng) searchParams.append("lng", params.lng.toString());
-
-  //   const { data } = await apiClient.get<ProductSearchResponse>(
-  //     `/products?${searchParams.toString()}`,
-  //   );
-  //   return data;
-  // },
-
   getCuisines: async (): Promise<string[]> => {
-    const { data } =
-      await apiClient.get<CuisinesResponse>("/vendor-categories");
+    const { data } = await apiClient.get<CuisinesResponse>(
+      "/auth/vendor-categories",
+    );
     return data.categories;
   },
   // ---------------- PRODUCTS ----------------
@@ -108,8 +103,7 @@ export const api = {
       return {
         query: "",
         groupedResults: [],
-        totalVendors: 0,
-        totalProducts: 0,
+        pagination: { currentPage: 1, totalPages: 0, total: 0, limit: 20 },
       };
     }
   },
@@ -118,7 +112,6 @@ export const api = {
     try {
       const { data }: SuccessResponse<{ product: Product }> =
         await apiClient.get(`/products/${id}`, { withCredentials: true });
-      console.log(data);
       return data.product;
     } catch (error) {
       if (typeof window !== "undefined")
@@ -139,6 +132,8 @@ export const api = {
       return {
         vendors: res.data.vendors || [],
         pagination: res.data.pagination,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        message: (res.data as any).message,
       };
     } catch (error) {
       if (typeof window !== "undefined")
@@ -147,6 +142,7 @@ export const api = {
       return {
         vendors: [],
         pagination: { page: 1, limit: 20, total: 0, pages: 0 },
+        message: undefined,
       };
     }
   },
@@ -171,7 +167,9 @@ export const api = {
       const res: SuccessResponse<{
         products: Product[];
         pagination: Pagination;
-      }> = await apiClient.get(`/vendors/${id}/products?${params || ""}`);
+      }> = await apiClient.get(
+        `/products/vendor/${id}${params ? `?${params}` : ""}`,
+      );
 
       return {
         products: res.data.products || [],
@@ -190,29 +188,34 @@ export const api = {
     }
   },
 
-  searchProducts: async (
-    query: string,
-    params?: { lat?: number; lng?: number },
-  ) => {
+  fetchDeliveryCalculation: async (params: {
+    vendorId: string;
+    lat: number;
+    lng: number;
+  }) => {
     try {
-      const queryString = new URLSearchParams({ q: query });
-      if (params?.lat) queryString.append("lat", params.lat.toString());
-      if (params?.lng) queryString.append("lng", params.lng.toString());
-
       const res: SuccessResponse<{
-        groupedResults: Array<{
-          vendor: Vendor;
-          products: Product[];
-          matchCount: number;
-        }>;
-      }> = await apiClient.get(`/search/products?${queryString.toString()}`);
+        distance: number;
+        deliveryTime: string;
+        deliveryFee: number;
+      }> = await apiClient.get(
+        `/products/delivery-calculation?vendorId=${params.vendorId}&lat=${params.lat}&lng=${params.lng}`,
+      );
 
-      return { groupedResults: res.data.groupedResults || [], query };
+      return {
+        distance: res.data.distance || 0,
+        estimatedTime: res.data.deliveryTime || "25-35 min",
+        fee: res.data.deliveryFee || 0,
+      };
     } catch (error) {
       if (typeof window !== "undefined")
-        toast(`Unable to search products: ${(error as Error).message}`);
-      console.warn(`Unable to search products: ${(error as Error).message}`);
-      return { groupedResults: [], query };
+        toast(`Unable to calculate delivery: ${(error as Error).message}`);
+      console.warn(`Unable to calculate delivery: ${(error as Error).message}`);
+      return {
+        distance: 0,
+        estimatedTime: "25-35 min",
+        fee: 0,
+      };
     }
   },
 
@@ -275,6 +278,19 @@ export const api = {
       return res.data;
     } catch (error) {
       throw new Error((error as Error).message || "Failed to add address");
+    }
+  },
+
+  updateAddress: async (addressId: string, address: AddressForm) => {
+    try {
+      const res: SuccessResponse<{ user: User }> = await apiClient.put(
+        `/users/addresses/${addressId}`,
+        address,
+      );
+
+      return res.data;
+    } catch (error) {
+      throw new Error((error as Error).message || "Failed to update address");
     }
   },
 
@@ -349,6 +365,78 @@ export const api = {
     }
   },
 
+  fetchUserOrders: async ({
+    page = 1,
+    limit = 100,
+  }: {
+    page?: number;
+    limit?: number;
+  } = {}) => {
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sort: "desc",
+      });
+
+      const {
+        data,
+      }: SuccessResponse<{ orders: Order[]; pagination: Pagination }> =
+        await apiClient.get(`/users/orders?${params.toString()}`);
+
+      return {
+        orders: (data.orders ?? []).map((o) => ({
+          ...o,
+          vendorName:
+            (o as Order & { vendorName?: string }).vendorName ?? "Vendor",
+          vendorLogoUrl: (o as Order & { vendorLogoUrl?: string })
+            .vendorLogoUrl,
+        })),
+      };
+    } catch (error) {
+      console.error("Failed to fetch user orders:", error);
+      return { orders: [] };
+    }
+  },
+
+  // ---------------- FAVORITES ----------------
+  fetchFavorites: async () => {
+    try {
+      const { data }: SuccessResponse<{ favorites: Product[] }> =
+        await apiClient.get(`/users/favorites`);
+      return { success: true, favorites: data.favorites || [] };
+    } catch (error) {
+      const message = (error as Error).message || "Failed to fetch favorites";
+      console.error("Failed to fetch favorites:", message);
+      return { success: false, error: message, favorites: [] };
+    }
+  },
+
+  addToFavorites: async (productId: string) => {
+    try {
+      const { data }: SuccessResponse<{ message: string }> =
+        await apiClient.post(`/users/favorites`, { productId });
+      return { success: true, message: data.message };
+    } catch (error) {
+      const message = (error as Error).message || "Failed to add to favorites";
+      console.error("Failed to add to favorites:", message);
+      return { success: false, error: message };
+    }
+  },
+
+  removeFromFavorites: async (productId: string) => {
+    try {
+      const { data }: SuccessResponse<{ message: string }> =
+        await apiClient.delete(`/users/favorites/${productId}`);
+      return { success: true, message: data.message };
+    } catch (error) {
+      const message =
+        (error as Error).message || "Failed to remove from favorites";
+      console.error("Failed to remove from favorites:", message);
+      return { success: false, error: message };
+    }
+  },
+
   // ---------------- PAYMENTS ----------------
   fetchPaymentMethods: async () => {
     try {
@@ -412,6 +500,20 @@ export const api = {
     }
   },
 
+  // ---------------- ORDERS ----------------
+  cancelOrder: async (orderId: string) => {
+    try {
+      const { data }: SuccessResponse<{ order: Order }> = await apiClient.patch(
+        `/orders/${orderId}/cancel`,
+      );
+      return { success: true, order: data.order };
+    } catch (error) {
+      const message = (error as Error).message || "Failed to cancel order";
+      console.error("Failed to cancel order:", message);
+      return { success: false, error: message };
+    }
+  },
+
   // ---------------- RIDERS ----------------
   fetchRider: async (riderId: string) => {
     try {
@@ -423,6 +525,165 @@ export const api = {
       return res.data.rider;
     } catch (error) {
       throw new Error((error as Error).message);
+    }
+  },
+
+  // ---------------- CHAT ----------------
+  fetchChatMessages: async (orderId: string, limit = 50, before?: string) => {
+    try {
+      const params = new URLSearchParams({ limit: limit.toString() });
+      if (before) params.set("before", before);
+
+      const res: SuccessResponse<{
+        messages: Array<{
+          id: string;
+          content: string;
+          senderType: "customer" | "rider" | "vendor";
+          senderId: string;
+          createdAt: string;
+        }>;
+      }> = await apiClient.get(`/orders/${orderId}/messages?${params}`);
+
+      return res.data.messages || [];
+    } catch (error) {
+      console.error("Failed to fetch chat messages:", error);
+      return [];
+    }
+  },
+
+  // ---------------- REVIEWS ----------------
+  fetchPendingReviews: async () => {
+    try {
+      const res: SuccessResponse<{
+        orders: Array<{
+          id: string;
+          vendor: { id: string; businessName: string; logoUrl?: string };
+          totalAmount: number;
+          deliveredAt: string;
+          items: Array<{
+            product: { id: string; name: string };
+            quantity: number;
+          }>;
+        }>;
+      }> = await apiClient.get("/orders/pending-review");
+      return res.data.orders || [];
+    } catch (error) {
+      console.error("Failed to fetch pending reviews:", error);
+      return [];
+    }
+  },
+
+  submitReview: async (reviewData: {
+    orderId: string;
+    vendorRating?: number;
+    riderRating?: number;
+    comment?: string;
+    productRatings?: Array<{ productId: string; rating: number }>;
+  }) => {
+    try {
+      const { data }: SuccessResponse<{ review: unknown }> =
+        await apiClient.post("/users/reviews", reviewData);
+      return { success: true, review: data.review };
+    } catch (error) {
+      const message = (error as Error).message || "Failed to submit review";
+      console.error("Failed to submit review:", message);
+      return { success: false, error: message };
+    }
+  },
+
+  fetchVendorReviews: async (vendorId: string, page = 1, limit = 10) => {
+    try {
+      const res: SuccessResponse<{
+        reviews: Array<{
+          id: string;
+          rating: number;
+          comment?: string;
+          createdAt: string;
+          user: { fullName: string; profileImageUrl?: string };
+        }>;
+        averageRating: number;
+        totalReviews: number;
+        ratingDistribution: Record<number, number>;
+      }> = await apiClient.get(
+        `/vendors/${vendorId}/reviews?page=${page}&limit=${limit}`,
+      );
+
+      const raw = res.data;
+      const dist = raw.ratingDistribution ?? {};
+
+      return {
+        reviewsData: {
+          averageRating: raw.averageRating ?? 0,
+          totalReviews: raw.totalReviews ?? 0,
+          ratingDistribution: Object.entries(dist).map(([stars, count]) => ({
+            stars: Number(stars),
+            count: count as number,
+            percentage:
+              raw.totalReviews > 0
+                ? ((count as number) / raw.totalReviews) * 100
+                : 0,
+          })),
+          reviews: (raw.reviews ?? []).map((r) => ({
+            id: r.id,
+            userId: r.user?.fullName ?? "",
+            userName: r.user?.fullName ?? "Anonymous",
+            userAvatar: r.user?.profileImageUrl,
+            rating: r.rating,
+            comment: r.comment ?? "",
+            createdAt: r.createdAt,
+          })),
+        },
+      };
+    } catch (error) {
+      console.error("Failed to fetch vendor reviews:", error);
+      return { reviewsData: null };
+    }
+  },
+
+  fetchProductReviews: async (productId: string, page = 1, limit = 10) => {
+    try {
+      const res: SuccessResponse<{
+        reviews: Array<{
+          id: string;
+          rating: number;
+          comment?: string;
+          createdAt: string;
+          user: { fullName: string; profileImageUrl?: string };
+        }>;
+        averageRating: number;
+        totalReviews: number;
+      }> = await apiClient.get(
+        `/products/${productId}/reviews?page=${page}&limit=${limit}`,
+      );
+
+      const raw = res.data;
+      const reviews = (raw.reviews ?? []).map((r) => ({
+        id: r.id,
+        userId: r.user?.fullName ?? "",
+        userName: r.user?.fullName ?? "Anonymous",
+        userAvatar: r.user?.profileImageUrl,
+        rating: r.rating,
+        comment: r.comment ?? "",
+        createdAt: r.createdAt,
+      }));
+
+      return {
+        reviews,
+        stats: {
+          averageRating: raw.averageRating ?? 0,
+          totalReviews: raw.totalReviews ?? 0,
+          ratingDistribution: [],
+        },
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil((raw.totalReviews ?? 0) / limit),
+          hasNext: page * limit < (raw.totalReviews ?? 0),
+          hasPrev: page > 1,
+        },
+      };
+    } catch (error) {
+      console.error("Failed to fetch product reviews:", error);
+      return null;
     }
   },
 };

@@ -157,6 +157,29 @@ export function CartDrawer({ onCloseAction }: { onCloseAction: () => void }) {
                             <h4 className="text-sm font-medium text-gray-900 truncate mb-1">
                               {item.name}
                             </h4>
+                            {item.variantName && (
+                              <p className="text-xs text-gray-500 truncate">
+                                {item.variantName}
+                              </p>
+                            )}
+                            {item.modifiers && item.modifiers.length > 0 && (
+                              <div className="mt-2 pt-2 border-t border-dashed border-gray-200">
+                                <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1">
+                                  Add-ons
+                                </p>
+                                <div className="flex flex-wrap gap-1">
+                                  {item.modifiers.map((m, idx) => (
+                                    <span
+                                      key={`${m.modifierOptionId}-${idx}`}
+                                      className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
+                                    >
+                                      {m.name}
+                                      {m.price > 0 && ` +₦${m.price}`}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                             <div className="flex items-center justify-between mt-2">
                               <span className="text-sm font-semibold text-primary">
                                 ₦{(item.price * item.quantity).toFixed(2)}
@@ -168,7 +191,9 @@ export function CartDrawer({ onCloseAction }: { onCloseAction: () => void }) {
                                   variant="ghost"
                                   size="icon"
                                   className="h-6 w-6 rounded-sm hover:bg-white shadow-sm"
-                                  onClick={() => updateQuantity(item.id, -1)}
+                                  onClick={() =>
+                                    updateQuantity(item.id, -1, item.variantId)
+                                  }
                                 >
                                   <Minus className="w-3 h-3" />
                                 </Button>
@@ -179,7 +204,9 @@ export function CartDrawer({ onCloseAction }: { onCloseAction: () => void }) {
                                   variant="ghost"
                                   size="icon"
                                   className="h-6 w-6 rounded-sm hover:bg-white shadow-sm"
-                                  onClick={() => updateQuantity(item.id, 1)}
+                                  onClick={() =>
+                                    updateQuantity(item.id, 1, item.variantId)
+                                  }
                                 >
                                   <Plus className="w-3 h-3" />
                                 </Button>
@@ -198,27 +225,12 @@ export function CartDrawer({ onCloseAction }: { onCloseAction: () => void }) {
 
         {/* FOOTER */}
         {cart.length > 0 && (
-          <footer className="bg-white mb-20 border-t p-4 space-y-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] shrink-0 z-20">
+          <footer className="bg-white mb-20 border-t p-4 space-y-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] shrink-0">
             {/* Summary Breakdown */}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
                 <span>₦{getTotals().subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Delivery</span>
-                <span>₦{getTotals().deliveryFee.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Service Fee</span>
-                <span>₦{getTotals().serviceFee.toFixed(2)}</span>
-              </div>
-              <div className="my-2">
-                <div className="w-full h-px bg-gray-200" />
-              </div>
-              <div className="flex justify-between font-bold text-lg text-gray-900">
-                <span>Total</span>
-                <span>₦{getTotals().total.toFixed(2)}</span>
               </div>
             </div>
 
@@ -233,7 +245,7 @@ export function CartDrawer({ onCloseAction }: { onCloseAction: () => void }) {
               </Button>
               <div className="flex items-center justify-center gap-1.5 text-xs text-gray-500 bg-gray-50 p-2 rounded text-center">
                 <AlertCircle className="w-3 h-3" />
-                <span>Taxes calculated at next step</span>
+                <span>Delivery & platform fees calculated at next step</span>
               </div>
             </div>
           </footer>

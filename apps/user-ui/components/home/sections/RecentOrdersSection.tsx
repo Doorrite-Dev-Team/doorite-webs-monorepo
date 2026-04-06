@@ -20,7 +20,7 @@ function EmptyOrders() {
       <Link href="/explore">
         <Button
           size="sm"
-          className="bg-amber-500 hover:bg-amber-600 text-white"
+          className="bg-green-600 hover:bg-green-700 text-white"
         >
           Order Now
         </Button>

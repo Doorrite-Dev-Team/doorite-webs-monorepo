@@ -66,10 +66,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {
             id: product.id,
             name: product.name,
-            // description: product.description,
             price: product.basePrice,
             vendorName: product.vendor.businessName,
             vendorId: product.vendorId,
+            vendorDeliveryFee: product.vendor.deliveryFee ?? 0,
             quantity: 1,
           },
         ]);

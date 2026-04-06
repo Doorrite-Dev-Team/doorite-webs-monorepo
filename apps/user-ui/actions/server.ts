@@ -26,8 +26,8 @@ export const serverApi = {
   fetchVendorsProduct: async (vendorId: string, productId?: string) => {
     try {
       const url = productId
-        ? `/vendors/${vendorId}/products?exclude=${productId}`
-        : `/vendors/${vendorId}/products`;
+        ? `/products/vendor/${vendorId}?exclude=${productId}`
+        : `/products/vendor/${vendorId}`;
       const res: { products: Product[] } = await serverFetch(url);
       return res.products || [];
     } catch (error) {
@@ -49,12 +49,23 @@ export const serverApi = {
 
   fetchVendors: async (params?: string) => {
     try {
-      const res: { vendors: Vendor[]; pagination: Pagination } =
-        await serverFetch(`/vendors${params ? `?${params}` : ""}`);
-      return res.vendors || [];
+      const res: {
+        vendors: Vendor[];
+        pagination: Pagination;
+        message?: string;
+      } = await serverFetch(`/vendors${params ? `?${params}` : ""}`);
+      return {
+        vendors: res.vendors || [],
+        pagination: res.pagination,
+        message: res.message,
+      };
     } catch (error) {
       console.warn("SERVER fetchVendors:", error);
-      return [];
+      return {
+        vendors: [],
+        pagination: { page: 1, limit: 20, total: 0, pages: 0 },
+        message: undefined,
+      };
     }
   },
 

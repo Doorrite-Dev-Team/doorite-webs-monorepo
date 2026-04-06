@@ -10,15 +10,16 @@ export const metadata: Metadata = {
     "Discover the best restaurants, food vendors, and cuisine near you. Browse menus, read reviews, and order your favorite meals.",
 };
 
+export const dynamic = "force-dynamic";
 export default async function ExplorePage() {
-  // Fetch initial vendors server-side for better SEO and faster initial load
-  const initialVendors = await serverApi.fetchVendors("?limit=12");
+  const vendorsData = await serverApi.fetchVendors("?limit=12");
 
   return (
     <Suspense fallback={<VendorGridSkeleton />}>
       <ExplorePageClient
-        initialVendors={initialVendors}
-        initialTotal={initialVendors.length}
+        initialVendors={vendorsData.vendors}
+        initialTotal={vendorsData.vendors.length}
+        initialMessage={vendorsData.message}
       />
     </Suspense>
   );

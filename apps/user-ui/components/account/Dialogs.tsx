@@ -46,7 +46,7 @@ export const NotificationsDialog = ({
         <DialogHeader>
           <DialogTitle>Notification Preferences</DialogTitle>
           <DialogDescription>
-            Choose what notifications you&apos;d like to receive from Dooeeite
+            Choose what notifications you&apos;d like to receive from Doorrite
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -82,7 +82,7 @@ export const NotificationsDialog = ({
             <div>
               <Label>New Restaurants</Label>
               <p className="text-sm text-muted-foreground">
-                When new restaurants join Dooeeite
+                When new restaurants join Doorrite
               </p>
             </div>
             <Switch
@@ -119,7 +119,7 @@ export const LanguageDialog = ({
         <DialogHeader>
           <DialogTitle>Select Language</DialogTitle>
           <DialogDescription>
-            Choose your preferred language for the Dooeeite app
+            Choose your preferred language for the Doorrite app
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
@@ -164,7 +164,7 @@ export const ThemeDialog = ({ theme, onThemeChange }: ThemeDialogProps) => {
         <DialogHeader>
           <DialogTitle>Choose Theme</DialogTitle>
           <DialogDescription>
-            Select your preferred theme for the Dooeeite app
+            Select your preferred theme for the Doorrite app
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
@@ -239,7 +239,7 @@ export const SignOutDialog = () => {
         <DialogHeader>
           <DialogTitle>Sign Out</DialogTitle>
           <DialogDescription>
-            Are you sure you want to sign out of your Dooeeite account?
+            Are you sure you want to sign out of your Doorrite account?
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
