@@ -17,14 +17,7 @@ import { api } from "@/actions/api";
 import LocationConsent from "@/components/explore/LocationConsent";
 import SavedAddressPicker from "@/components/explore/SavedAddressPicker";
 import AddAddressDialog from "@/components/account/address/Dialogue";
-import { Button } from "@repo/ui/components/button";
 import { toast } from "@repo/ui/components/sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@repo/ui/components/dialog";
 
 const SESSION_LOCATION_KEY = "session_location_data";
 
@@ -77,7 +70,6 @@ export default function HomeClient({
   const [showLocationConsent, setShowLocationConsent] = useState(false);
   const [showAddressPicker, setShowAddressPicker] = useState(false);
   const [showAddAddress, setShowAddAddress] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(true);
 
   const activeOrder = findActiveOrder(recentOrders);
 
@@ -102,8 +94,6 @@ export default function HomeClient({
       } catch {
         sessionStorage.removeItem(SESSION_LOCATION_KEY);
         setShowLocationConsent(true);
-      } finally {
-        setIsInitializing(false);
       }
     };
 
@@ -192,7 +182,7 @@ export default function HomeClient({
     try {
       await api.addAddress(addressData);
       toast.success("Address added successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to add address");
     }
     setShowAddAddress(false);

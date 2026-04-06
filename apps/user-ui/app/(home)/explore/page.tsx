@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     "Discover the best restaurants, food vendors, and cuisine near you. Browse menus, read reviews, and order your favorite meals.",
 };
 
+export const dynamic = "force-dynamic";
 export default async function ExplorePage() {
   const vendorsData = await serverApi.fetchVendors("?limit=12");
 

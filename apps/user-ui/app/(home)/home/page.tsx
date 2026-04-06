@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   description: "Order food from your favorite restaurants",
 };
 
+export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const [user, recentOrders, vendorsData] = await Promise.all([
     api.fetchProfile(),
