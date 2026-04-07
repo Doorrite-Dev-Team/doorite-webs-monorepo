@@ -9,6 +9,10 @@ export interface FormValues {
     country: string;
     state: string;
     address: string;
+    coordinates: {
+      lat: number;
+      long: number;
+    };
   };
   category: string[];
   logo?: string | null;

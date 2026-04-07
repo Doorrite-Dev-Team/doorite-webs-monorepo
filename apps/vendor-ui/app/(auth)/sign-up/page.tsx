@@ -43,6 +43,10 @@ const formSchema = z
       country: z.string().min(1, "Country is required"),
       state: z.string().min(1, "State is required"),
       address: z.string().min(3, "Address is required"),
+      coordinates: z.object({
+        lat: z.number(),
+        long: z.number(),
+      }),
     }),
     category: z
       .array(z.string())
@@ -98,6 +102,10 @@ export default function MultistepSignupForm() {
         country: "nigeria",
         state: "",
         address: "",
+        coordinates: {
+          lat: 0,
+          long: 0,
+        },
       },
       category: [],
       logo: "",
@@ -187,7 +195,12 @@ export default function MultistepSignupForm() {
           "confirmPassword",
         ];
       case 2:
-        return ["address", "category", "openingTime", "closingTime"];
+        return [
+          "address",
+          "category",
+          "openingTime",
+          "closingTime",
+        ] as (keyof FormValues)[];
       default:
         return [];
     }
@@ -234,11 +247,21 @@ export default function MultistepSignupForm() {
         email: values.email,
         phoneNumber: values.phoneNumber,
         password: values.password,
-        address: values.address,
+        address: {
+          address: values.address.address,
+          state: values.address.state,
+          country: "Nigeria",
+          coordinates: {
+            lat: values.address.coordinates.lat,
+            long: values.address.coordinates.long,
+          },
+        },
         categoryIds: values.category,
         logoUrl: values.logo || undefined,
-        openingTime: values.openingTime,
-        closingTime: values.closingTime,
+        businessHours: {
+          open: values.openingTime,
+          close: values.closingTime,
+        },
       };
 
       const createResponse = await axios.post(
