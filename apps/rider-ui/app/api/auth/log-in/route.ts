@@ -39,12 +39,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // console.log(data);
+
     // Build response payload always as JSON
     const nextResponse = NextResponse.json(
       {
         ok: upstreamRes.ok,
         data: upstreamRes.ok ? data : undefined,
-        message: data?.message || "Login failed",
+        message: data?.message || data?.error || "Login failed",
       },
       { status: upstreamRes.status },
     );

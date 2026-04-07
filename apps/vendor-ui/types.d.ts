@@ -268,3 +268,37 @@ declare interface Transaction {
   amount: number;
   date: string;
 }
+
+declare interface DashboardData {
+  vendor: {
+    id: string;
+    businessName: string;
+    email: string;
+    phoneNumber: string;
+    logoUrl?: string;
+    rating?: number;
+    openingTime?: string;
+    closingTime?: string;
+    address: {
+      address: string;
+      state?: string;
+      country?: string;
+    };
+  };
+  stats: {
+    todayOrders: number;
+    todayEarnings: number;
+    availableItems: number;
+  };
+  activeOrders: Array<{
+    id: string;
+    orderId: string;
+    customerName: string;
+    customerAvatar?: string;
+    status: string;
+    totalAmount: number;
+    itemCount: number;
+    firstItemName: string;
+    createdAt: string;
+  }>;
+}
