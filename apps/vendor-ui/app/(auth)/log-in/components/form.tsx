@@ -84,10 +84,15 @@ const LoginForm = () => {
         setError(message);
         return;
       }
-      setVendor(res.data.data.vendor);
+      const vendorData = res.data.data.vendor;
+      setVendor(vendorData);
 
-      toast.success("Login Successful");
-      router.push("/dashboard");
+      // toast.success("Login Successful");
+      // router.refresh();
+      toast.loading(`Redirecting to Dashboard Page...`);
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 500); //
     } catch (error) {
       let message = "Login Failed: An unexpected error occurred.";
 

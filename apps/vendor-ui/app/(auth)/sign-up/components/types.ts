@@ -12,6 +12,8 @@ export interface FormValues {
   };
   category: string[];
   logo?: string | null;
+  openingTime: string;
+  closingTime: string;
 }
 
 export interface Step {

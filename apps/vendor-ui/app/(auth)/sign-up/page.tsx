@@ -48,6 +48,8 @@ const formSchema = z
       .array(z.string())
       .min(1, "Please select at least one business category"),
     logo: z.string().optional().nullable(),
+    openingTime: z.string().min(1, "Opening time is required"),
+    closingTime: z.string().min(1, "Closing time is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -99,6 +101,8 @@ export default function MultistepSignupForm() {
       },
       category: [],
       logo: "",
+      openingTime: "",
+      closingTime: "",
     },
   });
 
@@ -183,7 +187,7 @@ export default function MultistepSignupForm() {
           "confirmPassword",
         ];
       case 2:
-        return ["address", "category"];
+        return ["address", "category", "openingTime", "closingTime"];
       default:
         return [];
     }
@@ -233,6 +237,8 @@ export default function MultistepSignupForm() {
         address: values.address,
         categoryIds: values.category,
         logoUrl: values.logo || undefined,
+        openingTime: values.openingTime,
+        closingTime: values.closingTime,
       };
 
       const createResponse = await axios.post(
