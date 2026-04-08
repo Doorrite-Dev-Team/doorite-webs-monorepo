@@ -121,32 +121,49 @@ export const StepTwo = () => {
     setLocationStatus("loading");
     setLocationError("");
 
+    const onSuccess = (position: GeolocationPosition) => {
+      form.setValue("address.coordinates", {
+        lat: position.coords.latitude,
+        long: position.coords.longitude,
+      });
+      setLocationStatus("success");
+    };
+
+    const onFinalError = (error: GeolocationPositionError) => {
+      let errorMessage = "Failed to get location";
+      if (error.code === error.PERMISSION_DENIED) {
+        errorMessage =
+          "Location permission denied. Please enable location access.";
+      } else if (error.code === error.POSITION_UNAVAILABLE) {
+        errorMessage = "Location information unavailable.";
+      } else if (error.code === error.TIMEOUT) {
+        errorMessage = "Location request timed out. Please try again.";
+      }
+      setLocationError(errorMessage);
+      setLocationStatus("error");
+    };
+
+    const highAccuracyOptions: PositionOptions = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 60000, // Accept a position up to 1 min old to avoid cold-start timeouts
+    };
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        form.setValue("address.coordinates", {
-          lat: position.coords.latitude,
-          long: position.coords.longitude,
-        });
-        setLocationStatus("success");
-      },
+      onSuccess,
       (error) => {
-        let errorMessage = "Failed to get location";
-        if (error.code === error.PERMISSION_DENIED) {
-          errorMessage =
-            "Location permission denied. Please enable location access.";
-        } else if (error.code === error.POSITION_UNAVAILABLE) {
-          errorMessage = "Location information unavailable.";
-        } else if (error.code === error.TIMEOUT) {
-          errorMessage = "Location request timed out.";
+        // On TIMEOUT with high accuracy, retry once with standard accuracy
+        if (error.code === error.TIMEOUT) {
+          navigator.geolocation.getCurrentPosition(onSuccess, onFinalError, {
+            ...highAccuracyOptions,
+            enableHighAccuracy: false,
+            timeout: 15000,
+          });
+        } else {
+          onFinalError(error);
         }
-        setLocationError(errorMessage);
-        setLocationStatus("error");
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      },
+      highAccuracyOptions,
     );
   };
 
@@ -259,7 +276,7 @@ export const StepTwo = () => {
                 <FormControl>
                   <SelectTrigger className="h-11 border-gray-300">
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
                       <SelectValue placeholder="Select state" />
                     </div>
                   </SelectTrigger>
@@ -276,24 +293,29 @@ export const StepTwo = () => {
             </FormItem>
           )}
         />
-
-        {/*address string*/}
-        <FormField
-          control={form.control}
-          name="address.address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium text-gray-700">
-                Address <span className="text-red-500">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input type="text" placeholder="Company's Address" {...field} />
-              </FormControl>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
       </div>
+
+      {/* Address - full width, outside the 2-col grid */}
+      <FormField
+        control={form.control}
+        name="address.address"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-sm font-medium text-gray-700">
+              Address <span className="text-red-500">*</span>
+            </FormLabel>
+            <FormControl>
+              <textarea
+                placeholder="Company's Address"
+                rows={3}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage className="text-xs" />
+          </FormItem>
+        )}
+      />
 
       {/* Precise Location */}
       <div className="space-y-2">
@@ -427,6 +449,7 @@ export const StepTwo = () => {
                 <input
                   type="time"
                   value={field.value}
+                  onInput={field.onChange}
                   onChange={field.onChange}
                   className="flex h-11 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
                 />
@@ -448,6 +471,7 @@ export const StepTwo = () => {
                 <input
                   type="time"
                   value={field.value}
+                  onInput={field.onChange}
                   onChange={field.onChange}
                   className="flex h-11 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
                 />
