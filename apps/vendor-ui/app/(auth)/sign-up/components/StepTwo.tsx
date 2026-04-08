@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/ui/components/select";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { ImageUpload } from "@/components/ImageUpload";
 import { FormValues } from "./types";
 import { useState, useEffect } from "react";
@@ -100,12 +100,55 @@ export const StepTwo = () => {
     { value: string; label: string }[]
   >([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [locationStatus, setLocationStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [locationError, setLocationError] = useState<string>("");
   const baseUrl = process.env.NEXT_PUBLIC_API_URI;
 
   // Set Nigeria as default country on mount
   useEffect(() => {
     form.setValue("address.country", "nigeria");
   }, [form]);
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser");
+      setLocationStatus("error");
+      return;
+    }
+
+    setLocationStatus("loading");
+    setLocationError("");
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        form.setValue("address.coordinates", {
+          lat: position.coords.latitude,
+          long: position.coords.longitude,
+        });
+        setLocationStatus("success");
+      },
+      (error) => {
+        let errorMessage = "Failed to get location";
+        if (error.code === error.PERMISSION_DENIED) {
+          errorMessage =
+            "Location permission denied. Please enable location access.";
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          errorMessage = "Location information unavailable.";
+        } else if (error.code === error.TIMEOUT) {
+          errorMessage = "Location request timed out.";
+        }
+        setLocationError(errorMessage);
+        setLocationStatus("error");
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      },
+    );
+  };
 
   // Fetch categories from API with caching
   useEffect(() => {
@@ -175,7 +218,7 @@ export const StepTwo = () => {
   return (
     <div className="space-y-6">
       {/* Country & State */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         {/* Country - Fixed to Nigeria */}
         <FormField
           control={form.control}
@@ -246,6 +289,64 @@ export const StepTwo = () => {
               <FormControl>
                 <Input type="text" placeholder="Company's Address" {...field} />
               </FormControl>
+              <FormMessage className="text-xs" />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {/* Precise Location */}
+      <div className="space-y-2">
+        <FormField
+          control={form.control}
+          name="address.coordinates"
+          render={() => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium text-gray-700">
+                Precise Location <span className="text-red-500">*</span>
+              </FormLabel>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={handleGetLocation}
+                  disabled={locationStatus === "loading"}
+                  className={`
+                    h-11 px-4 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700
+                    hover:bg-gray-50 hover:border-gray-400
+                    focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
+                    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white
+                    transition-colors duration-200
+                    ${locationStatus === "success" ? "border-green-500 bg-green-50" : ""}
+                    ${locationStatus === "error" ? "border-red-300 bg-red-50" : ""}
+                  `}
+                >
+                  {locationStatus === "loading" ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Getting location...
+                    </span>
+                  ) : locationStatus === "success" ? (
+                    <span className="flex items-center justify-center gap-2 text-green-700">
+                      <CheckCircle className="w-4 h-4" />
+                      Location set
+                    </span>
+                  ) : locationStatus === "error" ? (
+                    <span className="flex items-center justify-center gap-2 text-red-600">
+                      <XCircle className="w-4 h-4" />
+                      Try Again
+                    </span>
+                  ) : (
+                    "Set Precise Location"
+                  )}
+                </button>
+                {locationError && (
+                  <p className="text-xs text-red-500">{locationError}</p>
+                )}
+                <p className="text-xs text-gray-500">
+                  We need your precise location for delivery mapping and
+                  customer directions
+                </p>
+              </div>
               <FormMessage className="text-xs" />
             </FormItem>
           )}
@@ -323,7 +424,12 @@ export const StepTwo = () => {
                 Opening Time <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
-                <Input type="time" {...field} />
+                <input
+                  type="time"
+                  value={field.value}
+                  onChange={field.onChange}
+                  className="flex h-11 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                />
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>
@@ -339,7 +445,12 @@ export const StepTwo = () => {
                 Closing Time <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
-                <Input type="time" {...field} />
+                <input
+                  type="time"
+                  value={field.value}
+                  onChange={field.onChange}
+                  className="flex h-11 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                />
               </FormControl>
               <FormMessage className="text-xs" />
             </FormItem>
