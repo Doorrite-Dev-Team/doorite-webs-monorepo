@@ -89,8 +89,10 @@ const LoginForm = () => {
 
       // toast.success("Login Successful");
       // router.refresh();
-      toast.loading(`Redirecting to Dashboard Page...`);
+      // toast.loading(`Redirecting to Dashboard Page...`);
+	const toastId = toast.loading("Redirecting to Dashboard Page...");
       setTimeout(() => {
+	toast.success("Login Successful", { id: toastId });
         router.push("/dashboard");
       }, 500); //
     } catch (error) {
