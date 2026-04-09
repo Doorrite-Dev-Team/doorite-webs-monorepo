@@ -26,13 +26,18 @@ export default function AttachModifiersSection({
   const { data, isLoading, isError } = useQuery({
     queryKey: ["modifier-groups"],
     queryFn: async () => {
-      const { modifierApi } = await import("@/libs/api/modifier-api");
-      return modifierApi.getModifierGroups();
+      try {
+        const { modifierApi } = await import("@/libs/api/modifier-api");
+        const result = await modifierApi.getModifierGroups();
+        return result?.modifierGroups || [];
+      } catch {
+        return [];
+      }
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  const modifierGroups = data?.modifierGroups || [];
+  const modifierGroups = data || [];
 
   const handleToggleModifier = (modifierId: string, checked: boolean) => {
     if (checked) {

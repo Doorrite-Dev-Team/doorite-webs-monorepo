@@ -137,7 +137,7 @@ const DashboardClient = ({ initialData }: DashboardClientProps) => {
     <div className="min-h-screen bg-gray-50 px-4 sm:px-6 lg:px-8 py-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        {/*<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
             {dashboardData.vendor.logoUrl && (
               <Image
@@ -189,6 +189,62 @@ const DashboardClient = ({ initialData }: DashboardClientProps) => {
                 </span>
               </CardContent>
             </Card>
+          </div>
+        </div>*/}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            {dashboardData.vendor.logoUrl && (
+              <Image
+                src={dashboardData.vendor.logoUrl}
+                alt="Logo"
+                width={64}
+                height={64}
+                className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
+              />
+            )}
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                {dashboardData.vendor.businessName}
+              </h1>
+              <div className="flex items-center flex-wrap gap-2 mt-1 text-sm text-gray-600">
+                {dashboardData.vendor.rating && (
+                  <span className="font-medium text-gray-800">
+                    ⭐ {dashboardData.vendor.rating.toFixed(1)}
+                  </span>
+                )}
+                {dashboardData.vendor.openingTime &&
+                  dashboardData.vendor.closingTime && (
+                    <span className="flex items-center gap-2">
+                      <span className="text-gray-300">•</span>
+                      <span>
+                        🕐 {dashboardData.vendor.openingTime} -{" "}
+                        {dashboardData.vendor.closingTime}
+                      </span>
+                    </span>
+                  )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={refreshMutation.isPending}
+              className="flex-1 sm:flex-none h-9"
+            >
+              <RefreshCw
+                className={`w-4 h-4 mr-2 ${refreshMutation.isPending ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+
+            <div className="inline-flex items-center gap-2 px-3 h-9 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm font-medium">
+              <Bell className="w-4 h-4" />
+              <span className="hidden sm:inline">Notifications</span>
+              <span className="sm:hidden">On</span>
+            </div>
           </div>
         </div>
 
@@ -349,7 +405,7 @@ const DashboardClient = ({ initialData }: DashboardClientProps) => {
 
       <CreateMenuItemForm
         open={showForm}
-        onOpenChangeAction={() => setShowForm}
+        onOpenChangeAction={setShowForm}
         onSuccessAction={() => {
           router.push("/products");
           // Invalidate dashboard query to refetch data

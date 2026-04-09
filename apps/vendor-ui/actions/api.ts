@@ -108,7 +108,17 @@ const api = {
     );
 
     console.log(response.data);
-    return response.data.orders;
+    return (
+      response.data?.orders || {
+        orders: [],
+        pagination: {
+          totalOrders: 0,
+          totalPages: 0,
+          currentPage: page,
+          pageSize: limit,
+        },
+      }
+    );
   },
   fetchDashboardData: async (): Promise<DashboardData> => {
     const response = await apiClient.get("/vendors/dashboard");
