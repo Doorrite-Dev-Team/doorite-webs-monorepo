@@ -59,7 +59,7 @@ export const modifierApi = {
       ok: boolean;
       data: { modifierGroups: ModifierGroup[] };
     }>("/vendors/modifiers");
-    return data.data;
+    return data.data ?? [];
   },
 
   getModifierGroupById: async (id: string) => {

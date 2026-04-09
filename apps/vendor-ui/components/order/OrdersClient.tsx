@@ -80,8 +80,8 @@ export default function OrdersClient() {
     staleTime: 30 * 1000,
   });
 
-  const stats = data
-    ? calculateStats(data.orders)
+  const stats = data.orders
+    ? calculateStats(data.orders ?? [])
     : { active: 0, completed: 0, pending: 0, cancelled: 0 };
 
   const filterOrders = (orders: Order[]) => {
@@ -97,7 +97,7 @@ export default function OrdersClient() {
     return orders;
   };
 
-  const filteredOrders = data ? filterOrders(data.orders) : [];
+  const filteredOrders = data.orders ? filterOrders(data.orders ?? []) : [];
 
   const getInitial = (name: string) => {
     return name.charAt(0).toUpperCase();

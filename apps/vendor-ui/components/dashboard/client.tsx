@@ -383,10 +383,9 @@ const DashboardClient = ({ initialData }: DashboardClientProps) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
+        <div className="w-full flex gap-4 max-sm:flex-col  mb-20">
           <Button
             onClick={() => setShowForm(true)}
-            size="lg"
             className="flex-1 bg-green-700 hover:bg-green-800"
           >
             Create New Menu Item
@@ -395,7 +394,6 @@ const DashboardClient = ({ initialData }: DashboardClientProps) => {
           <Button
             onClick={() => router.push("/orders")}
             variant="outline"
-            size="lg"
             className="flex-1"
           >
             View All Orders
