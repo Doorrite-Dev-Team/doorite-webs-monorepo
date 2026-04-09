@@ -51,7 +51,7 @@ interface ChangePasswordData {
 
 // API Functions
 const fetchVendorProfile = async (): Promise<VendorProfile> => {
-  const response = await apiClient.get("/vendors/profile");
+  const response = await apiClient.get("/vendors/me");
 
   console.log("fetchVendorProfile response:", response);
   if (!response.data?.ok) {
@@ -81,7 +81,7 @@ const fetchNotificationSettings = async (): Promise<NotificationSettings> => {
 };
 
 const updateProfile = async (data: UpdateProfileData) => {
-  const response = await apiClient.put("/vendors/profile", data);
+  const response = await apiClient.put("/vendors/me", data);
   return response.data;
 };
 

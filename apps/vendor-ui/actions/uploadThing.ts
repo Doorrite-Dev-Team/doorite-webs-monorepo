@@ -1,4 +1,4 @@
-"server-only";
+"use server";
 
 import { UTApi } from "uploadthing/server";
 
@@ -6,7 +6,6 @@ const utapi = new UTApi();
 
 export async function deleteImage(url: string) {
   try {
-    // Extract fileKey from URL (https://utfs.io/f/FILE_KEY)
     const fileKey = url.split("/").pop();
 
     if (!fileKey) {
