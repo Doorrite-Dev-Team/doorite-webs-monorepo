@@ -10,8 +10,27 @@ import { Input } from "@repo/ui/components/input";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { toast } from "@repo/ui/components/sonner";
 import { Switch } from "@repo/ui/components/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@repo/ui/components/alert-dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Package, Plus, Search, Settings2 } from "lucide-react";
+import {
+  Loader2,
+  Package,
+  Plus,
+  Search,
+  Settings2,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import CreateProductSheet from "./CreateProduct";
@@ -29,9 +48,15 @@ const updateProductAvailability = async ({
   return response.data;
 };
 
+const deleteProduct = async (productId: string) => {
+  const response = await apiClient.delete(`vendors/products/${productId}`);
+  return response.data;
+};
+
 export default function ProductsTab() {
   const queryClient = useQueryClient();
   const [showCreateSheet, setShowCreateSheet] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
@@ -94,6 +119,22 @@ export default function ProductsTab() {
     onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: ["vendor-products"],
+      });
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: deleteProduct,
+    onSuccess: () => {
+      toast.success("Product deleted successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["vendor-products"],
+      });
+    },
+    onError: (error) => {
+      const message = deriveError(error);
+      toast.error("Failed to delete product", {
+        description: message || "Please try again",
       });
     },
   });
@@ -354,6 +395,58 @@ export default function ProductsTab() {
                           }
                         />
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-500 hover:text-green-600"
+                          onClick={() => {
+                            setEditingProduct(product);
+                            setShowCreateSheet(true);
+                          }}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-gray-500 hover:text-red-600"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Delete Product
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete{" "}
+                                <strong>{product.name}</strong>? This action
+                                cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-red-600 hover:bg-red-700"
+                                onClick={() =>
+                                  deleteProductMutation.mutate(product.id)
+                                }
+                                disabled={deleteProductMutation.isPending}
+                              >
+                                {deleteProductMutation.isPending ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  "Delete"
+                                )}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -409,8 +502,12 @@ export default function ProductsTab() {
 
       <CreateProductSheet
         open={showCreateSheet}
-        onOpenChangeAction={setShowCreateSheet}
+        onOpenChangeAction={(open) => {
+          setShowCreateSheet(open);
+          if (!open) setEditingProduct(null);
+        }}
         onSuccessAction={handleProductCreated}
+        product={editingProduct}
       />
     </div>
   );

@@ -21,10 +21,9 @@ export default function ModifierGroupCard({
 }: ModifierGroupCardProps) {
   const [expanded, setExpanded] = useState(false);
 
-  const toggleOptionAvailability = (optionId: string) => {
-    // This would be handled by the parent component via API calls
-    console.log("Toggle option:", optionId);
-  };
+   const toggleOptionAvailability = (optionId: string) => {
+     // This would be handled by the parent component via API calls
+   };
 
   return (
     <Card className="overflow-hidden">

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useAtom } from "jotai";
-import { activeOrderAtom } from "@/store/orderAtom";
+import { activeOrderAtom, orderHistoryAtom } from "@/store/orderAtom";
+import { apiClient } from "@/libs/api-client";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,7 @@ export default function DeliveryCompletionModal({
   onClose,
 }: DeliveryCompletionModalProps) {
   const [activeOrder, setActiveOrder] = useAtom(activeOrderAtom);
+  const [, setOrderHistory] = useAtom(orderHistoryAtom);
   const [notes, setNotes] = useState("");
   const [proofImage, setProofImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,16 +45,43 @@ export default function DeliveryCompletionModal({
     setIsSubmitting(true);
 
     try {
-      // Simulate API call to complete delivery
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Build the request payload
+      const payload: {
+        notes?: string;
+        proofImageUrl?: string;
+      } = {};
 
-      // TODO: Call actual API endpoint
-      // await apiClient.post(`/orders/${activeOrder.id}/complete`, {
-      //   notes,
-      //   proofImage: proofImage ? await uploadImage(proofImage) : null
-      // });
+      if (notes.trim()) {
+        payload.notes = notes.trim();
+      }
 
-      toast.success("Delivery completed successfully! 🎉", {
+      // If a proof image was selected, upload it first
+      if (proofImage) {
+        const formData = new FormData();
+        formData.append("file", proofImage);
+        try {
+          const uploadRes = await apiClient.post(
+            "/riders/upload-proof",
+            formData,
+            { headers: { "Content-Type": "multipart/form-data" } },
+          );
+          payload.proofImageUrl = uploadRes.data?.url;
+        } catch {
+          // Non-fatal — proceed without proof image if upload fails
+          console.warn("Proof image upload failed, proceeding without it");
+        }
+      }
+
+      // Call the real completion endpoint
+      await apiClient.post(`/orders/${activeOrder.id}/verify-delivery`, payload);
+
+      // Move the completed order into local history
+      setOrderHistory((prev) => [
+        { ...activeOrder, status: "delivered" as const },
+        ...prev,
+      ]);
+
+      toast.success("Delivery completed successfully!", {
         description: `You earned ₦${activeOrder.totalAmount?.toFixed(2)}`,
       });
 
@@ -65,8 +94,9 @@ export default function DeliveryCompletionModal({
 
       onClose();
     } catch (error) {
+      console.error("Delivery completion error:", error);
       toast.error("Failed to complete delivery", {
-        description: "Please try again",
+        description: "Please try again or contact support.",
       });
     } finally {
       setIsSubmitting(false);

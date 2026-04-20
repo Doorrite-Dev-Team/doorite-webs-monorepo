@@ -29,12 +29,11 @@ export default function AccountModal({ show, onClose }: AccountModalProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    // 🔗 integrate API call here
-    onClose();
-  };
+   const handleSubmit = (e: React.FormEvent) => {
+     e.preventDefault();
+     // 🔗 integrate API call here
+     onClose();
+   };
 
   return (
     <Transition show={show}>

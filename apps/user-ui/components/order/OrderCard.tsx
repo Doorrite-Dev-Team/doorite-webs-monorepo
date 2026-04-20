@@ -6,6 +6,7 @@ import { Badge } from "@repo/ui/components/badge";
 import { Card, CardContent } from "@repo/ui/components/card";
 import { Button } from "@repo/ui/components/button";
 import { Clock, Package, ChevronRight, MapPin, DollarSign } from "lucide-react";
+import { ReorderButton } from "@/components/order/ReorderButton";
 import {
   formatDate,
   formatTime,
@@ -160,18 +161,21 @@ export default function OrderCard({ order }: OrderCardProps) {
               </span>
             </div>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1 group-hover:gap-2 transition-all"
-              onClick={(e) => {
-                e.stopPropagation();
-                router.push(`/order/${order.id}`);
-              }}
-            >
-              {isActive ? "Track Order" : "View Details"}
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              {isCompleted && <ReorderButton orderId={order.id} />}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 group-hover:gap-2 transition-all"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/order/${order.id}`);
+                }}
+              >
+                {isActive ? "Track Order" : "View Details"}
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
 
           {/* ETA for active order */}

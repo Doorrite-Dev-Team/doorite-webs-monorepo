@@ -1,6 +1,6 @@
 "use client";
 
-import { Back } from "@/public/assets/icons";
+import { ArrowLeft } from "lucide-react";
 import {
   Dialog,
   DialogPanel,
@@ -69,7 +69,7 @@ export default function AccountModal({ show, onClose }: AccountModalProps) {
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <button onClick={onClose}>
-                      <Back className="w-6 h-6 text-gray-700" />
+                      <ArrowLeft className="w-6 h-6 text-gray-700" />
                     </button>
                     <h2 className="text-lg font-semibold text-center flex-1">
                       Profile

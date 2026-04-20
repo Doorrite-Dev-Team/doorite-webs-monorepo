@@ -29,19 +29,14 @@ async function forwardRequest(
       searchParams ? `?${searchParams}` : ""
     }`;
 
-    console.log(`Forwarding request to ${targetUrl}`);
-
     // Get cookies from server-side store
     const cookieHeader = await getCookieHeader();
     const accessToken = await getCookieHeader(true);
 
     const getBody = async () => {
-      // 1. Safe JSON parsing
       let body;
       try {
         body = await req.json();
-
-        console.log(body);
         return body;
       } catch {
         return NextResponse.json(
@@ -68,7 +63,6 @@ async function forwardRequest(
         "content-type": req.headers.get("content-type") || "application/json",
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         ...(cookieHeader && { cookie: cookieHeader }),
-        // Forward relevant headers
         ...(req.headers.get("accept") && {
           accept: req.headers.get("accept")!,
         }),
@@ -80,71 +74,55 @@ async function forwardRequest(
     clearTimeout(timeoutId);
 
     // Handle 401 with automatic token refresh (once)
-    // if (response.status === 401 && !retry) {
-    //   console.log("[Proxy] Access token expired, attempting refresh...");
-
-    //   if (!cookieHeader) {
-    //     return Response.json(
-    //       {
-    //         ok: false,
-    //         message: "No refresh token found",
-    //         code: "NO_REFRESH_TOKEN",
-    //       },
-    //       { status: 401 },
-    //     );
-    //   }
-
-    //   const token = await getCookieHeader(false, true);
-    //   if (!token) {
-    //     return Response.json(
-    //       {
-    //         ok: false,
-    //         message: "No refresh token found",
-    //         code: "NO_REFRESH_TOKEN",
-    //       },
-    //       { status: 401 },
-    //     );
-    //   }
-
-    //   const refreshResponse = await fetch(
-    //     `${req.nextUrl.origin}/api/auth/refresh`,
-    //     {
-    //       method: "POST",
-    //       body: JSON.stringify({ token }),
-    //       headers: {
-    //         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    //         cookie: cookieHeader,
-    //       },
-    //       credentials: "include",
-    //     },
-    //   );
-
-    //   if (refreshResponse.ok) {
-    //     console.log("[Proxy] Token refresh successful, retrying request");
-    //     // Retry original request with refreshed token
-    //     return forwardRequest(req, true);
-    //   } else {
-    //     console.log("[Proxy] Token refresh failed");
-    //     // Return 401 to trigger client-side logout
-    //     return Response.json(
-    //       {
-    //         ok: false,
-    //         message: "Session expired. Please log in again.",
-    //         code: "SESSION_EXPIRED",
-    //       },
-    //       { status: 401 },
-    //     );
-    //   }
-    // }
     if (response.status === 401 && !retry) {
-      return NextResponse.json(
+      if (!cookieHeader) {
+        return Response.json(
+          {
+            ok: false,
+            message: "No refresh token found",
+            code: "NO_REFRESH_TOKEN",
+          },
+          { status: 401 },
+        );
+      }
+
+      const refreshToken = await getCookieHeader(false, true);
+      if (!refreshToken) {
+        return Response.json(
+          {
+            ok: false,
+            message: "No refresh token found",
+            code: "NO_REFRESH_TOKEN",
+          },
+          { status: 401 },
+        );
+      }
+
+      const refreshResponse = await fetch(
+        `${req.nextUrl.origin}/api/auth/refresh-token`,
         {
-          ok: false,
-          code: "UNAUTHORIZED",
-          message: "Session expired",
+          method: "POST",
+          body: JSON.stringify({ refresh: refreshToken }),
+          headers: {
+            "content-type": "application/json",
+            cookie: cookieHeader,
+          },
+          credentials: "include",
         },
-        { status: 401 },
       );
+
+      if (refreshResponse.ok) {
+        return forwardRequest(req, true);
+      } else {
+        return Response.json(
+          {
+            ok: false,
+            message: "Session expired. Please log in again.",
+            code: "SESSION_EXPIRED",
+          },
+          { status: 401 },
+        );
+      }
     }
 
     // Parse response body
@@ -180,17 +158,8 @@ async function forwardRequest(
     });
 
     return nextResponse;
-  } catch (error: any) {
-    console.error("[Proxy] Request failed:", error);
-
-    if (error.status === 401) {
-      return NextResponse.json(
-        { ok: false, code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
-    }
-
-    if (error.name === "AbortError") {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === "AbortError") {
       return createErrorResponse({ message: "Request timeout" }, 504);
     }
 
@@ -201,6 +170,7 @@ async function forwardRequest(
 async function handler(req: NextRequest) {
   return forwardRequest(req, false);
 }
+
 // Export HTTP method handlers
 export const GET = handler;
 export const POST = handler;

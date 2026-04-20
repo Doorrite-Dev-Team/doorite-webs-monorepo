@@ -24,6 +24,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@repo/ui/components/avatar";
+import WithdrawSheet from "./WithdrawSheet";
 import {
   LineChart,
   Line,
@@ -46,6 +47,7 @@ const PERIOD_TABS: { value: Period; label: string }[] = [
 
 export default function Earnings() {
   const [period, setPeriod] = useState<Period>("weekly");
+  const [showWithdrawSheet, setShowWithdrawSheet] = useState(false);
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["vendor-earnings", period],
     queryFn: () => api.fetchEarnings(period),
@@ -118,21 +120,34 @@ export default function Earnings() {
           </p>
         </div>
 
-        {/* Period Tabs */}
-        <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
-          {PERIOD_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setPeriod(tab.value)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                period === tab.value
-                  ? "bg-white text-green-700 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
+        <div className="flex items-center gap-4">
+          {/* Period Tabs */}
+          <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
+            {PERIOD_TABS.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => setPeriod(tab.value)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  period === tab.value
+                    ? "bg-white text-green-700 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Withdraw Button */}
+          {data?.wallet?.balance > 2000 && (
+            <Button
+              onClick={() => setShowWithdrawSheet(true)}
+              className="bg-green-600 hover:bg-green-700"
             >
-              {tab.label}
-            </button>
-          ))}
+              <Wallet className="w-4 h-4 mr-2" />
+              Withdraw
+            </Button>
+          )}
         </div>
       </div>
 
@@ -329,6 +344,13 @@ export default function Earnings() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Withdraw Sheet */}
+      <WithdrawSheet
+        open={showWithdrawSheet}
+        onOpenChange={setShowWithdrawSheet}
+        balance={data?.wallet?.balance || 0}
+      />
     </div>
   );
 }

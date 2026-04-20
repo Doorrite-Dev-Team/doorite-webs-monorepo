@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from "@repo/ui/components/form";
 import { Input } from "@repo/ui/components/input";
-import { Building2, Mail, Phone, Lock, User, Eye, EyeOff } from "lucide-react";
+import { Building2, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
 import { FormValues } from "./types";
 import { useState } from "react";
 
@@ -31,15 +31,12 @@ export const StepOne = () => {
               Business Name <span className="text-red-500">*</span>
             </FormLabel>
             <FormControl>
-              <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  {...field}
-                  leftIcon={<User className="w-5 h-5" />}
-                  placeholder="Enter your business name"
-                  className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
-                />
-              </div>
+              <Input
+                {...field}
+                leftIcon={<Building2 className="w-5 h-5" />}
+                placeholder="Enter your business name"
+                className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
+              />
             </FormControl>
             <FormMessage className="text-xs" />
           </FormItem>
@@ -56,16 +53,13 @@ export const StepOne = () => {
               Phone Number <span className="text-red-500">*</span>
             </FormLabel>
             <FormControl>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  {...field}
-                  leftIcon={<Phone className="w-5 h-5" />}
-                  type="tel"
-                  placeholder="07011111111"
-                  className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
-                />
-              </div>
+              <Input
+                {...field}
+                leftIcon={<Phone className="w-5 h-5" />}
+                type="tel"
+                placeholder="07011111111"
+                className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
+              />
             </FormControl>
             <FormMessage className="text-xs" />
           </FormItem>
@@ -82,16 +76,13 @@ export const StepOne = () => {
               Email Address <span className="text-red-500">*</span>
             </FormLabel>
             <FormControl>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  {...field}
-                  leftIcon={<Mail className="w-5 h-5" />}
-                  type="email"
-                  placeholder="name@example.com"
-                  className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
-                />
-              </div>
+              <Input
+                {...field}
+                leftIcon={<Mail className="w-5 h-5" />}
+                type="email"
+                placeholder="name@example.com"
+                className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
+              />
             </FormControl>
             <FormMessage className="text-xs" />
           </FormItem>
@@ -108,32 +99,29 @@ export const StepOne = () => {
               Password <span className="text-red-500">*</span>
             </FormLabel>
             <FormControl>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  {...field}
-                  leftIcon={<Lock className="w-5 h-5" />}
-                  rightIcon={
-                    <button
-                      type="button"
-                      className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-4 h-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="w-4 h-4 text-muted-foreground" />
-                      )}
-                    </button>
-                  }
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Create a strong password"
-                  className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
-                />
-              </div>
+              <Input
+                {...field}
+                leftIcon={<Lock className="w-5 h-5" />}
+                rightIcon={
+                  <button
+                    type="button"
+                    className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </button>
+                }
+                type={showPassword ? "text" : "password"}
+                placeholder="Create a strong password"
+                className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
+              />
             </FormControl>
             <FormMessage className="text-xs" />
           </FormItem>
@@ -150,31 +138,28 @@ export const StepOne = () => {
               Confirm Password <span className="text-red-500">*</span>
             </FormLabel>
             <FormControl>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  {...field}
-                  leftIcon={<Lock className="w-5 h-5" />}
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Re-enter your password"
-                  className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
-                  rightIcon={
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="w-4 h-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="w-4 h-4 text-muted-foreground" />
-                      )}
-                    </button>
-                  }
-                />
-              </div>
+              <Input
+                {...field}
+                leftIcon={<Lock className="w-5 h-5" />}
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Re-enter your password"
+                className="pl-10 h-11 border-gray-300 focus:border-primary focus:ring-primary"
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowConfirmPassword(!showConfirmPassword)
+                    }
+                    className="cursor-pointer p-1 hover:bg-muted rounded transition-colors"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </button>
+                }
+              />
             </FormControl>
             <FormMessage className="text-xs" />
           </FormItem>

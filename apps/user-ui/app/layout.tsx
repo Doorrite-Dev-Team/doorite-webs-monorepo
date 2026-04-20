@@ -6,6 +6,7 @@ import "./globals.css";
 // import { Provider } from "jotai";
 import Providers from "@/providers";
 import SplashScreen from "@/components/global/SplashScreen";
+import { ServiceWorkerRegistration } from "@/components/notifications/ServiceWorkerRegistration";
 
 const plus_Jakarta_Sans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -44,6 +45,7 @@ export default function RootLayout({
         <Providers>
           <SplashScreen duration={2500}>{children}</SplashScreen>
           <Toaster richColors position="top-center" />
+          <ServiceWorkerRegistration />
         </Providers>
       </body>
     </html>

@@ -9,7 +9,7 @@ const BASE_URL = "/api/proxy";
 const apiClient = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
-  timeout: 5 * 60 * 1000,
+  timeout: 30_000, // 30 seconds
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",

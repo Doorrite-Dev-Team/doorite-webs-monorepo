@@ -38,8 +38,6 @@ export async function getCookieHeader(
     .join("; ");
 }
 
-// export async function getAccessCookie()
-
 /**
  * Extracts and parses Set-Cookie headers from response
  */
@@ -64,7 +62,6 @@ export function createErrorResponse(
     {
       ok: false,
       message: error?.message || "An error occurred",
-      details: error,
     },
     { status },
   );

@@ -7,12 +7,24 @@ import { Notification } from "@/types/notification";
 import { toast } from "@repo/ui/components/sonner";
 
 // Strict Event Types
+interface ChatMessage {
+  id: string;
+  content: string;
+  senderType: "customer" | "rider" | "vendor";
+  senderId: string;
+  createdAt: string;
+}
+
 interface ServerToClientEvents {
   // Urgent: New Ride Job (Trigger Dialog)
   "new-ride-job": (data: Notification) => void;
 
   // General: System/Info updates
   notification: (data: Notification) => void;
+  "pending-notifications": (pending: Notification[]) => void;
+
+  // Chat events
+  new_message: (message: ChatMessage) => void;
 
   // Specific Order Updates
   [key: string]: any; // for rider:{riderId}-order:{orderId} dynamic events
@@ -25,6 +37,14 @@ interface ClientToServerEvents {
   "join-rider-room": (riderId: string) => void;
   "update-rider-location": (data: { lat: number; lng: number }) => void;
   "order-accepted": (orderId: string) => void;
+
+  // Chat events
+  join_order: (orderId: string) => void;
+  leave_order: (orderId: string) => void;
+  send_message: (data: { orderId: string; content: string }) => void;
+
+  // Notification read
+  "notification-read": (notificationId: string) => void;
 }
 
 type SocketInstance = Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -71,6 +91,14 @@ export const initSocketAtom = atom(null, (get, set, token: string) => {
   socket.on("notification", (notif) => {
     playSound("pop");
     set(addNotificationAtom, notif);
+    socket.emit("notification-read", notif.id);
+  });
+
+  socket.on("pending-notifications", (pending: Notification[]) => {
+    for (const n of pending) {
+      set(addNotificationAtom, n);
+      socket.emit("notification-read", n.id);
+    }
   });
 
   socket.on("disconnect", () => set(isConnectedAtom, false));

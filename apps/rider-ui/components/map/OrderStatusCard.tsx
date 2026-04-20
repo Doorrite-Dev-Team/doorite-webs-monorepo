@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useAtomValue } from "jotai";
 import { activeOrderAtom } from "@/store/orderAtom";
-import { Navigation, MapPin, Clock, DollarSign, Package } from "lucide-react";
+import { Navigation, MapPin, Package } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import DeliveryCompletionModal from "../orders/DeliveryCompletionModal";
 
@@ -13,11 +13,13 @@ export default function OrderStatusCard() {
 
   if (!activeOrder) {
     return (
-      <div className="absolute bottom-4 left-4 right-4 bg-white rounded-lg shadow-xl p-4">
+      <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-5 border border-gray-100">
         <div className="text-center text-gray-500">
-          <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-          <p className="font-medium">No Active Delivery</p>
-          <p className="text-sm">Accept an order to start delivering</p>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-50 flex items-center justify-center">
+            <Package className="w-6 h-6 text-gray-300" />
+          </div>
+          <p className="font-semibold text-gray-700">No Active Delivery</p>
+          <p className="text-sm mt-0.5">Accept an order to start delivering</p>
         </div>
       </div>
     );
@@ -28,7 +30,7 @@ export default function OrderStatusCard() {
       case "accepted":
         return "bg-blue-500";
       case "picked_up":
-        return "bg-orange-500";
+        return "bg-amber-500";
       case "delivered":
         return "bg-green-500";
       default:
@@ -39,83 +41,65 @@ export default function OrderStatusCard() {
   const getNextAction = () => {
     switch (activeOrder.status) {
       case "accepted":
-        return { label: "Navigate to Pickup", action: "navigate-pickup" };
+        return "Navigate to Pickup";
       case "picked_up":
-        return { label: "Navigate to Customer", action: "navigate-dropoff" };
+        return "Navigate to Customer";
       default:
-        return { label: "View Details", action: "details" };
-    }
-  };
-
-  const nextAction = getNextAction();
-
-  const handleAction = () => {
-    if (activeOrder.status === "picked_up") {
-      // For picked_up status, we also want to show complete option
-      // User can navigate first, then complete
+        return "View Details";
     }
   };
 
   return (
     <>
-      <div className="absolute bottom-4 left-4 right-4 bg-white rounded-lg shadow-xl overflow-hidden">
+      <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden border border-gray-100">
         {/* Status Bar */}
         <div className={`${getStatusColor(activeOrder.status)} px-4 py-2`}>
-          <p className="text-white text-sm font-semibold uppercase tracking-wide">
+          <p className="text-white text-xs font-bold uppercase tracking-wide">
             {activeOrder.status.replace("_", " ")}
           </p>
         </div>
 
-        {/* Order Info */}
         <div className="p-4">
           <div className="flex items-start justify-between mb-3">
-            <div>
-              <h3 className="font-bold text-lg">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-base text-gray-900 truncate">
                 {activeOrder.restaurantName || "Restaurant"}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-500 truncate">
                 {activeOrder.customerName || "Customer"}
               </p>
             </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold text-green-600">
-                ₦{activeOrder.totalAmount?.toFixed(2) || "0.00"}
-              </p>
-            </div>
+            <p className="text-xl font-bold text-green-600 shrink-0 ml-3">
+              ₦{activeOrder.totalAmount?.toFixed(0) || "0"}
+            </p>
           </div>
 
           {/* Locations */}
-          <div className="space-y-2 mb-3">
-            <div className="flex items-start gap-2 text-sm">
-              <Package className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <p className="font-medium">Pickup</p>
-                <p className="text-gray-600 text-xs">
-                  {activeOrder.pickupLocation.address}
-                </p>
-              </div>
+          <div className="space-y-1.5 mb-3">
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
+              <span className="text-gray-600 truncate text-xs">
+                {activeOrder.pickupLocation.address}
+              </span>
             </div>
-            <div className="flex items-start gap-2 text-sm">
-              <MapPin className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <p className="font-medium">Drop-off</p>
-                <p className="text-gray-600 text-xs">
-                  {activeOrder.dropoffLocation.address}
-                </p>
-              </div>
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+              <span className="text-gray-600 truncate text-xs">
+                {activeOrder.dropoffLocation.address}
+              </span>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex gap-2">
-            <Button className="flex-1" size="lg" onClick={handleAction}>
-              <Navigation className="w-4 h-4 mr-2" />
-              {nextAction.label}
+            <Button className="flex-1 h-10" size="sm">
+              <Navigation className="w-4 h-4 mr-1.5" />
+              {getNextAction()}
             </Button>
             {activeOrder.status === "picked_up" && (
               <Button
-                className="flex-1 bg-green-600 hover:bg-green-700"
-                size="lg"
+                className="flex-1 h-10 bg-green-600 hover:bg-green-700"
+                size="sm"
                 onClick={() => setShowCompletionModal(true)}
               >
                 Complete
@@ -125,7 +109,6 @@ export default function OrderStatusCard() {
         </div>
       </div>
 
-      {/* Delivery Completion Modal */}
       <DeliveryCompletionModal
         isOpen={showCompletionModal}
         onClose={() => setShowCompletionModal(false)}
