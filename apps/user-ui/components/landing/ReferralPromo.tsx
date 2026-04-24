@@ -28,7 +28,7 @@ export default function ReferralPromo() {
             </Button>
           </Link>
           <p className="text-sm text-muted-foreground italic">
-            Use a friend's code during signup for an instant bonus!
+            Use a friend&apos;s code during signup for an instant bonus!
           </p>
         </div>
       </div>

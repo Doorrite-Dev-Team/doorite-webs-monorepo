@@ -1,21 +1,36 @@
 "use client";
 
-import React from "react";
-import { useUser } from "@/hooks/use-user";
+import React, { useEffect, useState } from "react";
 import { Ticket, Copy, UserPlus } from "lucide-react";
 import { cn } from "@repo/ui/lib/utils";
-import { Button } from "@repo/ui/components/button";
 import { toast } from "@repo/ui/components/sonner";
 import Link from "next/link";
 
+type UserData = {
+  referralCode?: string;
+  id?: string;
+  fullName?: string;
+};
+
 export function ReferralCard() {
-  const { user } = useUser();
+  const [user, setUser] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const userData = parsed?.user || parsed;
+        setUser(userData);
+      }
+    } catch {}
+  }, []);
 
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
       toast.success("Referral code copied!");
-    } catch (err) {
+    } catch {
       toast.error("Failed to copy code");
     }
   };
