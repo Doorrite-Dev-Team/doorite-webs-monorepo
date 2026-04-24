@@ -1,5 +1,6 @@
 "use client";
-// import { AppSettingsSection } from "@/components/account/settings";
+import { AppSettingsSection } from "@/components/account/settings";
+import { ReferralSection } from "@/components/account/referral";
 import AccountActionsSection from "@/components/account/account-action";
 // import PaymentSection from "@/components/account/payment";
 import SupportSection from "@/components/account/support";
@@ -15,7 +16,9 @@ const WithUser = () => {
       <div className="w-full overflow-hidden">
         {/*<PaymentSection />*/}
 
-        {/*<AppSettingsSection />*/}
+        <AppSettingsSection />
+
+        <ReferralSection />
 
         <AccountSettingsSection />
 

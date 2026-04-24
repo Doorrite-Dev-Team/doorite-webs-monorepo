@@ -29,7 +29,9 @@ import { cn } from "@repo/ui/lib/utils";
 import DeliveryMap from "@/components/orders/DeliveryMap";
 import DeliveryQrDisplay from "@/components/orders/DeliveryQrDisplay";
 import { PaymentVerificationDialog } from "@/components/orders/PaymentVerificationDialog";
+import { ReceiptDownload } from "@/components/order/ReceiptDownload";
 import RiderInfoCard from "@/components/orders/RiderInfoCard";
+import { ChatDialog } from "@/components/orders/ChatDialog";
 import { api } from "@/actions/api";
 import { apiClient } from "@/libs/api/api-client";
 import { formatTime, getStatusLabel } from "@/libs/helper";
@@ -248,7 +250,7 @@ function DeliverySummaryCard({
   );
 }
 
-function SupportCard() {
+function SupportCard({ onOpenChat }: { onOpenChat: () => void }) {
   return (
     <Card className="border-border bg-card shadow-sm">
       <CardContent className="p-4">
@@ -264,7 +266,11 @@ function SupportCard() {
               Call support
             </Button>
           </a>
-          <Button variant="outline" className="h-12 w-full rounded-2xl gap-2">
+          <Button
+            variant="outline"
+            className="h-12 w-full rounded-2xl gap-2"
+            onClick={onOpenChat}
+          >
             <MessageCircle className="h-4 w-4" />
             Live chat
           </Button>
@@ -352,6 +358,7 @@ export default function OrderTrackingClient({
   const [showVerificationDialog, setShowVerificationDialog] =
     React.useState(false);
   const [showCancelDialog, setShowCancelDialog] = React.useState(false);
+  const [showChat, setShowChat] = React.useState(false);
   const [verificationStatus, setVerificationStatus] = React.useState<
     "verifying" | "success" | "failed" | "error"
   >("verifying");
@@ -435,8 +442,22 @@ export default function OrderTrackingClient({
   };
 
   const cancelOrder = async () => {
-    toast.success("Order cancelled");
-    setShowCancelDialog(false);
+    setIsLoading(true);
+    try {
+      const result = await api.cancelOrder(activeOrder.id);
+      if (!result.success) {
+        toast.error(result.error || "Failed to cancel order");
+        return;
+      }
+      toast.success("Order cancelled successfully");
+      setShowCancelDialog(false);
+      router.push("/order");
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+      setShowCancelDialog(false);
+    }
   };
 
   if (showQrScanner) {
@@ -558,7 +579,13 @@ export default function OrderTrackingClient({
           </CardContent>
         </Card>
 
-        <SupportCard />
+        <SupportCard onOpenChat={() => setShowChat(true)} />
+
+        {isDelivered && (
+          <div className="mt-2">
+            <ReceiptDownload order={activeOrder} />
+          </div>
+        )}
       </div>
 
       {isOutForDelivery && activeOrder.deliveryVerificationCode ? (
@@ -578,6 +605,13 @@ export default function OrderTrackingClient({
         orderId={activeOrder.id}
         onRetry={initializePayment}
         onCloseAction={() => setShowVerificationDialog(false)}
+      />
+
+      <ChatDialog
+        open={showChat}
+        onOpenChange={setShowChat}
+        orderId={activeOrder.id}
+        riderName={activeOrder.riderId ? undefined : "Support"}
       />
 
       {showCancelDialog ? (

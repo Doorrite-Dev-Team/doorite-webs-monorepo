@@ -6,6 +6,7 @@ import Hero from "@/components/landing/Hero";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Impact from "@/components/landing/Impact";
 import Testimonials from "@/components/landing/Testimonials";
+import ReferralPromo from "@/components/landing/ReferralPromo";
 // import Header from "@/components/navigations/main-header";
 
 export default function Home() {
@@ -16,6 +17,7 @@ export default function Home() {
         <Benefits />
         <Impact />
         <HowItWorks />
+        <ReferralPromo />
         <Testimonials />
       </div>
       <Footer />

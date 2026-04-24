@@ -49,11 +49,75 @@ interface ChangePasswordData {
   newPassword: string;
 }
 
-// API Functions
+const updateStoreStatus = async (isActive: boolean) => {
+  const response = await apiClient.put("/vendors/me", {
+    isActive,
+  });
+  return response.data;
+};
+
+export function useUpdateStoreStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateStoreStatus,
+    onMutate: async (isActive) => {
+      // Cancel any outgoing refetches to avoid overwriting our optimistic update
+      await queryClient.cancelQueries({ queryKey: ["vendor-profile"] });
+      await queryClient.cancelQueries({ queryKey: ["dashboard"] });
+
+      // Snapshot the previous values
+      const previousVendorProfile = queryClient.getQueryData(["vendor-profile"]);
+      const previousDashboard = queryClient.getQueryData(["dashboard"]);
+
+      // Optimistically update to the new value
+      if (previousVendorProfile) {
+        queryClient.setQueryData(["vendor-profile"], (old: any) => ({
+          ...old,
+          isActive: isActive,
+        }));
+      }
+
+      if (previousDashboard) {
+        queryClient.setQueryData(["dashboard"], (old: any) => ({
+          ...old,
+          vendor: {
+            ...old.vendor,
+            isActive: isActive,
+          },
+        }));
+      }
+
+      // Return a context object with the snapshotted values
+      return { previousVendorProfile, previousDashboard };
+    },
+    onError: (error, variables, context) => {
+      // Rollback to the previous values if the mutation fails
+      if (context?.previousVendorProfile) {
+        queryClient.setQueryData(["vendor-profile"], context.previousVendorProfile);
+      }
+      if (context?.previousDashboard) {
+        queryClient.setQueryData(["dashboard"], context.previousDashboard);
+      }
+      const message = deriveError(error) || "Failed to update store status";
+      toast.error("Error updating store status", {
+        description: message,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Store status updated successfully");
+    },
+    onSettled: (data, error, variables, context) => {
+      // Refetch to ensure we have the latest server state
+      queryClient.invalidateQueries({ queryKey: ["vendor-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
 const fetchVendorProfile = async (): Promise<VendorProfile> => {
   const response = await apiClient.get("/vendors/me");
 
-  console.log("fetchVendorProfile response:", response);
   if (!response.data?.ok) {
     throw new Error("Failed to fetch vendor profile");
   }
@@ -63,7 +127,6 @@ const fetchVendorProfile = async (): Promise<VendorProfile> => {
 const fetchVendorStats = async (): Promise<VendorStats> => {
   const response = await apiClient.get("/vendors/stats");
 
-  console.log("fetchVendorStats response:", response);
   if (!response.data?.ok) {
     throw new Error("Failed to fetch vendor stats");
   }
@@ -73,7 +136,6 @@ const fetchVendorStats = async (): Promise<VendorStats> => {
 const fetchNotificationSettings = async (): Promise<NotificationSettings> => {
   const response = await apiClient.get("/vendors/notifications/settings");
 
-  console.log("fetchNotificationSettings response:", response);
   if (!response.data?.ok) {
     throw new Error("Failed to fetch notification settings");
   }
@@ -133,11 +195,9 @@ export function useUpdateProfile() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["vendor-profile"] });
       toast.success("Profile updated successfully");
-      console.log(data);
     },
     onError: (error) => {
       const message = deriveError(error) || "Please try again";
-      console.warn(message);
       toast.error("Failed to update profile", {
         description: message,
       });
@@ -155,7 +215,6 @@ export function useChangePassword() {
     },
     onError: (error) => {
       const message = deriveError(error) || "Please try again";
-      console.warn(message);
       toast.error("Failed to change password", {
         description: message,
       });
@@ -185,7 +244,6 @@ export function useUpdateNotificationSettings() {
         queryClient.setQueryData(["notification-settings"], context.previous);
       }
       const message = deriveError(error) || "Please try again";
-      console.warn(message);
       toast.error("Failed to update settings", {
         description: message,
       });

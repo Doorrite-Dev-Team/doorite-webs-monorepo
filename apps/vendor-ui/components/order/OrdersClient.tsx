@@ -1,6 +1,5 @@
 "use client";
 
-// import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -18,28 +17,11 @@ import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import { Tabs, TabsList, TabsTrigger } from "@repo/ui/components/tabs";
 import { useState } from "react";
+import { Search } from "lucide-react";
+import { Input } from "@repo/ui/components/input";
 import api from "@/actions/api";
 
-// interface Order {
-//   id: string;
-//   status: string;
-//   totalAmount: number;
-//   createdAt: string;
-//   customer: {
-//     id: string;
-//     fullName: string;
-//     profileImageUrl?: string;
-//   };
-//   items: Array<{
-//     id: string;
-//     quantity: number;
-//     price: number;
-//     product: {
-//       name: string;
-//       imageUrl?: string;
-//     };
-//   }>;
-// }
+import type { Order } from "@/types/api";
 
 interface StatsData {
   active: number;
@@ -47,16 +29,6 @@ interface StatsData {
   pending: number;
   cancelled: number;
 }
-
-// const fetchOrders = async (
-//   page: number = 1,
-//   limit: number = 10,
-// ): Promise<OrdersResponse> => {
-//   const response = await apiClient.get(
-//     `/vendors/orders?page=${page}&limit=${limit}`,
-//   );
-//   return response.data;
-// };
 
 const calculateStats = (orders: Order[]): StatsData => {
   return {
@@ -73,6 +45,7 @@ export default function OrdersClient() {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["vendor-orders", currentPage],
@@ -80,24 +53,43 @@ export default function OrdersClient() {
     staleTime: 30 * 1000,
   });
 
-  const stats = data.orders
-    ? calculateStats(data.orders ?? [])
+  const stats = data?.orders
+    ? calculateStats(data.orders)
     : { active: 0, completed: 0, pending: 0, cancelled: 0 };
 
   const filterOrders = (orders: Order[]) => {
-    if (activeTab === "all") return orders;
-    if (activeTab === "active")
-      return orders.filter((o) =>
-        ["ACCEPTED", "PREPARING", "OUT_FOR_DELIVERY"].includes(o.status),
+    let filtered = orders;
+
+    // Filter by active tab
+    if (activeTab !== "all") {
+      if (activeTab === "active")
+        filtered = filtered.filter((o) =>
+          ["ACCEPTED", "PREPARING", "OUT_FOR_DELIVERY"].includes(o.status),
+        );
+      if (activeTab === "pending")
+        filtered = filtered.filter((o) => o.status === "PENDING");
+      if (activeTab === "completed")
+        filtered = filtered.filter((o) => o.status === "DELIVERED");
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (order) =>
+          order.customer.fullName.toLowerCase().includes(query) ||
+          order.items.some((item) =>
+            item.product.name.toLowerCase().includes(query),
+          ) ||
+          order.status.toLowerCase().includes(query) ||
+          order.id.toLowerCase().includes(query),
       );
-    if (activeTab === "pending")
-      return orders.filter((o) => o.status === "PENDING");
-    if (activeTab === "completed")
-      return orders.filter((o) => o.status === "DELIVERED");
-    return orders;
+    }
+
+    return filtered;
   };
 
-  const filteredOrders = data.orders ? filterOrders(data.orders ?? []) : [];
+  const filteredOrders = data?.orders ? filterOrders(data.orders) : [];
 
   const getInitial = (name: string) => {
     return name.charAt(0).toUpperCase();
@@ -121,7 +113,7 @@ export default function OrdersClient() {
               Failed to load orders
             </h2>
             <p className="text-gray-600 mb-4">Please try again later</p>
-            <Button onClick={() => window.location.reload()} variant="outline">
+            <Button onClick={() => router.refresh()} variant="outline">
               Retry
             </Button>
           </CardContent>
@@ -135,8 +127,27 @@ export default function OrdersClient() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
-          <p className="text-gray-600 mt-1">Manage and track all your orders</p>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
+              <p className="text-gray-600 mt-1">
+                Manage and track all your orders
+              </p>
+            </div>
+
+            {/* Search Input */}
+            {data?.orders && data.orders.length > 0 && (
+              <div className="relative max-w-sm w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search orders, customers, items..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Stats Cards */}

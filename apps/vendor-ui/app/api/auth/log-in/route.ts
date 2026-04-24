@@ -12,8 +12,6 @@ export async function POST(req: NextRequest) {
     let body;
     try {
       body = await req.json();
-
-      console.log(body);
     } catch {
       return NextResponse.json(
         { ok: false, message: "Invalid JSON" },
@@ -35,8 +33,6 @@ export async function POST(req: NextRequest) {
     });
 
     const data = await response.json();
-
-    // console.log(data);
 
     const nextResponse = NextResponse.json(
       {

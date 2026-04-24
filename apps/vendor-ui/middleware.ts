@@ -7,7 +7,6 @@ const PUBLIC_ROUTES = [
   "/log-in",
   "/sign-up",
   "/continue",
-  "/",
   "/pending-approval",
   "/terms",
   "/privacy",
@@ -22,6 +21,15 @@ export function middleware(request: NextRequest) {
   // 2. Check for token (Middleware uses request.cookies, not next/headers)
   const hasToken = request.cookies.has(COOKIE_NAME.ACCESS);
   const hasRefreshToken = request.cookies.has(COOKIE_NAME.REFRESH);
+
+  // Root path `/` handling
+  if (nextUrl.pathname === "/") {
+    if (hasToken) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    } else {
+      return NextResponse.redirect(new URL("/log-in", request.url));
+    }
+  }
 
   // 3. Redirect logic: Protected Route + No Token -> Login
   if (!isPublicRoute && !hasToken && hasRefreshToken) {

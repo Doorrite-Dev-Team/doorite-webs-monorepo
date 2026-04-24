@@ -22,9 +22,13 @@ import {
   Navigation,
   CheckCircle,
   XCircle,
+  Loader2,
 } from "lucide-react";
-import { useSetAtom } from "jotai";
+import { useState } from "react";
+import { useSetAtom, useAtomValue } from "jotai";
 import { activeOrderAtom } from "@/store/orderAtom";
+import { socketAtom } from "@/store/socketAtom";
+import { apiClient } from "@/libs/api-client";
 import { toast } from "@repo/ui/components/sonner";
 
 interface OrderDetailsModalProps {
@@ -39,16 +43,48 @@ export default function OrderDetailsModal({
   onClose,
 }: OrderDetailsModalProps) {
   const setActiveOrder = useSetAtom(activeOrderAtom);
+  const socket = useAtomValue(socketAtom);
+  const [isActioning, setIsActioning] = useState(false);
 
-  const handleAcceptOrder = () => {
-    setActiveOrder(order);
-    toast.success("Order accepted! Navigate to pickup location");
-    onClose();
+  const handleAcceptOrder = async () => {
+    setIsActioning(true);
+    try {
+      // 1. Tell the backend this rider is claiming the order
+      await apiClient.post(`/orders/${order.id}/claim`);
+
+      // 2. Emit socket event so backend dispatcher marks this rider as assigned
+      socket?.emit("order-accepted", order.id);
+
+      // 3. Update local Jotai state so the map/dashboard reflect the active order
+      setActiveOrder(order);
+
+      toast.success("Order accepted! Navigate to pickup location");
+      onClose();
+
+      toast.success("Order accepted! Navigate to pickup location");
+      onClose();
+    } catch (error) {
+      console.error("Failed to accept order:", error);
+      toast.error("Failed to accept order. Please try again.");
+    } finally {
+      setIsActioning(false);
+    }
   };
 
-  const handleDeclineOrder = () => {
-    toast.info("Order declined");
-    onClose();
+  const handleDeclineOrder = async () => {
+    setIsActioning(true);
+    try {
+      await apiClient.post(`/orders/${order.id}/decline`);
+      toast.info("Order declined");
+      onClose();
+    } catch (error) {
+      // Declining should fail silently — just close the modal
+      console.warn("Decline API call failed (non-critical):", error);
+      toast.info("Order declined");
+      onClose();
+    } finally {
+      setIsActioning(false);
+    }
   };
 
   const isActiveOrder = order.status !== "pending";
@@ -101,7 +137,7 @@ export default function OrderDetailsModal({
               </p>
               <div className="flex items-center gap-2 text-gray-600">
                 <Phone className="w-4 h-4" />
-                <span className="text-sm">+1 (XXX) XXX-XXXX</span>
+                <span className="text-sm">{(order as any).customerPhone || "Phone hidden"}</span>
               </div>
             </div>
           </div>
@@ -198,13 +234,22 @@ export default function OrderDetailsModal({
                 variant="outline"
                 onClick={handleDeclineOrder}
                 className="flex-1"
+                disabled={isActioning}
               >
                 <XCircle className="w-4 h-4 mr-2" />
-                Decline
+                {isActioning ? "..." : "Decline"}
               </Button>
-              <Button onClick={handleAcceptOrder} className="flex-1">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Accept Order
+              <Button
+                onClick={handleAcceptOrder}
+                className="flex-1"
+                disabled={isActioning}
+              >
+                {isActioning ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                )}
+                {isActioning ? "Accepting..." : "Accept Order"}
               </Button>
             </>
           ) : (

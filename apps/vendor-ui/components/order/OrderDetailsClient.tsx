@@ -94,11 +94,10 @@ export default function OrderDetailsClient() {
       toast.success(`Order status updated to ${data.order.status}`);
       setShowCancelDialog(false);
     },
-    onError: (error) => {
-      const message = deriveError(error);
-      toast.error(message || "Failed to update order status");
-      console.log(message);
-    },
+     onError: (error) => {
+       const message = deriveError(error);
+       toast.error(message || "Failed to update order status");
+     },
   });
 
   const handleStatusUpdate = (status: string, note?: string) => {

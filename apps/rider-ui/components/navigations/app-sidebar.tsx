@@ -12,7 +12,7 @@ import {
   DollarSign,
   User,
   LogOut,
-  Menu,
+  HelpCircle,
 } from "lucide-react";
 import { useAtom, useSetAtom } from "jotai";
 import { riderAtom, logOutRiderAtom } from "@/store/riderAtom";
@@ -40,6 +40,7 @@ const navItems = [
   { title: "Map", href: "/map", icon: MapPin },
   { title: "Earnings", href: "/earnings", icon: DollarSign },
   { title: "Account", href: "/account", icon: User },
+  { title: "Help", href: "/help", icon: HelpCircle },
 ];
 
 export function AppSidebar() {

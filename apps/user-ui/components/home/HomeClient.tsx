@@ -12,6 +12,7 @@ import { LiveTrackingSection } from "./sections/LiveTrackingSection";
 import { RecentOrdersSection } from "./sections/RecentOrdersSection";
 import { MoreVendorsGrid } from "./sections/MoreVendorsGrid";
 import { FooterCTA } from "./sections/FooterCTA";
+import { ReferralCard } from "./sections/ReferralCard";
 import { findActiveOrder } from "@/libs/home";
 import { api } from "@/actions/api";
 import LocationConsent from "@/components/explore/LocationConsent";
@@ -233,10 +234,12 @@ export default function HomeClient({
         {/* Active Order Banner */}
         {activeOrder && <ActiveOrderBanner order={activeOrder} />}
 
-        {/* Promo Banner */}
-        <PromoBanner />
+         {/* Promo Banner */}
+         <PromoBanner />
+         <ReferralCard />
+ 
+         {/* Popular Vendors Strip */}
 
-        {/* Popular Vendors Strip */}
         <PopularVendorsSection vendors={stripVendors} />
 
         {/* Live Order Tracker */}

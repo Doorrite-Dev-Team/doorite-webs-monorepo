@@ -48,31 +48,30 @@ const LoginForm = () => {
   async function onSubmit(values: LoginValues) {
     setError(null);
     try {
-      const res = await axios.post(
-        "/api/auth/log-in",
-        {
-          identifier: values.email,
-          password: values.password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        },
-      );
+       const res = await axios.post(
+         "/api/auth/log-in",
+         {
+           identifier: values.email,
+           password: values.password,
+         },
+         {
+           headers: {
+             "Content-Type": "application/json",
+           },
+           withCredentials: true,
+         },
+       );
 
-      console.log(res.data);
-      if (!res || !res.data.ok) {
-        const message = res.data?.message || "Login failed. Please try again.";
-        showToast({
-          message: "Login Failed",
-          subtext: message,
-          type: "error",
-        });
-        setError(message);
-        return;
-      }
+       if (!res || !res.data.ok) {
+         const message = res.data?.message || "Login failed. Please try again.";
+         showToast({
+           message: "Login Failed",
+           subtext: message,
+           type: "error",
+         });
+         setError(message);
+         return;
+       }
 
       if (!res.data.data.vendor || !res.data.data.vendor.id) {
         const message = res.data?.message || "Login failed. Please try again.";

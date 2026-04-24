@@ -98,3 +98,32 @@ export const authService = {
     return response.data;
   },
 };
+
+// ============================================================================
+// CHAT API
+// ============================================================================
+
+export interface ChatMessage {
+  id: string;
+  content: string;
+  senderType: "customer" | "rider" | "vendor";
+  senderId: string;
+  createdAt: string;
+}
+
+interface MessagesResponse {
+  messages?: ChatMessage[];
+}
+
+export const chatApi = {
+  async fetchMessages(orderId: string, limit = 50): Promise<ChatMessage[]> {
+    try {
+      const res = (await apiClient.get(
+        `/orders/${orderId}/messages?limit=${limit}`,
+      )) as MessagesResponse;
+      return res.messages || [];
+    } catch {
+      return [];
+    }
+  },
+};

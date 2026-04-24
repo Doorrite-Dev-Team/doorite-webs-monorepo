@@ -282,19 +282,14 @@ export default function MultistepSignupForm() {
       toast.success("Verification code sent to your email!");
       setCurrentStep(3);
     } catch (err) {
-      // console.error("Error in vendor creation/OTP:", err);
-      // const message =
-      //   err?.response?.data?.message || err?.message || "Unknown error";
-      // toast.error("Failed to proceed", {
-      //   description: message,
-      // });
-      let message;
+      let message: string;
       if (isAxiosError(err)) {
         message = err.response?.data.error || err.message || "Unknown error";
       } else if (err instanceof Error) {
         message = err.message;
+      } else {
+        message = String(err);
       }
-      message = message || err;
       console.error("Account creation failed", err);
       toast.error("Account creation failed", {
         description: message,
@@ -327,14 +322,14 @@ export default function MultistepSignupForm() {
       toast.success("Verification code resent!");
       return true;
     } catch (err) {
-      let message;
-
+      let message: string;
       if (isAxiosError(err)) {
         message = err.response?.data?.message || err.message;
       } else if (err instanceof Error) {
         message = err.message;
+      } else {
+        message = String(err);
       }
-      message = message || err;
       console.error("Error resending OTP:", err);
       toast.error("Unable to resend OTP", {
         description: message,

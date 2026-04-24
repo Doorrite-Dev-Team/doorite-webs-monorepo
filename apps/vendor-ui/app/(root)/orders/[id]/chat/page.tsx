@@ -1,10 +1,18 @@
-import OrderChatPage from "@/components/order/OrderChatPage";
-import { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Order Chat",
-};
+"use client";
+
+import OrderChatPage from "@/components/order/OrderChatPage";
+import { useParams } from "next/navigation";
+import { useEffect } from "react";
 
 export default function OrderPage() {
-  return <OrderChatPage />;
+  const { id } = useParams();
+  const orderId = id as string;
+
+  useEffect(() => {
+    document.title = "Order Chat";
+  }, []);
+
+  return <OrderChatPage orderId={orderId} />;
 }

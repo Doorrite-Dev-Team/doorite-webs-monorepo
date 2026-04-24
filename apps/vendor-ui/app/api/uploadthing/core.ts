@@ -9,8 +9,6 @@ export const ourFileRouter: FileRouter = {
       return { uploadedBy: "signup-form" };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      console.log("file url", file.ufsUrl);
-
       // Modern UploadThing apps serve files from:
       // https://<APP_ID>.ufs.sh/f/<FILE_KEY>
 

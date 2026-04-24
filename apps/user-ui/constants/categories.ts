@@ -35,14 +35,6 @@ export const HOME_CATEGORIES: HomeCategory[] = [
     description: "Fresh & Daily Essentials",
     href: "/explore",
   },
-  {
-    id: "quick-delivery",
-    name: "Quick Delivery",
-    icon: Zap,
-    color: "bg-orange-50 text-orange-600 border-orange-100",
-    description: "15 min delivery",
-    href: "/delivery",
-  },
 ] as const;
 
 /**

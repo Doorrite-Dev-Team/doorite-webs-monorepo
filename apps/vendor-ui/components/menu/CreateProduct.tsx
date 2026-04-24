@@ -83,6 +83,23 @@ type Props = {
   onOpenChangeAction: (open: boolean) => void;
   endpoint?: string;
   onSuccessAction?: () => void;
+  product?: {
+    id: string;
+    name: string;
+    description?: string;
+    basePrice: number;
+    sku?: string;
+    isAvailable: boolean;
+    imageUrl?: string | null;
+    attributes?: Array<{ key: string; value: string }>;
+    variants?: Array<{
+      name: string;
+      price: number;
+      stock?: number;
+      isAvailable: boolean;
+    }>;
+    modifierGroups?: string[];
+  };
 };
 
 export default function CreateProductSheet({
@@ -90,6 +107,7 @@ export default function CreateProductSheet({
   onOpenChangeAction,
   endpoint = "/vendors/products",
   onSuccessAction,
+  product,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const imageRef = useRef<ImageUploadRef>(null); // ✅ Initialize Ref
@@ -108,6 +126,28 @@ export default function CreateProductSheet({
       modifierGroups: [],
     },
   });
+
+  React.useEffect(() => {
+    if (open && product) {
+      form.reset({
+        ...product,
+        // Ensure basePrice is a number (sometimes API returns string)
+        basePrice: Number(product.basePrice),
+      });
+    } else if (!open) {
+      form.reset({
+        name: "",
+        description: "",
+        basePrice: 0,
+        sku: "",
+        isAvailable: true,
+        attributes: [],
+        variants: [],
+        imageUrl: null,
+        modifierGroups: [],
+      });
+    }
+  }, [open, product, form]);
 
   const {
     fields: attrFields,
@@ -151,18 +191,29 @@ export default function CreateProductSheet({
         }),
       };
 
-      const res = await apiClient.post(endpoint, payload);
+      const isEditing = !!product;
+      const requestUrl = isEditing ? `${endpoint}/${product?.id}` : endpoint;
+      const method = isEditing ? "put" : "post";
 
-      console.log(res.data.product);
+      const res = await apiClient[method](requestUrl, payload);
 
-      toast.success(`Product "${res.data.product.name}" created successfully`, {
-        description: "Your product is now available in your menu",
-      });
+      const updatedProduct = res.data.product;
+
+      toast.success(
+        `Product "${updatedProduct.name}" ${isEditing ? "updated" : "created"} successfully`,
+        {
+          description: isEditing
+            ? "Your product details have been saved"
+            : "Your product is now available in your menu",
+        },
+      );
 
       close();
       onSuccessAction?.();
     } catch (err) {
-      const errorMessage = deriveError(err) || "Failed to create product";
+      const errorMessage =
+        deriveError(err) ||
+        `Failed to ${product ? "update" : "create"} product`;
 
       // ✅ ACID: Rollback image if API request fails
       if (data.imageUrl) {
@@ -170,11 +221,11 @@ export default function CreateProductSheet({
         await imageRef.current?.rollback();
       }
 
-      toast.error("Failed to create product", {
+      toast.error(`Failed to ${product ? "update" : "create"} product`, {
         description: errorMessage,
       });
 
-      console.error("Product creation error:", err);
+      console.error(`Product ${product ? "update" : "creation"} error:`, err);
     } finally {
       setLoading(false);
     }
@@ -189,10 +240,12 @@ export default function CreateProductSheet({
         <SheetHeader className="px-6 pt-6 pb-4">
           <SheetTitle className="flex items-center gap-2">
             <Package className="w-5 h-5 text-green-600" />
-            Create New Product
+            {product ? "Edit Product" : "Create New Product"}
           </SheetTitle>
           <SheetDescription>
-            Add product details, variants, and attributes to your menu
+            {product
+              ? "Update product details, variants, and attributes"
+              : "Add product details, variants, and attributes to your menu"}
           </SheetDescription>
         </SheetHeader>
 
@@ -600,8 +653,10 @@ export default function CreateProductSheet({
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Creating...
+                      {product ? "Updating..." : "Creating..."}
                     </>
+                  ) : product ? (
+                    "Update Product"
                   ) : (
                     "Create Product"
                   )}

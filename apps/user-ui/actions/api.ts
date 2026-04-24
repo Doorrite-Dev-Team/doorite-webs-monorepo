@@ -513,6 +513,39 @@ export const api = {
       return { success: false, error: message };
     }
   },
+  reorderOrder: async (orderId: string) => {
+    try {
+      const {
+        data,
+      }: SuccessResponse<{
+        order: Order;
+        items: Array<{
+          id: string;
+          name: string;
+          price: number;
+          quantity: number;
+          variantId?: string;
+          variantName?: string;
+          modifiers?: Array<{
+            modifierGroupId: string;
+            modifierOptionId: string;
+            name: string;
+            price: number;
+          }>;
+          productId: string;
+          vendorId: string;
+          vendorName: string;
+          vendorDeliveryFee: number;
+          imageUrl?: string;
+        }>;
+      }> = await apiClient.post(`/orders/${orderId}/reorder`);
+      return { success: true, order: data.order, items: data.order.items };
+    } catch (error) {
+      const message = (error as Error).message || "Failed to reorder";
+      console.error("Failed to reorder:", message);
+      return { success: false, error: message };
+    }
+  },
 
   // ---------------- RIDERS ----------------
   fetchRider: async (riderId: string) => {
@@ -683,6 +716,78 @@ export const api = {
       };
     } catch (error) {
       console.error("Failed to fetch product reviews:", error);
+      return null;
+    }
+  },
+
+  // ---------------- REFERRAL ----------------
+  fetchMyReferralCode: async () => {
+    try {
+      const {
+        data,
+      }: SuccessResponse<{
+        referralCode: string;
+        freeDeliveryOrders: number;
+      }> = await apiClient.get("/users/referral/my-code");
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch referral code:", error);
+      return null;
+    }
+  },
+
+  applyReferralCode: async (code: string) => {
+    try {
+      const {
+        data,
+      }: SuccessResponse<{
+        message: string;
+        freeDeliveryOrders: number;
+      }> = await apiClient.post("/users/referral/apply", { code });
+      return { success: true, ...data };
+    } catch (error) {
+      const message =
+        (error as Error).message || "Failed to apply referral code";
+      console.error("Failed to apply referral code:", message);
+      return { success: false, error: message };
+    }
+  },
+
+  fetchReferralStats: async () => {
+    try {
+      const {
+        data,
+      }: SuccessResponse<{
+        referralCode: string;
+        freeDeliveryOrders: number;
+        referralsMade: number;
+        referralsReceived: number;
+        totalEarned: number;
+        referrals: Array<{
+          id: string;
+          refereePhone: string;
+          status: string;
+          createdAt: string;
+        }>;
+      }> = await apiClient.get("/users/referral/stats");
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch referral stats:", error);
+      return null;
+    }
+  },
+
+  checkFreeDelivery: async () => {
+    try {
+      const {
+        data,
+      }: SuccessResponse<{
+        eligibleForFreeDelivery: boolean;
+        remainingFreeDeliveries: number;
+      }> = await apiClient.get("/users/referral/free-delivery");
+      return data;
+    } catch (error) {
+      console.error("Failed to check free delivery:", error);
       return null;
     }
   },

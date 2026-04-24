@@ -10,10 +10,8 @@ import {
 } from "@repo/ui/components/input-otp";
 import { ArrowLeft, Mail, MessageSquare, RotateCcw } from "lucide-react";
 import Image from "next/image";
-import { Dispatch, SetStateAction } from "react";
 import { useOtpLogic } from "@/hooks/use-verify-otp";
 import { OTP_LENGTH } from "@/libs/utils/otp-helper";
-import { Page } from "@/app/(auth)/forgot-password/components/form";
 
 interface VerifyOTPProps {
     email?: string;
@@ -29,6 +27,7 @@ interface VerifyOTPProps {
     // SignUpForm passes `setShowOtp` which is `Dispatch<SetStateAction<boolean>>`.
     // `useOtpLogic` expects `Dispatch<SetStateAction<Page>>`.
     // We might need to make `setToSignUp` generic or looser.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setToSignUp: any;
 }
 

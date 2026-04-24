@@ -1,6 +1,6 @@
 "use client";
 
-import { Back, Delivery } from "@/public/assets/icons";
+import { ArrowLeft, Package, MapPin } from "lucide-react";
 import {
   Dialog,
   DialogPanel,
@@ -121,7 +121,7 @@ export default function UpcomingDeliveriesModal({
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6">
                       <button onClick={onClose}>
-                        <Back className="w-6 h-6 text-gray-700" />
+                        <ArrowLeft className="w-6 h-6 text-gray-700" />
                       </button>
                       <h2 className="text-lg font-semibold text-center flex-1">
                         My Deliveries
@@ -144,7 +144,7 @@ export default function UpcomingDeliveriesModal({
                         >
                           <div className="flex items-start space-x-3">
                             <div className="p-2 bg-green-100 rounded-lg">
-                              <Delivery className="w-6 h-6 text-green-700" />
+                              <MapPin className="w-6 h-6 text-green-700" />
                             </div>
                             <div>
                               <p className="font-medium">Delivery #{d.id}</p>

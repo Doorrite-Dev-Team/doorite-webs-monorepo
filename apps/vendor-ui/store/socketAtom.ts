@@ -31,7 +31,13 @@ export const isConnectedAtom = atom(false);
 export const initSocketAtom = atom(null, (get, set, token: string) => {
   if (get(socketAtom)) return;
 
-  const socket: SocketInstance = io(process.env.NEXT_PUBLIC_WS_URI!, {
+  const wsUri = process.env.NEXT_PUBLIC_WS_URI;
+  if (!wsUri) {
+    console.error("NEXT_PUBLIC_WS_URI is not set. Socket connection skipped.");
+    return;
+  }
+
+  const socket: SocketInstance = io(wsUri, {
     transports: ["websocket"],
     auth: { token },
   });
@@ -39,13 +45,10 @@ export const initSocketAtom = atom(null, (get, set, token: string) => {
   // --- Connection Events ---
   socket.on("connect", () => {
     set(isConnectedAtom, true);
-    console.log("🟢 Connected to DoorRite Socket");
   });
 
   socket.on("connect_error", (err) => {
     toast("Socket Connection Error", { description: err.message });
-
-    console.log(err);
   });
 
   // --- URGENT: New Order (Dialog + Loop Sound) ---
