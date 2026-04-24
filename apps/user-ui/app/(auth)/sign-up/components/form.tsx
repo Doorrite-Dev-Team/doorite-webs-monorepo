@@ -4,7 +4,7 @@ import VerifyOTP from "@/components/ui/verify-otp";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { toast } from "@repo/ui/components/sonner";
-import { User, Mail, EyeOff, Eye, Phone } from "lucide-react";
+import { User, Mail, EyeOff, Eye, Phone, Ticket } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -17,6 +17,7 @@ type FormData = {
   email: string;
   password: string;
   phoneNumber: string;
+  referrerCode?: string;
 };
 
 const SignUpForm = () => {
@@ -192,11 +193,20 @@ const SignUpForm = () => {
           })}
           type="tel"
           error={errors.phoneNumber?.message}
-          placeholder="09011122233"
-        />
+           placeholder="09011122233"
+         />
 
-        {/* Submit */}
-        <Button
+         {/* Referrer Code */}
+         <Input
+           label="Referrer Code (Optional)"
+           leftIcon={<Ticket className="w-4 h-4" />}
+           {...register("referrerCode")}
+           placeholder="DR-123456"
+         />
+
+         {/* Submit */}
+         <Button
+
           type="submit"
           size="lg"
           className="w-full"
