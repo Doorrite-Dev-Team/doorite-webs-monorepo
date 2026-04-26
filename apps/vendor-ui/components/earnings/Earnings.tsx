@@ -107,6 +107,7 @@ export default function Earnings() {
 
   const { summary, wallet, chartData, recentTransactions, pendingPayout } =
     data;
+  const safeWallet = wallet ?? { balance: 0, totalEarned: 0, totalWithdrawn: 0 };
   const isPositiveChange = summary.percentageChange >= 0;
 
   return (
@@ -139,7 +140,7 @@ export default function Earnings() {
           </div>
 
           {/* Withdraw Button */}
-          {data?.wallet?.balance > 2000 && (
+          {(safeWallet.balance) > 2000 && (
             <Button
               onClick={() => setShowWithdrawSheet(true)}
               className="bg-green-600 hover:bg-green-700"
@@ -189,12 +190,12 @@ export default function Earnings() {
               Available Balance
             </CardDescription>
             <CardTitle className="text-3xl font-bold">
-              ₦{wallet.balance.toLocaleString()}
+              ₦{safeWallet.balance.toLocaleString()}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm text-gray-600">
-              Total earned: ₦{wallet.totalEarned.toLocaleString()}
+              Total earned: ₦{safeWallet.totalEarned.toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -349,7 +350,7 @@ export default function Earnings() {
       <WithdrawSheet
         open={showWithdrawSheet}
         onOpenChange={setShowWithdrawSheet}
-        balance={data?.wallet?.balance || 0}
+        balance={safeWallet.balance}
       />
     </div>
   );

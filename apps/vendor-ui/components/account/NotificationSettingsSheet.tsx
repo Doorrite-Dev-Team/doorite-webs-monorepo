@@ -22,6 +22,7 @@ import {
   FormLabel,
 } from "@repo/ui/components/form";
 import { Separator } from "@repo/ui/components/separator";
+import { ScrollArea } from "@repo/ui/components/scroll-area";
 import { NotificationSettings, useUpdateNotificationSettings } from "./hooks";
 
 const NotificationSettingsSchema = z.object({
@@ -76,8 +77,8 @@ export default function NotificationSettingsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md">
-        <SheetHeader>
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
+        <SheetHeader className="px-6 pt-6 pb-4">
           <SheetTitle>Notification Settings</SheetTitle>
           <SheetDescription>
             Choose how you want to receive notifications about orders and
@@ -86,7 +87,8 @@ export default function NotificationSettingsSheet({
         </SheetHeader>
 
         <Form {...form}>
-          <div className="space-y-6 mt-6">
+          <ScrollArea className="flex-1 px-6">
+            <div className="space-y-6 pb-6">
             {/* Order Notifications */}
             <FormField
               control={form.control}
@@ -214,7 +216,8 @@ export default function NotificationSettingsSheet({
                 order alerts and faster response times.
               </p>
             </div>
-          </div>
+            </div>
+          </ScrollArea>
         </Form>
       </SheetContent>
     </Sheet>

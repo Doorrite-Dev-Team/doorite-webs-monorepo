@@ -26,6 +26,7 @@ import {
   SheetFooter,
 } from "@repo/ui/components/sheet";
 import { Loader2, Wallet, CheckCircle2, CreditCard } from "lucide-react";
+import { ScrollArea } from "@repo/ui/components/scroll-area";
 import { deriveError } from "@/libs/utils/errorHandler";
 
 const WithdrawSchema = z.object({
@@ -126,7 +127,8 @@ export default function WithdrawSheet({ open, onOpenChange, balance }: Props) {
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col flex-1 overflow-hidden"
           >
-            <div className="px-6 py-4 space-y-6">
+            <ScrollArea className="flex-1 px-6">
+              <div className="py-4 space-y-6">
               {/* Step Indicator */}
               <div className="flex items-center justify-center gap-2 mb-8">
                 {[1, 2, 3].map((s) => (
@@ -271,7 +273,8 @@ export default function WithdrawSheet({ open, onOpenChange, balance }: Props) {
                   </div>
                 </div>
               )}
-            </div>
+              </div>
+            </ScrollArea>
 
             <SheetFooter className="px-6 py-4 border-t bg-gray-50/50">
               <div className="flex gap-3 w-full">
