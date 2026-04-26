@@ -15,6 +15,7 @@ import {
 } from "@repo/ui/components/sheet";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
+import { ScrollArea } from "@repo/ui/components/scroll-area";
 import {
   Form,
   FormControl,
@@ -86,8 +87,8 @@ export default function ChangePasswordSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md">
-        <SheetHeader>
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
+        <SheetHeader className="px-6 pt-6 pb-4">
           <SheetTitle>Change Password</SheetTitle>
           <SheetDescription>
             Update your password to keep your account secure
@@ -97,8 +98,10 @@ export default function ChangePasswordSheet({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 mt-6"
+            className="flex flex-col flex-1 overflow-hidden"
           >
+            <ScrollArea className="flex-1 px-6">
+              <div className="space-y-6 pb-6">
             {/* Current Password */}
             <FormField
               control={form.control}
@@ -202,7 +205,10 @@ export default function ChangePasswordSheet({
               )}
             />
 
-            <SheetFooter>
+              </div>
+            </ScrollArea>
+
+            <SheetFooter className="px-6 py-4 border-t bg-gray-50/50">
               <div className="flex gap-3 w-full">
                 <Button
                   type="button"

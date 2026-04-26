@@ -122,7 +122,7 @@ export interface EarningsData {
     percentageChange: number;
     period: Period;
   };
-  wallet: WalletData;
+  wallet: WalletData | null;
   chartData: ChartDataPoint[];
   recentTransactions: Transaction[];
   pendingPayout: number;

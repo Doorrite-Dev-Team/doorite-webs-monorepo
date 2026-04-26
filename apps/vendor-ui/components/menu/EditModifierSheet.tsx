@@ -11,6 +11,7 @@ import {
 } from "@repo/ui/components/sheet";
 import { Switch } from "@repo/ui/components/switch";
 import { toast } from "@repo/ui/components/sonner";
+import { ScrollArea } from "@repo/ui/components/scroll-area";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -173,12 +174,14 @@ export default function EditModifierSheet({
 
   return (
     <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
-        <SheetHeader>
+      <SheetContent className="w-full sm:max-w-xl p-0 flex flex-col">
+        <SheetHeader className="px-6 pt-6 pb-4">
           <SheetTitle>Edit Modifier Group</SheetTitle>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <ScrollArea className="flex-1 px-6">
+            <div className="space-y-6 pb-6">
           {/* Basic Information */}
           <div className="space-y-4">
             <div>
@@ -313,8 +316,11 @@ export default function EditModifierSheet({
             )}
           </div>
 
+            </div>
+          </ScrollArea>
+
           {/* Actions */}
-          <div className="flex items-center gap-3 pt-4 border-t">
+          <div className="flex items-center gap-3 px-6 py-4 border-t bg-gray-50/50">
             <Button
               type="button"
               variant="outline"
