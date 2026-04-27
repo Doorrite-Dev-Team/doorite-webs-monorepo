@@ -179,145 +179,151 @@ export default function EditModifierSheet({
           <SheetTitle>Edit Modifier Group</SheetTitle>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <ScrollArea className="flex-1 px-6">
-            <div className="space-y-6 pb-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name">Group Name *</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Protein Options, Spice Level"
-                className="mt-1"
-              />
-            </div>
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col flex-1 overflow-hidden"
+        >
+          <div className="flex-1">
+            <ScrollArea className="h-[calc(100%-8rem)] px-6">
+              {/*<div className="space-y-6 pb-6">*/}
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Group Name *</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g., Protein Options, Spice Level"
+                    className="mt-1"
+                  />
+                </div>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Required Selection</Label>
-                <p className="text-sm text-gray-500">
-                  Customers must select at least one option
-                </p>
-              </div>
-              <Switch checked={isRequired} onCheckedChange={setIsRequired} />
-            </div>
-          </div>
-
-          {/* Selection Limits */}
-          <div className="space-y-4">
-            <Label>Selection Limits</Label>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="minSelect">Minimum</Label>
-                <Input
-                  id="minSelect"
-                  type="number"
-                  min="0"
-                  value={minSelect}
-                  onChange={(e) => setMinSelect(Number(e.target.value))}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="maxSelect">Maximum</Label>
-                <Input
-                  id="maxSelect"
-                  type="number"
-                  min="1"
-                  value={maxSelect}
-                  onChange={(e) => setMaxSelect(Number(e.target.value))}
-                  className="mt-1"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Options */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Options</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addNewOption}
-                className="flex items-center gap-1"
-              >
-                <Plus className="w-4 h-4" />
-                Add Option
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              {options.map((option, index) => (
-                <div key={option.id} className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <Input
-                      value={option.name}
-                      onChange={(e) =>
-                        updateOption(option.id, "name", e.target.value)
-                      }
-                      placeholder={
-                        option.isNew
-                          ? `New Option ${index + 1}`
-                          : `Option ${index + 1}`
-                      }
-                    />
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Required Selection</Label>
+                    <p className="text-sm text-gray-500">
+                      Customers must select at least one option
+                    </p>
                   </div>
-                  <div className="w-24">
+                  <Switch
+                    checked={isRequired}
+                    onCheckedChange={setIsRequired}
+                  />
+                </div>
+              </div>
+
+              {/* Selection Limits */}
+              <div className="space-y-4">
+                <Label>Selection Limits</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="minSelect">Minimum</Label>
                     <Input
+                      id="minSelect"
                       type="number"
-                      value={option.priceAdjustment}
-                      onChange={(e) =>
-                        updateOption(
-                          option.id,
-                          "priceAdjustment",
-                          e.target.value,
-                        )
-                      }
-                      placeholder="0"
                       min="0"
+                      value={minSelect}
+                      onChange={(e) => setMinSelect(Number(e.target.value))}
+                      className="mt-1"
                     />
                   </div>
+                  <div>
+                    <Label htmlFor="maxSelect">Maximum</Label>
+                    <Input
+                      id="maxSelect"
+                      type="number"
+                      min="1"
+                      value={maxSelect}
+                      onChange={(e) => setMaxSelect(Number(e.target.value))}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Options */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Options</Label>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => removeOption(option.id, option.isNew)}
-                    className="h-10 w-10 p-0"
+                    onClick={addNewOption}
+                    className="flex items-center gap-1"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Plus className="w-4 h-4" />
+                    Add Option
                   </Button>
                 </div>
-              ))}
-            </div>
 
-            {/* Save New Options Button */}
-            {options.some((opt) => opt.isNew && opt.name.trim()) && (
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={saveNewOptions}
-                className="w-full"
-                disabled={addOptionMutation.isPending}
-              >
-                {addOptionMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving New Options...
-                  </>
-                ) : (
-                  "Save New Options"
+                <div className="space-y-3">
+                  {options.map((option, index) => (
+                    <div key={option.id} className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <Input
+                          value={option.name}
+                          onChange={(e) =>
+                            updateOption(option.id, "name", e.target.value)
+                          }
+                          placeholder={
+                            option.isNew
+                              ? `New Option ${index + 1}`
+                              : `Option ${index + 1}`
+                          }
+                        />
+                      </div>
+                      <div className="w-24">
+                        <Input
+                          type="number"
+                          value={option.priceAdjustment}
+                          onChange={(e) =>
+                            updateOption(
+                              option.id,
+                              "priceAdjustment",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="0"
+                          min="0"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeOption(option.id, option.isNew)}
+                        className="h-10 w-10 p-0"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Save New Options Button */}
+                {options.some((opt) => opt.isNew && opt.name.trim()) && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={saveNewOptions}
+                    className="w-full"
+                    disabled={addOptionMutation.isPending}
+                  >
+                    {addOptionMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving New Options...
+                      </>
+                    ) : (
+                      "Save New Options"
+                    )}
+                  </Button>
                 )}
-              </Button>
-            )}
+              </div>
+            </ScrollArea>
           </div>
-
-            </div>
-          </ScrollArea>
 
           {/* Actions */}
           <div className="flex items-center gap-3 px-6 py-4 border-t bg-gray-50/50">

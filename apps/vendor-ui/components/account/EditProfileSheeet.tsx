@@ -138,7 +138,7 @@ export default function EditProfileSheet({
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col flex-1 overflow-hidden"
           >
-            <ScrollArea className="flex-1 px-6">
+            <ScrollArea className="h-[calc(100%-8rem)] px-6">
               <div className="space-y-6 pb-6">
                 <FormField
                   control={form.control}

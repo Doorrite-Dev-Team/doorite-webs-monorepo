@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@repo/ui/components/sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/libs/api/client";
 import { deriveError } from "@/libs/utils/errorHandler";
 
@@ -67,7 +67,9 @@ export function useUpdateStoreStatus() {
       await queryClient.cancelQueries({ queryKey: ["dashboard"] });
 
       // Snapshot the previous values
-      const previousVendorProfile = queryClient.getQueryData(["vendor-profile"]);
+      const previousVendorProfile = queryClient.getQueryData([
+        "vendor-profile",
+      ]);
       const previousDashboard = queryClient.getQueryData(["dashboard"]);
 
       // Optimistically update to the new value
@@ -94,7 +96,10 @@ export function useUpdateStoreStatus() {
     onError: (error, variables, context) => {
       // Rollback to the previous values if the mutation fails
       if (context?.previousVendorProfile) {
-        queryClient.setQueryData(["vendor-profile"], context.previousVendorProfile);
+        queryClient.setQueryData(
+          ["vendor-profile"],
+          context.previousVendorProfile,
+        );
       }
       if (context?.previousDashboard) {
         queryClient.setQueryData(["dashboard"], context.previousDashboard);
