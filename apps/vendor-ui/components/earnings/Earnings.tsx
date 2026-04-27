@@ -140,15 +140,14 @@ export default function Earnings() {
           </div>
 
           {/* Withdraw Button */}
-          {(safeWallet.balance) > 2000 && (
-            <Button
-              onClick={() => setShowWithdrawSheet(true)}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <Wallet className="w-4 h-4 mr-2" />
-              Withdraw
-            </Button>
-          )}
+          <Button
+            onClick={() => setShowWithdrawSheet(true)}
+            className="bg-green-600 hover:bg-green-700"
+            disabled={safeWallet.balance < 2000}
+          >
+            <Wallet className="w-4 h-4 mr-2" />
+            Withdraw
+          </Button>
         </div>
       </div>
 
@@ -351,6 +350,7 @@ export default function Earnings() {
         open={showWithdrawSheet}
         onOpenChange={setShowWithdrawSheet}
         balance={safeWallet.balance}
+        disabled={safeWallet.balance < 2000}
       />
     </div>
   );

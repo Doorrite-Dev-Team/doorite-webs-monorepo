@@ -45,9 +45,10 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   balance: number;
+  disabled?: boolean;
 };
 
-export default function WithdrawSheet({ open, onOpenChange, balance }: Props) {
+export default function WithdrawSheet({ open, onOpenChange, balance, disabled = false }: Props) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -127,154 +128,161 @@ export default function WithdrawSheet({ open, onOpenChange, balance }: Props) {
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col flex-1 overflow-hidden"
           >
-            <ScrollArea className="flex-1 px-6">
-              <div className="py-4 space-y-6">
-              {/* Step Indicator */}
-              <div className="flex items-center justify-center gap-2 mb-8">
-                {[1, 2, 3].map((s) => (
-                  <div
-                    key={s}
-                    className={`h-2 w-8 rounded-full transition-colors ${
-                      step >= s ? "bg-green-600" : "bg-gray-200"
-                    }`}
-                  />
-                ))}
-              </div>
+            <div className="flex-1">
+              <ScrollArea className="h-[calc(100%-8rem)] px-6">
+                <div className="py-4 space-y-6">
+                  {/* Step Indicator */}
+                  <div className="flex items-center justify-center gap-2 mb-8">
+                    {[1, 2, 3].map((s) => (
+                      <div
+                        key={s}
+                        className={`h-2 w-8 rounded-full transition-colors ${
+                          step >= s ? "bg-green-600" : "bg-gray-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
 
-              {step === 1 && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                  <h3 className="font-semibold text-sm text-gray-900 flex items-center gap-2">
-                    <CreditCard className="w-4 h-4" /> Bank Details
-                  </h3>
-                  <FormField
-                    control={form.control}
-                    name="bankName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Bank Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. First Bank" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="accountNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Account Number</FormLabel>
-                        <FormControl>
-                          <Input placeholder="10 digits" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="accountName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Account Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Full account name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
+                  {step === 1 && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <h3 className="font-semibold text-sm text-gray-900 flex items-center gap-2">
+                        <CreditCard className="w-4 h-4" /> Bank Details
+                      </h3>
+                      <FormField
+                        control={form.control}
+                        name="bankName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Bank Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. First Bank" {...field} disabled={disabled} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="accountNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Account Number</FormLabel>
+                            <FormControl>
+                              <Input placeholder="10 digits" {...field} disabled={disabled} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="accountName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Account Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Full account name"
+                                {...field}
+                                disabled={disabled}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
 
-              {step === 2 && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                  <h3 className="font-semibold text-sm text-gray-900">
-                    Withdrawal Amount
-                  </h3>
-                  <div className="p-4 bg-green-50 rounded-lg border border-green-100 mb-4">
-                    <p className="text-xs text-green-600 font-medium">
-                      Available Balance
-                    </p>
-                    <p className="text-2xl font-bold text-green-700">
-                      ₦{balance.toLocaleString()}
-                    </p>
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Amount to Withdraw (₦)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="2000"
-                            {...field}
-                            onChange={(e) => {
-                              const value = parseFloat(e.target.value) || 0;
-                              field.onChange(value);
-                            }}
-                            min={0}
-                            max={balance}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Minimum withdrawal is ₦2,000. Maximum: ₦
-                          {balance.toLocaleString()}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
+                  {step === 2 && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <h3 className="font-semibold text-sm text-gray-900">
+                        Withdrawal Amount
+                      </h3>
+                      <div className="p-4 bg-green-50 rounded-lg border border-green-100 mb-4">
+                        <p className="text-xs text-green-600 font-medium">
+                          Available Balance
+                        </p>
+                        <p className="text-2xl font-bold text-green-700">
+                          ₦{balance.toLocaleString()}
+                        </p>
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="amount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Amount to Withdraw (₦)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                placeholder="2000"
+                                {...field}
+                                onChange={(e) => {
+                                  const value = parseFloat(e.target.value) || 0;
+                                  field.onChange(value);
+                                }}
+                                min={0}
+                                max={balance}
+                                disabled={disabled}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Minimum withdrawal is ₦2,000. Maximum: ₦
+                              {balance.toLocaleString()}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
 
-              {step === 3 && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300 text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="w-8 h-8 text-green-600" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-lg">
-                      Confirm Withdrawal
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      Please review your details before submitting
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg border text-left space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Bank:</span>
-                      <span className="font-medium">
-                        {form.getValues("bankName")}
-                      </span>
+                  {step === 3 && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300 text-center">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                        <CheckCircle2 className="w-8 h-8 text-green-600" />
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-lg">
+                          Confirm Withdrawal
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          Please review your details before submitting
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg border text-left space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Bank:</span>
+                          <span className="font-medium">
+                            {form.getValues("bankName")}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Account:</span>
+                          <span className="font-medium">
+                            {form.getValues("accountNumber")}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Name:</span>
+                          <span className="font-medium">
+                            {form.getValues("accountName")}
+                          </span>
+                        </div>
+                        <div className="h-px bg-gray-200 my-2" />
+                        <div className="flex justify-between text-base font-bold">
+                          <span className="text-gray-900">Amount:</span>
+                          <span className="text-green-600">
+                            ₦{form.getValues("amount").toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Account:</span>
-                      <span className="font-medium">
-                        {form.getValues("accountNumber")}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Name:</span>
-                      <span className="font-medium">
-                        {form.getValues("accountName")}
-                      </span>
-                    </div>
-                    <div className="h-px bg-gray-200 my-2" />
-                    <div className="flex justify-between text-base font-bold">
-                      <span className="text-gray-900">Amount:</span>
-                      <span className="text-green-600">
-                        ₦{form.getValues("amount").toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
+                  )}
                 </div>
-              )}
-              </div>
-            </ScrollArea>
+              </ScrollArea>
+            </div>
 
             <SheetFooter className="px-6 py-4 border-t bg-gray-50/50">
               <div className="flex gap-3 w-full">
@@ -293,6 +301,7 @@ export default function WithdrawSheet({ open, onOpenChange, balance }: Props) {
                     type="button"
                     className="flex-1 bg-green-600 hover:bg-green-700"
                     onClick={handleNext}
+                    disabled={disabled || loading}
                   >
                     Next
                   </Button>
@@ -300,7 +309,7 @@ export default function WithdrawSheet({ open, onOpenChange, balance }: Props) {
                   <Button
                     type="submit"
                     className="flex-1 bg-green-600 hover:bg-green-700"
-                    disabled={loading}
+                    disabled={loading || disabled}
                   >
                     {loading ? (
                       <>
