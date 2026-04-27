@@ -100,7 +100,8 @@ export default function ChangePasswordSheet({
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col flex-1 overflow-hidden"
           >
-            <ScrollArea className="flex-1 px-6">
+            <div className="flex-1">
+              <ScrollArea className="h-full px-6">
               <div className="space-y-6 pb-6">
             {/* Current Password */}
             <FormField
@@ -207,6 +208,7 @@ export default function ChangePasswordSheet({
 
               </div>
             </ScrollArea>
+            </div>
 
             <SheetFooter className="px-6 py-4 border-t bg-gray-50/50">
               <div className="flex gap-3 w-full">

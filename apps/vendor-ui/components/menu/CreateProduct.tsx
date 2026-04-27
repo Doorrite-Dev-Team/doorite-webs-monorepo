@@ -1,15 +1,6 @@
 "use client";
-
-import React, { useRef, useState } from "react";
-import { z } from "zod";
-import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import apiClient from "@/libs/api/client";
-import { toast } from "@repo/ui/components/sonner";
 import { Button } from "@repo/ui/components/button";
-import { Input } from "@repo/ui/components/input";
-import { Textarea } from "@repo/ui/components/textarea";
-import { Switch } from "@repo/ui/components/switch";
 import {
   Form,
   FormControl,
@@ -19,23 +10,30 @@ import {
   FormLabel,
   FormMessage,
 } from "@repo/ui/components/form";
+import { Input } from "@repo/ui/components/input";
+import { ScrollArea } from "@repo/ui/components/scroll-area";
+import { Separator } from "@repo/ui/components/separator";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetFooter,
 } from "@repo/ui/components/sheet";
-import { ScrollArea } from "@repo/ui/components/scroll-area";
-import { Separator } from "@repo/ui/components/separator";
-import { X, Plus, Loader2, Package } from "lucide-react";
-import { ImageUpload, ImageUploadRef } from "@/components/ImageUpload";
-import { deriveError } from "@/libs/utils/errorHandler";
+import { toast } from "@repo/ui/components/sonner";
+import { Switch } from "@repo/ui/components/switch";
+import { Textarea } from "@repo/ui/components/textarea";
+import { Loader2, Package, Plus, X } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import { z } from "zod";
 import { deleteImage } from "@/actions/uploadThing";
+import { ImageUpload, type ImageUploadRef } from "@/components/ImageUpload";
+import apiClient from "@/libs/api/client";
+import { deriveError } from "@/libs/utils/errorHandler";
 import AttachModifiersSection from "./AttachModifiersSection";
 
-// Zod v4 compatible schema
 const ProductFormSchema = z.object({
   name: z
     .string({ message: "Product name is required" })
@@ -110,7 +108,7 @@ export default function CreateProductSheet({
   product,
 }: Props) {
   const [loading, setLoading] = useState(false);
-  const imageRef = useRef<ImageUploadRef>(null); // ✅ Initialize Ref
+  const imageRef = useRef<ImageUploadRef>(null);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(ProductFormSchema),
@@ -131,7 +129,6 @@ export default function CreateProductSheet({
     if (open && product) {
       form.reset({
         ...product,
-        // Ensure basePrice is a number (sometimes API returns string)
         basePrice: Number(product.basePrice),
       });
     } else if (!open) {
@@ -153,19 +150,13 @@ export default function CreateProductSheet({
     fields: attrFields,
     append: addAttr,
     remove: removeAttr,
-  } = useFieldArray({
-    control: form.control,
-    name: "attributes",
-  });
+  } = useFieldArray({ control: form.control, name: "attributes" });
 
   const {
     fields: variantFields,
     append: addVariant,
     remove: removeVariant,
-  } = useFieldArray({
-    control: form.control,
-    name: "variants",
-  });
+  } = useFieldArray({ control: form.control, name: "variants" });
 
   const close = () => {
     onOpenChangeAction(false);
@@ -175,7 +166,6 @@ export default function CreateProductSheet({
   const onSubmit = async (data: ProductFormValues) => {
     setLoading(true);
     try {
-      // Filter out empty attributes
       const payload = {
         ...data,
         ...(data.attributes && {
@@ -194,9 +184,7 @@ export default function CreateProductSheet({
       const isEditing = !!product;
       const requestUrl = isEditing ? `${endpoint}/${product?.id}` : endpoint;
       const method = isEditing ? "put" : "post";
-
       const res = await apiClient[method](requestUrl, payload);
-
       const updatedProduct = res.data.product;
 
       toast.success(
@@ -207,7 +195,6 @@ export default function CreateProductSheet({
             : "Your product is now available in your menu",
         },
       );
-
       close();
       onSuccessAction?.();
     } catch (err) {
@@ -215,7 +202,6 @@ export default function CreateProductSheet({
         deriveError(err) ||
         `Failed to ${product ? "update" : "create"} product`;
 
-      // ✅ ACID: Rollback image if API request fails
       if (data.imageUrl) {
         console.error("API failed, rolling back image...");
         await imageRef.current?.rollback();
@@ -224,7 +210,6 @@ export default function CreateProductSheet({
       toast.error(`Failed to ${product ? "update" : "create"} product`, {
         description: errorMessage,
       });
-
       console.error(`Product ${product ? "update" : "creation"} error:`, err);
     } finally {
       setLoading(false);
@@ -233,11 +218,13 @@ export default function CreateProductSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChangeAction}>
+      {/* ✅ Key: SheetContent must be flex col with fixed height */}
       <SheetContent
         side="right"
-        className="w-full sm:max-w-2xl p-0 flex flex-col"
+        className="w-full sm:max-w-2xl p-0 flex flex-col h-full"
       >
-        <SheetHeader className="px-6 pt-6 pb-4">
+        {/* ✅ Header: shrinks to its natural height */}
+        <SheetHeader className="px-6 pt-6 pb-4 shrink-0">
           <SheetTitle className="flex items-center gap-2">
             <Package className="w-5 h-5 text-green-600" />
             {product ? "Edit Product" : "Create New Product"}
@@ -249,13 +236,15 @@ export default function CreateProductSheet({
           </SheetDescription>
         </SheetHeader>
 
+        {/* ✅ Form fills remaining height, footer stays pinned */}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col flex-1 overflow-hidden"
+            className="flex flex-col flex-1 min-h-0"
           >
-            <ScrollArea className="flex-1 px-6">
-              <div className="space-y-6 pb-6">
+            {/* ✅ Single ScrollArea — no nesting */}
+            <ScrollArea className="h-[calc(100%-8rem)]">
+              <div className="space-y-6 px-6 pb-6">
                 {/* Image Upload */}
                 <FormField
                   control={form.control}
@@ -265,10 +254,10 @@ export default function CreateProductSheet({
                       <FormLabel>Product Image</FormLabel>
                       <FormControl>
                         <ImageUpload
-                          ref={imageRef} // ✅ Attach Ref
+                          ref={imageRef}
                           value={field.value ?? null}
                           onChange={field.onChange}
-                          onRemove={deleteImage} // ✅ Pass deletion logic
+                          onRemove={deleteImage}
                         />
                       </FormControl>
                       <FormDescription>
@@ -278,7 +267,6 @@ export default function CreateProductSheet({
                     </FormItem>
                   )}
                 />
-
                 <Separator />
 
                 {/* Basic Information */}
@@ -286,7 +274,6 @@ export default function CreateProductSheet({
                   <h3 className="font-semibold text-sm text-gray-900">
                     Basic Information
                   </h3>
-
                   <FormField
                     control={form.control}
                     name="name"
@@ -303,7 +290,6 @@ export default function CreateProductSheet({
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="description"
@@ -325,7 +311,6 @@ export default function CreateProductSheet({
                       </FormItem>
                     )}
                   />
-
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -349,7 +334,6 @@ export default function CreateProductSheet({
                         </FormItem>
                       )}
                     />
-
                     <FormField
                       control={form.control}
                       name="sku"
@@ -364,7 +348,6 @@ export default function CreateProductSheet({
                       )}
                     />
                   </div>
-
                   <FormField
                     control={form.control}
                     name="isAvailable"
@@ -388,7 +371,6 @@ export default function CreateProductSheet({
                     )}
                   />
                 </div>
-
                 <Separator />
 
                 {/* Attributes Section */}
@@ -413,7 +395,6 @@ export default function CreateProductSheet({
                       Add
                     </Button>
                   </div>
-
                   {attrFields.length === 0 ? (
                     <div className="text-center py-6 border-2 border-dashed rounded-lg">
                       <p className="text-sm text-gray-500">
@@ -468,7 +449,6 @@ export default function CreateProductSheet({
                     </div>
                   )}
                 </div>
-
                 <Separator />
 
                 {/* Variants Section */}
@@ -499,7 +479,6 @@ export default function CreateProductSheet({
                       Add Variant
                     </Button>
                   </div>
-
                   {variantFields.length === 0 ? (
                     <div className="text-center py-6 border-2 border-dashed rounded-lg">
                       <p className="text-sm text-gray-500">
@@ -522,7 +501,6 @@ export default function CreateProductSheet({
                           >
                             <X className="w-4 h-4 text-gray-400" />
                           </Button>
-
                           <FormField
                             control={form.control}
                             name={`variants.${index}.name`}
@@ -539,7 +517,6 @@ export default function CreateProductSheet({
                               </FormItem>
                             )}
                           />
-
                           <div className="grid grid-cols-2 gap-3">
                             <FormField
                               control={form.control}
@@ -589,7 +566,6 @@ export default function CreateProductSheet({
                               )}
                             />
                           </div>
-
                           <FormField
                             control={form.control}
                             name={`variants.${index}.isAvailable`}
@@ -612,7 +588,6 @@ export default function CreateProductSheet({
                     </div>
                   )}
                 </div>
-
                 <Separator />
 
                 {/* Modifiers Section */}
@@ -634,7 +609,8 @@ export default function CreateProductSheet({
               </div>
             </ScrollArea>
 
-            <SheetFooter className="px-6 py-4 border-t bg-gray-50/50">
+            {/* ✅ Footer is outside ScrollArea — always pinned to bottom */}
+            <SheetFooter className="px-6 py-4 border-t bg-gray-50/50 shrink-0">
               <div className="flex gap-3 w-full">
                 <Button
                   type="button"
