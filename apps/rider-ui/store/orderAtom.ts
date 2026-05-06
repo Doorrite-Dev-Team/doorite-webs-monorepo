@@ -1,6 +1,6 @@
-// store/orderAtom.ts
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
+import { orderService } from "@/libs/order-service";
 
 export interface Order {
     id: string;
@@ -37,3 +37,25 @@ export const orderHistoryAtom = atomWithStorage<Order[]>(
     "rider-order-history",
     [],
 );
+
+// Fetch the rider's active assigned order
+export const fetchActiveOrderAtom = atom(null, async (get, set) => {
+    try {
+        // According to API docs, GET /riders/orders returns assigned orders
+        // We'll assume the active one is OUT_FOR_DELIVERY, PREPARING, ACCEPTED or READY_FOR_PICKUP
+        const data = await orderService.getRiderOrders();
+        const orders = data.orders || [];
+        // Find the first order that is not delivered or cancelled
+        const active = orders.find(
+            (o) => !["delivered", "cancelled", "DELIVERED", "CANCELLED"].includes(o.status)
+        );
+        
+        if (active) {
+            set(activeOrderAtom, active);
+        } else {
+            set(activeOrderAtom, null);
+        }
+    } catch (error) {
+        console.error("Failed to fetch active order:", error);
+    }
+});

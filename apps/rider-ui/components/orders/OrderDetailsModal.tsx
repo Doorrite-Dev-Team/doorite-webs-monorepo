@@ -28,7 +28,7 @@ import { useState } from "react";
 import { useSetAtom, useAtomValue } from "jotai";
 import { activeOrderAtom } from "@/store/orderAtom";
 import { socketAtom } from "@/store/socketAtom";
-import { apiClient } from "@/libs/api-client";
+import { orderService } from "@/libs/order-service";
 import { toast } from "@repo/ui/components/sonner";
 
 interface OrderDetailsModalProps {
@@ -50,16 +50,13 @@ export default function OrderDetailsModal({
     setIsActioning(true);
     try {
       // 1. Tell the backend this rider is claiming the order
-      await apiClient.post(`/orders/${order.id}/claim`);
+      await orderService.claimOrder(order.id);
 
       // 2. Emit socket event so backend dispatcher marks this rider as assigned
       socket?.emit("order-accepted", order.id);
 
       // 3. Update local Jotai state so the map/dashboard reflect the active order
       setActiveOrder(order);
-
-      toast.success("Order accepted! Navigate to pickup location");
-      onClose();
 
       toast.success("Order accepted! Navigate to pickup location");
       onClose();
@@ -74,7 +71,7 @@ export default function OrderDetailsModal({
   const handleDeclineOrder = async () => {
     setIsActioning(true);
     try {
-      await apiClient.post(`/orders/${order.id}/decline`);
+      await orderService.declineOrder(order.id);
       toast.info("Order declined");
       onClose();
     } catch (error) {

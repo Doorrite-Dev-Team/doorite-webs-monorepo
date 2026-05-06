@@ -4,10 +4,12 @@ import { useAtomValue } from "jotai";
 import {
   activeOrderAtom,
   availableOrdersAtom,
+  fetchActiveOrderAtom,
   Order,
 } from "@/store/orderAtom";
 import { riderAtom } from "@/store/riderAtom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSetAtom } from "jotai";
 import {
   Package,
   MapPin,
@@ -27,6 +29,12 @@ export default function DashboardPage() {
   const availableOrders = useAtomValue(availableOrdersAtom);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const fetchActiveOrder = useSetAtom(fetchActiveOrderAtom);
+
+  useEffect(() => {
+    // Fetch live active assigned order on dashboard mount
+    fetchActiveOrder();
+  }, [fetchActiveOrder]);
 
   const handleViewDetails = (order: Order) => {
     setSelectedOrder(order);

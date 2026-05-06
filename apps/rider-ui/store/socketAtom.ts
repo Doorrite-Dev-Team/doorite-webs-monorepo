@@ -5,6 +5,7 @@ import { addNotificationAtom, urgentOrderAtom } from "./notificationAtom";
 import { playSound } from "@/libs/player";
 import { Notification } from "@/types/notification";
 import { toast } from "@repo/ui/components/sonner";
+import { availableOrdersAtom } from "./orderAtom";
 
 // Strict Event Types
 interface ChatMessage {
@@ -17,7 +18,7 @@ interface ChatMessage {
 
 interface ServerToClientEvents {
   // Urgent: New Ride Job (Trigger Dialog)
-  "new-ride-job": (data: Notification) => void;
+  "new:order": (data: any) => void;
 
   // General: System/Info updates
   notification: (data: Notification) => void;
@@ -73,18 +74,27 @@ export const initSocketAtom = atom(null, (get, set, token: string) => {
   });
 
   // --- URGENT: New Ride Job (Dialog + Loop Sound) ---
-  socket.on("new-ride-job", (data) => {
+  socket.on("new:order", (data) => {
     // 1. Play Loud Ringtone
     const audio = playSound("new-order"); // Returns audio instance
 
     // 2. Set Urgent State (Opens Dialog)
     set(urgentOrderAtom, {
-      orderId: data.metadata?.orderId ?? "Not Found",
+      orderId: data.orderId || data.id || "Not Found",
       audio: audio || undefined,
     });
 
-    // 3. Add to History
-    set(addNotificationAtom, data);
+    // 3. Add to Available Orders
+    set(availableOrdersAtom, (prev) => {
+      // Avoid duplicates
+      if (prev.find((o) => o.id === (data.orderId || data.id))) return prev;
+      return [data, ...prev];
+    });
+
+    // 4. Add to Notification History if it matches Notification type
+    if (data.type) {
+      set(addNotificationAtom, data as Notification);
+    }
   });
 
   // --- INFO: General Notification (Toast + Beep) ---
