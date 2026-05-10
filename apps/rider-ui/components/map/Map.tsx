@@ -8,6 +8,7 @@ import { activeOrderAtom } from "@/store/orderAtom";
 import OrderStatusCard from "./OrderStatusCard";
 import {
   maptilerConfig,
+  isFallbackMap,
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_ZOOM,
 } from "@/libs/maptiler";
@@ -66,12 +67,16 @@ export default function RiderMap({ markers = [] }: MapProps) {
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
+    const styleUrl = isFallbackMap 
+      ? "https://demotiles.maplibre.org/style.json"
+      : "https://api.maptiler.com/maps/streets-v2/style.json";
+
     const map = new Map({
       container: mapContainerRef.current,
-      style: "https://api.maptiler.com/maps/streets-v2/style.json",
+      style: styleUrl,
       center: DEFAULT_MAP_CENTER as [number, number],
       zoom: DEFAULT_MAP_ZOOM,
-      apiKey: maptilerConfig.apiKey || "",
+      apiKey: isFallbackMap ? "" : maptilerConfig.apiKey,
     });
 
     map.addControl(new NavigationControl({ showCompass: true }), "top-right");
@@ -166,18 +171,7 @@ export default function RiderMap({ markers = [] }: MapProps) {
     });
   }, [activeOrder, userLocation, createMarkerEl]);
 
-  if (!maptilerConfig.apiKey) {
-    return (
-      <div className="flex items-center justify-center h-full bg-gray-50">
-        <div className="text-center p-6">
-          <p className="text-red-500 font-medium">Missing MapTiler API Key</p>
-          <p className="text-sm text-gray-500 mt-1">
-            Set NEXT_PUBLIC_MAPTILER_API_KEY in your environment
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Removed the blocking screen so fallback map renders instead
 
   return (
     <div className="w-full h-full relative">
