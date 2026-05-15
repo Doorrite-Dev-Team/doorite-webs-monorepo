@@ -48,7 +48,7 @@ export default function ModifiersTab() {
     }
   };
 
-  const modifierGroups = data?.modifierGroups || [];
+  const modifierGroups = data || [];
   const filteredGroups = modifierGroups.filter((group) =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
@@ -84,6 +84,7 @@ export default function ModifiersTab() {
         </div>
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: <no explanation>
             <Card key={i}>
               <CardContent className="p-4">
                 <Skeleton className="h-20 w-full" />

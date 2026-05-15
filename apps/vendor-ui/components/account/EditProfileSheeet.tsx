@@ -89,6 +89,17 @@ export default function EditProfileSheet({
 
   const onSubmit = async (data: EditProfileFormValues) => {
     try {
+      let logoUrl = data.logoUrl;
+
+      if (imageRef.current?.hasPendingFile()) {
+        const uploaded = await imageRef.current?.upload();
+        if (!uploaded) {
+          toast.error("Image upload failed. Please try again.");
+          return;
+        }
+        logoUrl = uploaded;
+      }
+
       await updateProfile({
         businessName: data.businessName,
         phoneNumber: data.phoneNumber,
@@ -98,7 +109,7 @@ export default function EditProfileSheet({
           country: profile.address?.country,
           coordinates: profile.address?.coordinates,
         },
-        logoUrl: data.logoUrl || undefined,
+        logoUrl: logoUrl || undefined,
         openingTime: data.openingTime || undefined,
         closingTime: data.closingTime || undefined,
         avrgPreparationTime: data.avrgPreparationTime || undefined,
@@ -107,14 +118,10 @@ export default function EditProfileSheet({
       toast.success("Profile updated successfully");
       onOpenChange(false);
     } catch (error) {
-      // ✅ ACID: If the DB update fails, rollback the uploaded image
       console.error("Profile update failed, rolling back image...", error);
       toast.error("Profile update failed, rolling back image...");
 
-      // Only rollback if the URL has changed (meaning a new file was just uploaded)
-      if (data.logoUrl !== profile.logoUrl) {
-        await imageRef.current?.rollback();
-      }
+      await imageRef.current?.rollback();
 
       toast.error("Failed to update profile. Please try again.");
     }
