@@ -33,6 +33,7 @@ import { ImageUpload, type ImageUploadRef } from "@/components/ImageUpload";
 import apiClient from "@/libs/api/client";
 import { deriveError } from "@/libs/utils/errorHandler";
 import AttachModifiersSection from "./AttachModifiersSection";
+import CreateModifierSheet from "./CreateModifierSheet";
 
 const ProductFormSchema = z.object({
   name: z
@@ -79,35 +80,17 @@ type ProductFormValues = z.infer<typeof ProductFormSchema>;
 type Props = {
   open: boolean;
   onOpenChangeAction: (open: boolean) => void;
-  endpoint?: string;
   onSuccessAction?: () => void;
-  product?: {
-    id: string;
-    name: string;
-    description?: string;
-    basePrice: number;
-    sku?: string;
-    isAvailable: boolean;
-    imageUrl?: string | null;
-    attributes?: Array<{ key: string; value: string }>;
-    variants?: Array<{
-      name: string;
-      price: number;
-      stock?: number;
-      isAvailable: boolean;
-    }>;
-    modifierGroups?: string[];
-  };
 };
 
 export default function CreateProductSheet({
   open,
   onOpenChangeAction,
-  endpoint = "/vendors/products",
   onSuccessAction,
-  product,
 }: Props) {
   const [loading, setLoading] = useState(false);
+  const [showModifierSheet, setShowModifierSheet] = useState(false);
+  const [hasVariants, setHasVariants] = useState(false);
   const imageRef = useRef<ImageUploadRef>(null);
 
   const form = useForm<ProductFormValues>({
@@ -126,12 +109,7 @@ export default function CreateProductSheet({
   });
 
   React.useEffect(() => {
-    if (open && product) {
-      form.reset({
-        ...product,
-        basePrice: Number(product.basePrice),
-      });
-    } else if (!open) {
+    if (open) {
       form.reset({
         name: "",
         description: "",
@@ -144,7 +122,7 @@ export default function CreateProductSheet({
         modifierGroups: [],
       });
     }
-  }, [open, product, form]);
+  }, [open, form]);
 
   const {
     fields: attrFields,
@@ -166,8 +144,10 @@ export default function CreateProductSheet({
   const onSubmit = async (data: ProductFormValues) => {
     setLoading(true);
     try {
+      const { imageUrl, ...rest } = data;
       const payload = {
-        ...data,
+        ...rest,
+        ...(imageUrl ? { imageUrl } : {}),
         ...(data.attributes && {
           attributes: data.attributes
             .filter((a) => a.key.trim() !== "")
@@ -181,36 +161,30 @@ export default function CreateProductSheet({
         }),
       };
 
-      const isEditing = !!product;
-      const requestUrl = isEditing ? `${endpoint}/${product?.id}` : endpoint;
-      const method = isEditing ? "put" : "post";
-      const res = await apiClient[method](requestUrl, payload);
-      const updatedProduct = res.data.product;
+      const res = await apiClient.post("/vendors/products", payload);
+      const createdProduct = res.data.product;
 
       toast.success(
-        `Product "${updatedProduct.name}" ${isEditing ? "updated" : "created"} successfully`,
+        `Product "${createdProduct.name}" created successfully`,
         {
-          description: isEditing
-            ? "Your product details have been saved"
-            : "Your product is now available in your menu",
+          description: "Your product is now available in your menu",
         },
       );
       close();
       onSuccessAction?.();
     } catch (err) {
       const errorMessage =
-        deriveError(err) ||
-        `Failed to ${product ? "update" : "create"} product`;
+        deriveError(err) || "Failed to create product";
 
       if (data.imageUrl) {
         console.error("API failed, rolling back image...");
         await imageRef.current?.rollback();
       }
 
-      toast.error(`Failed to ${product ? "update" : "create"} product`, {
+      toast.error("Failed to create product", {
         description: errorMessage,
       });
-      console.error(`Product ${product ? "update" : "creation"} error:`, err);
+      console.error("Product creation error:", err);
     } finally {
       setLoading(false);
     }
@@ -227,12 +201,10 @@ export default function CreateProductSheet({
         <SheetHeader className="px-6 pt-6 pb-4 shrink-0">
           <SheetTitle className="flex items-center gap-2">
             <Package className="w-5 h-5 text-green-600" />
-            {product ? "Edit Product" : "Create New Product"}
+            Create New Product
           </SheetTitle>
           <SheetDescription>
-            {product
-              ? "Update product details, variants, and attributes"
-              : "Add product details, variants, and attributes to your menu"}
+            Add product details, variants, and attributes to your menu
           </SheetDescription>
         </SheetHeader>
 
@@ -311,8 +283,7 @@ export default function CreateProductSheet({
                       </FormItem>
                     )}
                   />
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
+                  <FormField
                       control={form.control}
                       name="basePrice"
                       render={({ field }) => (
@@ -334,20 +305,6 @@ export default function CreateProductSheet({
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="sku"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>SKU (Optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="PROD-001" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                   <FormField
                     control={form.control}
                     name="isAvailable"
@@ -451,145 +408,6 @@ export default function CreateProductSheet({
                 </div>
                 <Separator />
 
-                {/* Variants Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-sm text-gray-900">
-                        Product Variants
-                      </h3>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Offer different versions with unique pricing and stock
-                      </p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        addVariant({
-                          name: "",
-                          price: 0,
-                          stock: 0,
-                          isAvailable: true,
-                        })
-                      }
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Add Variant
-                    </Button>
-                  </div>
-                  {variantFields.length === 0 ? (
-                    <div className="text-center py-6 border-2 border-dashed rounded-lg">
-                      <p className="text-sm text-gray-500">
-                        No variants added yet
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {variantFields.map((field, index) => (
-                        <div
-                          key={field.id}
-                          className="p-4 border-2 rounded-lg space-y-4 relative bg-gray-50/50"
-                        >
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className="absolute top-2 right-2"
-                            onClick={() => removeVariant(index)}
-                          >
-                            <X className="w-4 h-4 text-gray-400" />
-                          </Button>
-                          <FormField
-                            control={form.control}
-                            name={`variants.${index}.name`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Variant Name</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="e.g. Large, Extra Spicy"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <div className="grid grid-cols-2 gap-3">
-                            <FormField
-                              control={form.control}
-                              name={`variants.${index}.price`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Price (₦)</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="number"
-                                      step="0.01"
-                                      min="0"
-                                      placeholder="0.00"
-                                      {...field}
-                                      onChange={(e) =>
-                                        field.onChange(
-                                          parseFloat(e.target.value) || 0,
-                                        )
-                                      }
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name={`variants.${index}.stock`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Stock (Optional)</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      placeholder="0"
-                                      {...field}
-                                      onChange={(e) =>
-                                        field.onChange(
-                                          parseInt(e.target.value) || undefined,
-                                        )
-                                      }
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          <FormField
-                            control={form.control}
-                            name={`variants.${index}.isAvailable`}
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-white p-3">
-                                <FormLabel className="text-sm font-normal">
-                                  Available
-                                </FormLabel>
-                                <FormControl>
-                                  <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <Separator />
-
                 {/* Modifiers Section */}
                 <FormField
                   control={form.control}
@@ -600,12 +418,170 @@ export default function CreateProductSheet({
                         <AttachModifiersSection
                           selectedModifiers={field.value || []}
                           onModifiersChange={field.onChange}
+                          onCreateModifierGroup={() => setShowModifierSheet(true)}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                <Separator />
+
+                {/* Has Variants Toggle */}
+                <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Product Variants</FormLabel>
+                    <FormDescription>
+                      Offer different versions with unique pricing
+                    </FormDescription>
+                  </div>
+                  <Switch
+                    checked={hasVariants}
+                    onCheckedChange={setHasVariants}
+                  />
+                </div>
+
+                {hasVariants && (
+                  <>
+                    {/* Variants Section */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-sm text-gray-900">
+                            Product Variants
+                          </h3>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Offer different versions with unique pricing and stock
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            addVariant({
+                              name: "",
+                              price: 0,
+                              stock: 0,
+                              isAvailable: true,
+                            })
+                          }
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add Variant
+                        </Button>
+                      </div>
+                      {variantFields.length === 0 ? (
+                        <div className="text-center py-6 border-2 border-dashed rounded-lg">
+                          <p className="text-sm text-gray-500">
+                            No variants added yet
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {variantFields.map((field, index) => (
+                            <div
+                              key={field.id}
+                              className="p-4 border-2 rounded-lg space-y-4 relative bg-gray-50/50"
+                            >
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="absolute top-2 right-2"
+                                onClick={() => removeVariant(index)}
+                              >
+                                <X className="w-4 h-4 text-gray-400" />
+                              </Button>
+                              <FormField
+                                control={form.control}
+                                name={`variants.${index}.name`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Variant Name</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        placeholder="e.g. Large, Extra Spicy"
+                                        {...field}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <div className="grid grid-cols-2 gap-3">
+                                <FormField
+                                  control={form.control}
+                                  name={`variants.${index}.price`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Price (₦)</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          step="0.01"
+                                          min="0"
+                                          placeholder="0.00"
+                                          {...field}
+                                          onChange={(e) =>
+                                            field.onChange(
+                                              parseFloat(e.target.value) || 0,
+                                            )
+                                          }
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name={`variants.${index}.stock`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Stock (Optional)</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          min="0"
+                                          placeholder="0"
+                                          {...field}
+                                          onChange={(e) =>
+                                            field.onChange(
+                                              parseInt(e.target.value) || undefined,
+                                            )
+                                          }
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              <FormField
+                                control={form.control}
+                                name={`variants.${index}.isAvailable`}
+                                render={({ field }) => (
+                                  <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-white p-3">
+                                    <FormLabel className="text-sm font-normal">
+                                      Available
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Switch
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </ScrollArea>
 
@@ -626,22 +602,24 @@ export default function CreateProductSheet({
                   className="flex-1 bg-green-600 hover:bg-green-700"
                   disabled={loading}
                 >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {product ? "Updating..." : "Creating..."}
-                    </>
-                  ) : product ? (
-                    "Update Product"
-                  ) : (
-                    "Create Product"
-                  )}
+{loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      "Create Product"
+                    )}
                 </Button>
               </div>
             </SheetFooter>
           </form>
         </Form>
       </SheetContent>
+      <CreateModifierSheet
+        open={showModifierSheet}
+        onOpenChange={setShowModifierSheet}
+      />
     </Sheet>
   );
 }

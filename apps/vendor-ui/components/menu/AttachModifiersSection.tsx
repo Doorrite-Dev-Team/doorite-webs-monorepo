@@ -10,32 +10,39 @@ import {
 } from "@repo/ui/components/card";
 import { Checkbox } from "@repo/ui/components/checkbox";
 import { Skeleton } from "@repo/ui/components/skeleton";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Settings2, Plus } from "lucide-react";
+import { useEffect } from "react";
 import { ModifierGroup } from "@/libs/api/modifier-api";
 
 interface AttachModifiersSectionProps {
   selectedModifiers: string[];
   onModifiersChange: (modifierIds: string[]) => void;
+  onCreateModifierGroup?: () => void;
 }
 
 export default function AttachModifiersSection({
   selectedModifiers,
   onModifiersChange,
+  onCreateModifierGroup,
 }: AttachModifiersSectionProps) {
+  const queryClient = useQueryClient();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["modifier-groups"],
     queryFn: async () => {
-      try {
-        const { modifierApi } = await import("@/libs/api/modifier-api");
-        const result = await modifierApi.getModifierGroups();
-        return result?.modifierGroups || [];
-      } catch {
-        return [];
-      }
+      const { modifierApi } = await import("@/libs/api/modifier-api");
+      return await modifierApi.getModifierGroups();
     },
     staleTime: 5 * 60 * 1000,
   });
+
+  useEffect(() => {
+    const handleRefetch = () => {
+      queryClient.invalidateQueries({ queryKey: ["modifier-groups"] });
+    };
+    window.addEventListener("refetch-modifiers", handleRefetch);
+    return () => window.removeEventListener("refetch-modifiers", handleRefetch);
+  }, [queryClient]);
 
   const modifierGroups = data || [];
 
@@ -67,7 +74,31 @@ export default function AttachModifiersSection({
     );
   }
 
-  if (isError || modifierGroups.length === 0) {
+  if (isError) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Settings2 className="w-4 h-4" />
+            Customization Options
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-6 border-2 border-dashed rounded-lg border-red-200 bg-red-50/50">
+            <Settings2 className="w-8 h-8 text-red-400 mx-auto mb-2" />
+            <p className="text-sm text-red-600 mb-3">
+              Failed to load modifier groups
+            </p>
+            <p className="text-xs text-red-400 mb-4">
+              Check your connection and try again
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (modifierGroups.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -85,7 +116,7 @@ export default function AttachModifiersSection({
             <p className="text-xs text-gray-400 mb-4">
               Create modifier groups first to add customization options
             </p>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={onCreateModifierGroup}>
               <Plus className="w-4 h-4 mr-1" />
               Create Modifier Group
             </Button>

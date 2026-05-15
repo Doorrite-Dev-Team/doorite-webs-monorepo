@@ -6,6 +6,7 @@ import { ArrowLeft, Phone, Send, Loader2 } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Skeleton } from "@repo/ui/components/skeleton";
+import { toast } from "@repo/ui/components/sonner";
 import {
   Avatar,
   AvatarFallback,
@@ -77,7 +78,8 @@ export default function OrderChatPage({ orderId }: OrderChatPageProps) {
       setMessages((prev) => [...prev, message]);
       setNewMessage("");
     } catch (err) {
-      // Show error toast in production
+      toast.error("Failed to send message");
+      setError("Failed to send message");
     } finally {
       setSending(false);
     }

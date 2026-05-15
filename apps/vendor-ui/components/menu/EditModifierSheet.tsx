@@ -13,7 +13,7 @@ import { Switch } from "@repo/ui/components/switch";
 import { toast } from "@repo/ui/components/sonner";
 import { ScrollArea } from "@repo/ui/components/scroll-area";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   modifierApi,
@@ -150,11 +150,21 @@ export default function EditModifierSheet({
       return;
     }
 
+    const existingOptions = options
+      .filter((opt) => !opt.isNew)
+      .map((opt) => ({
+        id: opt.id,
+        name: opt.name,
+        priceAdjustment: Number(opt.priceAdjustment),
+        isAvailable: opt.isAvailable,
+      }));
+
     const payload: UpdateModifierGroupPayload = {
       name: name.trim(),
       isRequired,
       minSelect,
       maxSelect,
+      options: existingOptions,
     };
 
     updateGroupMutation.mutate({ id: group.id, payload });
@@ -172,38 +182,62 @@ export default function EditModifierSheet({
     });
   };
 
+  const hasNewOptions = options.some((opt) => opt.isNew && opt.name.trim());
+
   return (
     <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent className="w-full sm:max-w-xl p-0 flex flex-col">
-        <SheetHeader className="px-6 pt-6 pb-4">
-          <SheetTitle>Edit Modifier Group</SheetTitle>
+      <SheetContent className="w-full sm:max-w-[480px] p-0 flex flex-col h-screen bg-background border-l border-border">
+        <SheetHeader className="shrink-0 px-6 pt-6 pb-5 border-b border-border">
+          <SheetTitle className="text-lg font-bold text-foreground tracking-tight">
+            Edit Modifier Group
+          </SheetTitle>
+          <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
+            Update the group name, selection rules, or options for this modifier
+            set.
+          </p>
         </SheetHeader>
 
         <form
           onSubmit={handleSubmit}
           className="flex flex-col flex-1 overflow-hidden"
         >
-          <div className="flex-1">
-            <ScrollArea className="h-[calc(100%-8rem)] px-6">
-              {/*<div className="space-y-6 pb-6">*/}
-              {/* Basic Information */}
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Group Name *</Label>
+          {/*<div className="flex-1">*/}
+          <ScrollArea className="h-[calc(100%-6rem)] px-6">
+            <div className="py-6 space-y-6">
+              <FormSection
+                step={1}
+                title="Group Name"
+                description="Displayed to customers above the list of options on your menu."
+              >
+                <FieldWrapper
+                  label="Group name"
+                  htmlFor="group-name"
+                  required
+                  hint='Keep it short and clear — e.g. "Spice Level" or "Protein Options"'
+                >
                   <Input
-                    id="name"
+                    id="group-name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g., Protein Options, Spice Level"
-                    className="mt-1"
+                    placeholder="e.g. Spice Level, Add-ons, Protein Options"
                   />
-                </div>
+                </FieldWrapper>
+              </FormSection>
 
-                <div className="flex items-center justify-between">
+              <Divider />
+
+              <FormSection
+                step={2}
+                title="Selection Rules"
+                description="Control how many options a customer is allowed to pick at once."
+              >
+                <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-4 py-3.5">
                   <div className="space-y-0.5">
-                    <Label>Required Selection</Label>
-                    <p className="text-sm text-gray-500">
-                      Customers must select at least one option
+                    <p className="text-sm font-semibold text-foreground">
+                      Required selection
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Customer must pick an option before adding to cart
                     </p>
                   </div>
                   <Switch
@@ -211,141 +245,190 @@ export default function EditModifierSheet({
                     onCheckedChange={setIsRequired}
                   />
                 </div>
-              </div>
 
-              {/* Selection Limits */}
-              <div className="space-y-4">
-                <Label>Selection Limits</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="minSelect">Minimum</Label>
+                <div className="grid grid-cols-2 gap-3 mt-3">
+                  <FieldWrapper
+                    label="Minimum picks"
+                    htmlFor="min-select"
+                    hint="0 means the selection is optional"
+                  >
                     <Input
-                      id="minSelect"
+                      id="min-select"
                       type="number"
-                      min="0"
+                      min={0}
                       value={minSelect}
                       onChange={(e) => setMinSelect(Number(e.target.value))}
-                      className="mt-1"
                     />
-                  </div>
-                  <div>
-                    <Label htmlFor="maxSelect">Maximum</Label>
+                  </FieldWrapper>
+                  <FieldWrapper
+                    label="Maximum picks"
+                    htmlFor="max-select"
+                    hint="Most options a customer may select"
+                  >
                     <Input
-                      id="maxSelect"
+                      id="max-select"
                       type="number"
-                      min="1"
+                      min={1}
                       value={maxSelect}
                       onChange={(e) => setMaxSelect(Number(e.target.value))}
-                      className="mt-1"
                     />
-                  </div>
+                  </FieldWrapper>
                 </div>
-              </div>
+              </FormSection>
 
-              {/* Options */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label>Options</Label>
+              <Divider />
+
+              <FormSection
+                step={3}
+                title="Options"
+                description="Each individual choice a customer can select from this group."
+                action={
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={addNewOption}
-                    className="flex items-center gap-1"
+                    className="h-8 gap-1.5 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/5 hover:text-primary"
                   >
-                    <Plus className="w-4 h-4" />
-                    Add Option
+                    <Plus className="w-3.5 h-3.5" />
+                    Add option
                   </Button>
-                </div>
+                }
+              >
+                <div className="rounded-lg border border-border overflow-hidden">
+                  <div className="grid grid-cols-[1fr_112px_40px] bg-muted/60 border-b border-border px-3 py-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      Option name
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      Price adj. (₦)
+                    </span>
+                    <span />
+                  </div>
 
-                <div className="space-y-3">
-                  {options.map((option, index) => (
-                    <div key={option.id} className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <Input
-                          value={option.name}
-                          onChange={(e) =>
-                            updateOption(option.id, "name", e.target.value)
-                          }
-                          placeholder={
-                            option.isNew
-                              ? `New Option ${index + 1}`
-                              : `Option ${index + 1}`
-                          }
-                        />
-                      </div>
-                      <div className="w-24">
-                        <Input
-                          type="number"
-                          value={option.priceAdjustment}
-                          onChange={(e) =>
-                            updateOption(
-                              option.id,
-                              "priceAdjustment",
-                              e.target.value,
-                            )
-                          }
-                          placeholder="0"
-                          min="0"
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeOption(option.id, option.isNew)}
-                        className="h-10 w-10 p-0"
+                  <div className="divide-y divide-border">
+                    {options.map((opt, idx) => (
+                      <div
+                        key={opt.id}
+                        className="group grid grid-cols-[1fr_112px_40px] items-center bg-card px-3 py-2 hover:bg-muted/30 transition-colors"
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-2 pr-2">
+                          <span className="text-[10px] font-bold text-muted-foreground/50 tabular-nums w-4 shrink-0">
+                            {String(idx + 1).padStart(2, "0")}
+                          </span>
+                          <Input
+                            value={opt.name}
+                            onChange={(e) =>
+                              updateOption(opt.id, "name", e.target.value)
+                            }
+                            placeholder={
+                              opt.isNew
+                                ? `New option ${idx + 1}`
+                                : "e.g. Extra Cheese"
+                            }
+                          />
+                        </div>
+
+                        <div className="relative">
+                          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground select-none">
+                            ₦
+                          </span>
+                          <Input
+                            type="number"
+                            value={opt.priceAdjustment}
+                            onChange={(e) =>
+                              updateOption(
+                                opt.id,
+                                "priceAdjustment",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="0"
+                            min={0}
+                            className="pl-7"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-center">
+                          <button
+                            type="button"
+                            onClick={() => removeOption(opt.id, opt.isNew)}
+                            disabled={
+                              (!opt.isNew && deleteOptionMutation.isPending) ||
+                              options.length <= 1
+                            }
+                            className="
+                                h-7 w-7 flex items-center justify-center rounded-md
+                                text-muted-foreground/40
+                                opacity-0 group-hover:opacity-100
+                                hover:bg-destructive/10 hover:text-destructive
+                                disabled:pointer-events-none
+                                transition-all
+                              "
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Save New Options Button */}
-                {options.some((opt) => opt.isNew && opt.name.trim()) && (
+                {hasNewOptions && (
                   <Button
                     type="button"
                     variant="secondary"
                     onClick={saveNewOptions}
-                    className="w-full"
                     disabled={addOptionMutation.isPending}
+                    className="w-full h-9 text-xs font-semibold mt-2"
                   >
                     {addOptionMutation.isPending ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving New Options...
-                      </>
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Saving new options…
+                      </span>
                     ) : (
                       "Save New Options"
                     )}
                   </Button>
                 )}
-              </div>
-            </ScrollArea>
-          </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-3 px-6 py-4 border-t bg-gray-50/50">
+                <div className="flex items-start gap-2 mt-2.5 rounded-lg bg-muted/50 border border-border px-3 py-2.5">
+                  <Info className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    <span className="font-semibold text-foreground">
+                      Price adjustment
+                    </span>{" "}
+                    is added on top of the item&apos;s base price. Set to{" "}
+                    <span className="font-semibold text-foreground">₦0</span> if
+                    the option has no extra charge.
+                  </p>
+                </div>
+              </FormSection>
+            </div>
+          </ScrollArea>
+          {/*</div>*/}
+
+          <div className="shrink-0 flex items-center gap-3 px-6 py-4 border-t border-border bg-background">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
-              className="flex-1"
               disabled={updateGroupMutation.isPending}
+              className="flex-1 h-10 text-sm font-semibold"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="flex-1"
               disabled={updateGroupMutation.isPending}
+              className="flex-1 h-10 text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {updateGroupMutation.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Updating...
-                </>
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Updating…
+                </span>
               ) : (
                 "Update Group"
               )}
@@ -354,5 +437,77 @@ export default function EditModifierSheet({
         </form>
       </SheetContent>
     </Sheet>
+  );
+}
+
+/* ── MICRO-COMPONENTS ── */
+
+function Divider() {
+  return <div className="border-t border-border" />;
+}
+
+function FormSection({
+  step,
+  title,
+  description,
+  action,
+  children,
+}: {
+  step: number;
+  title: string;
+  description: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-[11px] font-extrabold text-primary tabular-nums mt-0.5">
+            {step}
+          </span>
+          <div>
+            <p className="text-sm font-bold text-foreground leading-tight">
+              {title}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+              {description}
+            </p>
+          </div>
+        </div>
+        {action && <div className="shrink-0 mt-0.5">{action}</div>}
+      </div>
+      <div className="ml-9">{children}</div>
+    </div>
+  );
+}
+
+function FieldWrapper({
+  label,
+  htmlFor,
+  required,
+  hint,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  required?: boolean;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label
+        htmlFor={htmlFor}
+        className="text-xs font-semibold text-foreground/80"
+      >
+        {label}
+        {required && <span className="ml-0.5 text-destructive">*</span>}
+      </Label>
+      {children}
+      {hint && (
+        <p className="text-[11px] text-muted-foreground leading-snug">{hint}</p>
+      )}
+    </div>
   );
 }

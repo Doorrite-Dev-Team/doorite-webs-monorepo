@@ -23,6 +23,7 @@ import {
 } from "@repo/ui/components/alert-dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Layers,
   Loader2,
   Package,
   Plus,
@@ -34,6 +35,7 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import CreateProductSheet from "./CreateProduct";
+import UpdateProductSheet from "./UpdateProduct";
 
 const updateProductAvailability = async ({
   productId,
@@ -56,6 +58,7 @@ const deleteProduct = async (productId: string) => {
 export default function ProductsTab() {
   const queryClient = useQueryClient();
   const [showCreateSheet, setShowCreateSheet] = useState(false);
+  const [showEditSheet, setShowEditSheet] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -296,149 +299,177 @@ export default function ProductsTab() {
             {filteredProducts.map((product) => (
               <Card
                 key={product.id}
-                className="overflow-hidden hover:shadow-md transition-shadow"
+                className="group relative overflow-hidden rounded-[14px] border border-stone-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-px hover:border-stone-300 hover:shadow-md"
               >
                 <CardContent className="p-0">
-                  <div className="flex flex-col md:flex-row md:items-center gap-4 p-4">
-                    <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border">
+                  <div className="flex flex-col md:flex-row min-h-[96px] md:items-stretch">
+
+                    {/* ── Availability stripe ── */}
+                    <div
+                      className={`hidden md:block w-1 shrink-0 transition-colors duration-200 ${
+                        product.isAvailable ? "bg-green-500" : "bg-stone-300"
+                      }`}
+                    />
+
+                    {/* ── Stripe on mobile (top edge) ── */}
+                    <div
+                      className={`md:hidden h-1 shrink-0 transition-colors duration-200 ${
+                        product.isAvailable ? "bg-green-500" : "bg-stone-300"
+                      }`}
+                    />
+
+                    {/* ── Image ── */}
+                    <div className="relative w-full h-32 md:w-24 md:h-auto shrink-0 self-stretch overflow-hidden bg-stone-50">
                       {product.imageUrl ? (
                         <Image
                           src={product.imageUrl}
                           alt={product.name}
                           fill
-                          className="object-cover"
-                          sizes="80px"
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          sizes="96px"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-8 h-8 text-gray-300" />
+                        <div className="flex h-full min-h-[96px] w-full items-center justify-center">
+                          <Package className="h-8 w-8 text-stone-300" />
                         </div>
                       )}
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-semibold text-gray-900 text-lg truncate">
+                    {/* ── Body ── */}
+                    <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-3.5 py-3">
+
+                      {/* Name + status badge */}
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="truncate text-[15px] font-semibold leading-snug tracking-tight text-stone-900">
                           {product.name}
                         </h3>
-                        <Badge
-                          variant={
-                            product.isAvailable ? "default" : "secondary"
-                          }
-                          className={
+                        <span
+                          className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide transition-colors duration-200 ${
                             product.isAvailable
-                              ? "bg-green-100 text-green-700 hover:bg-green-100"
-                              : "bg-gray-100 text-gray-600 hover:bg-gray-100"
-                          }
+                              ? "border-green-200 bg-green-50 text-green-700"
+                              : "border-stone-200 bg-stone-100 text-stone-500"
+                          }`}
                         >
-                          {product.isAvailable ? "Available" : "Unavailable"}
-                        </Badge>
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              product.isAvailable ? "bg-green-500" : "bg-stone-400"
+                            }`}
+                          />
+                          {product.isAvailable ? "Available" : "Off menu"}
+                        </span>
                       </div>
 
+                      {/* Description */}
                       {product.description && (
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                        <p className="line-clamp-2 text-[13px] leading-relaxed text-stone-500">
                           {product.description}
                         </p>
                       )}
 
-                      <div className="flex flex-wrap items-center gap-2 text-sm">
-                        <span className="font-semibold text-green-600">
+                      {/* Meta: price · SKU · variants · modifiers */}
+                      <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                        <span className="text-[16px] font-semibold tracking-tight text-green-700">
                           ₦{product.basePrice.toLocaleString()}
                         </span>
+
                         {product.sku && (
                           <>
-                            <span className="text-gray-300">•</span>
-                            <span className="text-gray-500">
-                              SKU: {product.sku}
+                            <span className="text-stone-300">·</span>
+                            <span className="tabular-nums text-[11px] text-stone-400">
+                              {product.sku}
                             </span>
                           </>
                         )}
+
                         {product.variants && product.variants.length > 0 && (
                           <>
-                            <span className="text-gray-300">•</span>
-                            <Badge variant="outline" className="text-xs">
-                              {product.variants.length} variant
-                              {product.variants.length !== 1 ? "s" : ""}
+                            <span className="text-stone-300">·</span>
+                            <Badge
+                              variant="outline"
+                              className="flex items-center gap-1 rounded-md border-stone-200 bg-stone-50 px-1.5 py-0 text-[11px] text-stone-500 hover:bg-stone-50"
+                            >
+                              <Layers className="h-3 w-3" />
+                              {product.variants.length}{" "}
+                              {product.variants.length === 1 ? "variant" : "variants"}
                             </Badge>
                           </>
                         )}
-                        {product.modifierGroups &&
-                          product.modifierGroups.length > 0 && (
-                            <>
-                              <span className="text-gray-300">•</span>
-                              <Badge
-                                variant="outline"
-                                className="text-xs flex items-center gap-1"
-                              >
-                                <Settings2 className="w-3 h-3" />
-                                {product.modifierGroups.length} customization
-                                {product.modifierGroups.length !== 1 ? "s" : ""}
-                              </Badge>
-                            </>
-                          )}
+
+                        {product.modifierGroups && product.modifierGroups.length > 0 && (
+                          <>
+                            <span className="text-stone-300">·</span>
+                            <Badge
+                              variant="outline"
+                              className="flex items-center gap-1 rounded-md border-stone-200 bg-stone-50 px-1.5 py-0 text-[11px] text-stone-500 hover:bg-stone-50"
+                            >
+                              <Settings2 className="h-3 w-3" />
+                              {product.modifierGroups.length}{" "}
+                              {product.modifierGroups.length === 1 ? "add-on" : "add-ons"}
+                            </Badge>
+                          </>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 md:flex-col md:items-end">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600 hidden md:block">
-                          {product.isAvailable ? "Disable" : "Enable"}
+                    {/* ── Actions column ── */}
+                    <div className="flex flex-row items-center justify-between gap-3 border-t border-stone-100 px-3.5 py-2 md:shrink-0 md:flex-col md:items-end md:justify-between md:border-t-0 md:py-3">
+
+                      {/* Toggle */}
+                      <div className="flex items-center gap-1.5">
+                        <span className="hidden text-[11px] font-medium text-stone-400 md:block">
+                          {product.isAvailable ? "On" : "Off"}
                         </span>
                         <Switch
                           checked={product.isAvailable}
                           disabled={updateAvailabilityMutation.isPending}
                           onCheckedChange={() =>
-                            handleToggleAvailability(
-                              product.id,
-                              product.isAvailable,
-                            )
+                            handleToggleAvailability(product.id, product.isAvailable)
                           }
                         />
                       </div>
-                      <div className="flex items-center gap-2">
+
+                      {/* Edit + Delete */}
+                      <div className="flex items-center gap-0.5">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-gray-500 hover:text-green-600"
+                          className="h-8 w-8 text-stone-400 transition-colors hover:bg-green-50 hover:text-green-700"
                           onClick={() => {
                             setEditingProduct(product);
-                            setShowCreateSheet(true);
+                            setShowEditSheet(true);
                           }}
                         >
-                          <Pencil className="w-4 h-4" />
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
+
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-gray-500 hover:text-red-600"
+                              className="h-8 w-8 text-stone-400 transition-colors hover:bg-red-50 hover:text-red-600"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Delete Product
-                              </AlertDialogTitle>
+                              <AlertDialogTitle>Delete Product</AlertDialogTitle>
                               <AlertDialogDescription>
                                 Are you sure you want to delete{" "}
-                                <strong>{product.name}</strong>? This action
-                                cannot be undone.
+                                <strong>{product.name}</strong>? This action cannot be
+                                undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
                                 className="bg-red-600 hover:bg-red-700"
-                                onClick={() =>
-                                  deleteProductMutation.mutate(product.id)
-                                }
+                                onClick={() => deleteProductMutation.mutate(product.id)}
                                 disabled={deleteProductMutation.isPending}
                               >
                                 {deleteProductMutation.isPending ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                   "Delete"
                                 )}
@@ -448,6 +479,7 @@ export default function ProductsTab() {
                         </AlertDialog>
                       </div>
                     </div>
+
                   </div>
                 </CardContent>
               </Card>
@@ -507,7 +539,15 @@ export default function ProductsTab() {
           if (!open) setEditingProduct(null);
         }}
         onSuccessAction={handleProductCreated}
+      />
+
+      <UpdateProductSheet
+        open={showEditSheet && !!editingProduct}
+        onOpenChangeAction={(open) => {
+          setShowEditSheet(open);
+        }}
         product={editingProduct}
+        onSuccessAction={handleProductCreated}
       />
     </div>
   );

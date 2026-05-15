@@ -16,6 +16,7 @@ import { Route } from "next";
 import { useSetAtom } from "jotai";
 import { logOutVendorAtom } from "@/store/vendorAtom";
 import { useRouter } from "next/navigation";
+import { toast } from "@repo/ui/components/sonner";
 
 const navItems = [
   { name: "Home", icon: Home, href: "/dashboard" },
@@ -45,6 +46,9 @@ export default function Sidebar({
       router.push("/log-in");
     } catch (error) {
       console.error("Error logging out:", error);
+      toast.error("Logout failed. Please try again.");
+      logOutVendor();
+      router.push("/log-in");
     }
   };
 
