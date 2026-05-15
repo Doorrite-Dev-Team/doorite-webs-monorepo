@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@repo/ui/components/select";
 import { MapPin, Loader2, CheckCircle, XCircle } from "lucide-react";
-import { ImageUpload } from "@/components/ImageUpload";
+import { ImageUpload, type ImageUploadRef } from "@/components/ImageUpload";
 import { FormValues } from "./types";
 import { useState, useEffect } from "react";
 import { MultiSelect } from "./MultiSelect";
@@ -94,7 +94,7 @@ const formatCategoryLabel = (key: string): string => {
   return formatted.join(" → ");
 };
 
-export const StepTwo = () => {
+export const StepTwo = ({ logoRef }: { logoRef?: React.RefObject<ImageUploadRef | null> }) => {
   const form = useFormContext<FormValues>();
   const [categories, setCategories] = useState<
     { value: string; label: string }[]
@@ -425,7 +425,11 @@ export const StepTwo = () => {
               Business Logo
             </FormLabel>
             <FormControl>
-              <ImageUpload value={field.value} onChange={field.onChange} />
+              <ImageUpload
+                ref={logoRef}
+                value={field.value}
+                onChange={field.onChange}
+              />
             </FormControl>
             <FormMessage className="text-xs" />
             <p className="text-xs text-gray-500 mt-1">

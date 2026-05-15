@@ -555,7 +555,6 @@ export default function UpdateProductSheet({
   endpoint = "vendors/products",
   onSuccessAction,
 }: Props) {
-  if (!product) return null;
   const [detailsSaving, setDetailsSaving] = useState(false);
   const [showModifierSheet, setShowModifierSheet] = useState(false);
   const [showAddVariant, setShowAddVariant] = useState(false);
@@ -631,13 +630,24 @@ export default function UpdateProductSheet({
   const handleSaveDetails = async (data: DetailsValues) => {
     setDetailsSaving(true);
     try {
+      let imageUrl = data.imageUrl;
+
+      if (imageRef.current?.hasPendingFile()) {
+        const uploaded = await imageRef.current?.upload();
+        if (!uploaded) {
+          toast.error("Image upload failed. Please try again.");
+          return;
+        }
+        imageUrl = uploaded;
+      }
+
       const payload: Record<string, unknown> = {
         name: data.name,
         description: data.description,
         basePrice: data.basePrice,
         sku: data.sku,
         isAvailable: data.isAvailable,
-        ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),
+        ...(imageUrl ? { imageUrl } : {}),
         ...(data.attributes && {
           attributes: data.attributes
             .filter((a) => a.key.trim() !== "")
@@ -658,9 +668,7 @@ export default function UpdateProductSheet({
       onSuccessAction?.();
     } catch (err) {
       const errorMessage = deriveError(err) || "Failed to update product";
-      if (data.imageUrl) {
-        await imageRef.current?.rollback();
-      }
+      await imageRef.current?.rollback();
       toast.error("Failed to save details", { description: errorMessage });
     } finally {
       setDetailsSaving(false);
@@ -735,18 +743,6 @@ export default function UpdateProductSheet({
               <Info className="w-3.5 h-3.5" />
               Details
             </TabsTrigger>
-            <TabsTrigger value="variants" className="gap-1.5">
-              <Layers className="w-3.5 h-3.5" />
-              Variants
-              {variants.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="ml-1 px-1.5 py-0 text-[10px] leading-none"
-                >
-                  {variants.length}
-                </Badge>
-              )}
-            </TabsTrigger>
             <TabsTrigger value="modifiers" className="gap-1.5">
               <Settings2 className="w-3.5 h-3.5" />
               Modifiers
@@ -756,6 +752,18 @@ export default function UpdateProductSheet({
                   className="ml-1 px-1.5 py-0 text-[10px] leading-none"
                 >
                   {attachedModifiers.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="variants" className="gap-1.5">
+              <Layers className="w-3.5 h-3.5" />
+              Variants
+              {variants.length > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="ml-1 px-1.5 py-0 text-[10px] leading-none"
+                >
+                  {variants.length}
                 </Badge>
               )}
             </TabsTrigger>
@@ -769,7 +777,7 @@ export default function UpdateProductSheet({
                 onSubmit={form.handleSubmit(handleSaveDetails)}
                 className="flex flex-col h-full"
               >
-                <ScrollArea className="flex-1">
+                <ScrollArea className="h-[calc(100vh-240px)]">
                   <div className="space-y-6 px-6 py-4">
                     <FormField
                       control={form.control}
@@ -857,7 +865,7 @@ export default function UpdateProductSheet({
                             </FormItem>
                           )}
                         />
-                        <FormField
+                        {/*<FormField
                           control={form.control}
                           name="sku"
                           render={({ field }) => (
@@ -869,7 +877,7 @@ export default function UpdateProductSheet({
                               <FormMessage />
                             </FormItem>
                           )}
-                        />
+                        />*/}
                       </div>
                       <FormField
                         control={form.control}

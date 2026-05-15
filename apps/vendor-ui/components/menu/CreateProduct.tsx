@@ -144,7 +144,18 @@ export default function CreateProductSheet({
   const onSubmit = async (data: ProductFormValues) => {
     setLoading(true);
     try {
-      const { imageUrl, ...rest } = data;
+      let imageUrl = data.imageUrl;
+
+      if (imageRef.current?.hasPendingFile()) {
+        const uploaded = await imageRef.current?.upload();
+        if (!uploaded) {
+          toast.error("Image upload failed. Please try again.");
+          return;
+        }
+        imageUrl = uploaded;
+      }
+
+      const { imageUrl: _, ...rest } = data;
       const payload = {
         ...rest,
         ...(imageUrl ? { imageUrl } : {}),
@@ -176,10 +187,7 @@ export default function CreateProductSheet({
       const errorMessage =
         deriveError(err) || "Failed to create product";
 
-      if (data.imageUrl) {
-        console.error("API failed, rolling back image...");
-        await imageRef.current?.rollback();
-      }
+      await imageRef.current?.rollback();
 
       toast.error("Failed to create product", {
         description: errorMessage,

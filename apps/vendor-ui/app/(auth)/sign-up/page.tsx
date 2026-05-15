@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
@@ -18,6 +19,7 @@ import { StepOne } from "./components/StepOne";
 import { StepTwo } from "./components/StepTwo";
 import { StepThree } from "./components/StepThree";
 import { FormValues, Step } from "./components/types";
+import { ImageUploadRef } from "@/components/ImageUpload";
 
 const STORAGE_KEY = "doorrite-vendor-signup-form-v1";
 
@@ -102,6 +104,7 @@ export default function MultistepSignupForm() {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
+  const logoRef = useRef<ImageUploadRef>(null);
 
   const saveTimerRef = useRef<number | null>(null);
   const mountedRef = useRef(false);
@@ -259,6 +262,17 @@ export default function MultistepSignupForm() {
     try {
       const values = form.getValues();
 
+      let logoUrl = values.logo || undefined;
+
+      if (logoRef.current?.hasPendingFile()) {
+        const uploaded = await logoRef.current?.upload();
+        if (!uploaded) {
+          toast.error("Logo upload failed. Please try again.");
+          return;
+        }
+        logoUrl = uploaded;
+      }
+
       // 1. Create vendor account
       const payload = {
         businessName: values.businessName,
@@ -275,7 +289,7 @@ export default function MultistepSignupForm() {
           },
         },
         categoryIds: values.category,
-        logoUrl: values.logo || undefined,
+        logoUrl,
         businessHours: {
           open: values.openingTime,
           close: values.closingTime,
@@ -309,6 +323,9 @@ export default function MultistepSignupForm() {
         message = String(err);
       }
       console.error("Account creation failed", err);
+
+      await logoRef.current?.rollback();
+
       toast.error("Account creation failed", {
         description: message,
       });
@@ -386,7 +403,7 @@ export default function MultistepSignupForm() {
           <Form {...form}>
             <div className="mt-8">
               {currentStep === 1 && <StepOne />}
-              {currentStep === 2 && <StepTwo />}
+              {currentStep === 2 && <StepTwo logoRef={logoRef} />}
               {currentStep === 3 && (
                 <StepThree
                   email={form.getValues("email")}
