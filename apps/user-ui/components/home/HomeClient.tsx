@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
+import { useQuery } from "@tanstack/react-query";
 import { userAtom } from "@/store/userAtom";
 import { HeroBanner } from "./sections/HeroBanner";
 import { CategoryPills } from "./sections/CategoryPills";
@@ -15,6 +16,7 @@ import { FooterCTA } from "./sections/FooterCTA";
 import { ReferralCard } from "./sections/ReferralCard";
 import { findActiveOrder } from "@/libs/home";
 import { api } from "@/actions/api";
+import { getAddressIndex, setAddressIndex, clearAddressIndex } from "@/libs/address-utils";
 import LocationConsent from "@/components/explore/LocationConsent";
 import SavedAddressPicker from "@/components/explore/SavedAddressPicker";
 import AddAddressDialog from "@/components/account/address/Dialogue";
@@ -33,35 +35,7 @@ type LocationData =
     }
   | { type: "denied" };
 
-interface HomeClientProps {
-  user: User | null;
-  recentOrders: Order[];
-  topVendors: Vendor[];
-  message?: string;
-  addresses?: Address[];
-}
-
-/**
- * Main home page client component
- *
- * Mobile-first responsive layout based on h.tsx design:
- * - Dark hero banner with search and avatar
- * - Horizontal scrolling cuisine category pills
- * - Active order banner (when applicable)
- * - Promo banner for top rated
- * - Horizontal vendor strip
- * - Live order tracking map (when applicable)
- * - Recent orders horizontal scroll
- * - More restaurants grid
- * - Footer CTA button
- */
-export default function HomeClient({
-  user,
-  recentOrders,
-  topVendors,
-  message,
-  addresses,
-}: HomeClientProps) {
+export default function HomeClient() {
   const [userFromAtom] = useAtom(userAtom);
   const [userCoords, setUserCoords] = useState<{
     lat: number;
@@ -71,6 +45,34 @@ export default function HomeClient({
   const [showLocationConsent, setShowLocationConsent] = useState(false);
   const [showAddressPicker, setShowAddressPicker] = useState(false);
   const [showAddAddress, setShowAddAddress] = useState(false);
+  const [addressIndex, setAddressIndexState] = useState<number | null>(() => getAddressIndex());
+
+  const { data: userData } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => api.fetchProfile(),
+    staleTime: 60000,
+  });
+
+  const user = userData ?? userFromAtom;
+
+  const { data: recentOrders = [] } = useQuery({
+    queryKey: ["recent-orders"],
+    queryFn: () => api.fetchRecentOrders(),
+    staleTime: 30000,
+  });
+
+  const vendorsQuery = useQuery({
+    queryKey: ["home-vendors", addressIndex],
+    queryFn: () => {
+      const params = new URLSearchParams({ limit: "8" });
+      if (addressIndex !== null) params.set("addressIndex", String(addressIndex));
+      return api.fetchVendors(`?${params.toString()}`);
+    },
+    staleTime: 30000,
+  });
+
+  const topVendors = vendorsQuery.data?.vendors ?? [];
+  const message = vendorsQuery.data?.message;
 
   const activeOrder = findActiveOrder(recentOrders);
 
@@ -111,13 +113,15 @@ export default function HomeClient({
     setUserCoords(coords);
     setSessionAddress(null);
     setShowLocationConsent(false);
+    clearAddressIndex();
+    setAddressIndexState(null);
   };
 
   const handleLocationDeny = () => {
     const data: LocationData = { type: "denied" };
     sessionStorage.setItem(SESSION_LOCATION_KEY, JSON.stringify(data));
 
-    const addressesWithCoords = (userFromAtom?.address || []).filter(
+    const addressesWithCoords = (user?.address || []).filter(
       (addr) => addr.coordinates?.lat && addr.coordinates?.long,
     );
 
@@ -130,14 +134,12 @@ export default function HomeClient({
   };
 
   const handleSelectSavedAddress = (coords: { lat: number; long: number }) => {
-    // Find the full address from user's saved addresses
-    const fullAddr = userFromAtom?.address?.find(
+    const fullAddr = user?.address?.find(
       (a) =>
         a.coordinates?.lat === coords.lat &&
         a.coordinates?.long === coords.long,
     );
 
-    // Build display address: use address field, or fallback to state, country
     const displayAddr =
       fullAddr?.address ||
       [fullAddr?.state, fullAddr?.country].filter(Boolean).join(", ");
@@ -153,6 +155,16 @@ export default function HomeClient({
     setUserCoords(coords);
     setSessionAddress(displayAddr);
     setShowAddressPicker(false);
+
+    const idx = user?.address?.findIndex(
+      (a) =>
+        a.coordinates?.lat === coords.lat &&
+        a.coordinates?.long === coords.long,
+    );
+    if (idx !== undefined && idx >= 0) {
+      setAddressIndex(idx);
+      setAddressIndexState(idx);
+    }
   };
 
   const handleRequestLocation = () => {
@@ -161,7 +173,6 @@ export default function HomeClient({
 
   const handleSelectAddress = (address: Address) => {
     if (address.coordinates) {
-      // Build display address: use address field, or fallback to state, country
       const displayAddr =
         address.address ||
         [address.state, address.country].filter(Boolean).join(", ");
@@ -176,6 +187,16 @@ export default function HomeClient({
       sessionStorage.setItem(SESSION_LOCATION_KEY, JSON.stringify(data));
       setUserCoords(address.coordinates);
       setSessionAddress(displayAddr);
+
+      const idx = user?.address?.findIndex(
+        (a) =>
+          a.coordinates?.lat === address.coordinates?.lat &&
+          a.coordinates?.long === address.coordinates?.long,
+      );
+      if (idx !== undefined && idx >= 0) {
+        setAddressIndex(idx);
+        setAddressIndexState(idx);
+      }
     }
   };
 
@@ -189,7 +210,6 @@ export default function HomeClient({
     setShowAddAddress(false);
   };
 
-  // Split vendors: first 6 in horizontal strip, remaining in grid below
   const stripVendors = topVendors.slice(0, 6);
   const gridVendors = topVendors.slice(6);
 
@@ -213,45 +233,35 @@ export default function HomeClient({
         isLoading={false}
       />
 
-      {/* Hero Banner with Search */}
       <HeroBanner
         user={user}
         userCoords={userCoords}
         sessionAddress={sessionAddress}
         onRequestLocation={handleRequestLocation}
         onAddAddress={() => setShowAddAddress(true)}
-        addresses={addresses}
+        addresses={user?.address || []}
         selectedAddress={sessionAddress || undefined}
         onSelectAddress={handleSelectAddress}
       />
 
-      {/* Category Pills */}
       <div className="bg-white pt-4 pb-3 shadow-sm">
         <CategoryPills />
       </div>
 
       <div className="space-y-7 pt-6">
-        {/* Active Order Banner */}
         {activeOrder && <ActiveOrderBanner order={activeOrder} />}
 
-         {/* Promo Banner */}
          <PromoBanner />
          <ReferralCard />
- 
-         {/* Popular Vendors Strip */}
 
         <PopularVendorsSection vendors={stripVendors} />
 
-        {/* Live Order Tracker */}
         {activeOrder && <LiveTrackingSection order={activeOrder} />}
 
-        {/* Recent Orders */}
         <RecentOrdersSection orders={recentOrders} />
 
-        {/* More Restaurants Grid */}
         <MoreVendorsGrid vendors={gridVendors} message={message} />
 
-        {/* Footer CTA */}
         <FooterCTA />
       </div>
     </div>
