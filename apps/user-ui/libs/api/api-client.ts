@@ -77,7 +77,7 @@ apiClient.interceptors.response.use(
       } catch (refreshError) {
         // If refresh fails, redirect to login
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          window.location.href = "/log-in";
         }
         return Promise.reject(refreshError);
       }
@@ -106,7 +106,7 @@ export async function handleApiError(error: unknown) {
       } catch (refreshError) {
         // If refresh fails, redirect to login
         console.log("Refresh failed, redirecting to login");
-        if (typeof window !== "undefined") window.location.href = "/login";
+        if (typeof window !== "undefined") window.location.href = "/log-in";
         const axiosRefreshError = refreshError as AxiosError<{
           message?: string;
         }>;
