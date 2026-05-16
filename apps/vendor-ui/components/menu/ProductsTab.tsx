@@ -541,14 +541,17 @@ export default function ProductsTab() {
         onSuccessAction={handleProductCreated}
       />
 
-      <UpdateProductSheet
-        open={showEditSheet && !!editingProduct}
-        onOpenChangeAction={(open) => {
-          setShowEditSheet(open);
-        }}
-        product={editingProduct}
-        onSuccessAction={handleProductCreated}
-      />
+      {editingProduct && (
+        <UpdateProductSheet
+          open={showEditSheet}
+          onOpenChangeAction={(open) => {
+            setShowEditSheet(open);
+            if (!open) setEditingProduct(null);
+          }}
+          product={editingProduct}
+          onSuccessAction={handleProductCreated}
+        />
+      )}
     </div>
   );
 }

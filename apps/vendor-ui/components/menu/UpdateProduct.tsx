@@ -559,10 +559,10 @@ export default function UpdateProductSheet({
   const [showModifierSheet, setShowModifierSheet] = useState(false);
   const [showAddVariant, setShowAddVariant] = useState(false);
   const [variants, setVariants] = useState<Variant[]>(
-    (product.variants as Variant[]) ?? [],
+    (product?.variants as Variant[]) ?? [],
   );
   const [attachedModifiers, setAttachedModifiers] = useState<string[]>(
-    product.modifierGroups
+    product?.modifierGroups
       ? product.modifierGroups.map((m) =>
           typeof m === "string" ? m : (m as ModifierGroup).id,
         )
@@ -571,7 +571,7 @@ export default function UpdateProductSheet({
   const [modifierLoading, setModifierLoading] = useState<string | null>(null);
   const imageRef = useRef<ImageUploadRef>(null);
 
-  const normalizedAttrs = !product.attributes
+  const normalizedAttrs = !product?.attributes
     ? []
     : Array.isArray(product.attributes)
       ? (product.attributes as Array<{ key: string; value: string }>)
@@ -599,7 +599,7 @@ export default function UpdateProductSheet({
   } = useFieldArray({ control: form.control, name: "attributes" });
 
   React.useEffect(() => {
-    if (open) {
+    if (open && product) {
       const attrs = !product.attributes
         ? []
         : Array.isArray(product.attributes)
@@ -661,7 +661,7 @@ export default function UpdateProductSheet({
         }),
       };
 
-      await apiClient.put(`${endpoint}/${product.id}`, payload);
+      await apiClient.put(`${endpoint}/${product?.id}`, payload);
       toast.success("Product details saved", {
         description: `"${data.name}" has been updated`,
       });
@@ -686,7 +686,7 @@ export default function UpdateProductSheet({
     for (const id of toAttach) {
       setModifierLoading(id);
       try {
-        await apiClient.post(`${endpoint}/${product.id}/modifiers`, {
+        await apiClient.post(`${endpoint}/${product?.id}/modifiers`, {
           modifierGroupId: id,
         });
         setAttachedModifiers((prev) => [...prev, id]);
@@ -730,7 +730,7 @@ export default function UpdateProductSheet({
             Edit Product
           </SheetTitle>
           <SheetDescription className="truncate">
-            {product.name}
+            {product?.name}
           </SheetDescription>
         </SheetHeader>
 
