@@ -4,6 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAtom } from "jotai";
+import { userAtom } from "@/store/userAtom";
 import {
   ChevronLeft,
   Share2,
@@ -29,6 +31,7 @@ import { Input } from "@repo/ui/components/input";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/actions/api";
 import { cn } from "@repo/ui/lib/utils";
+import { getAddressIndex } from "@/libs/address-utils";
 
 const fmt = (n: number) => `₦${n.toLocaleString("en-NG")}`;
 
@@ -393,6 +396,34 @@ function VendorProductsSkeleton() {
 
 export default function VendorPageClient({ vendor }: { vendor: Vendor }) {
   const [search, setSearch] = useState("");
+  const [userFromAtom] = useAtom(userAtom);
+  const [addressIndex] = useState(() => getAddressIndex());
+
+  const { data: userData } = useQuery({
+    queryKey: ["vendor-profile"],
+    queryFn: () => api.fetchProfile(),
+    staleTime: 60000,
+  });
+
+  const user = userData ?? userFromAtom;
+
+  const { data: deliveryCalc } = useQuery({
+    queryKey: ["vendor-delivery-calc", vendor.id, addressIndex],
+    queryFn: () => {
+      const addr = user?.address?.[addressIndex ?? 0];
+      if (!addr?.coordinates) throw new Error("No address coordinates");
+      return api.fetchDeliveryCalculation({
+        vendorId: vendor.id,
+        lat: addr.coordinates.lat,
+        lng: addr.coordinates.long,
+      });
+    },
+    enabled: addressIndex !== null && !!user?.address?.[addressIndex ?? 0]?.coordinates,
+    staleTime: 30000,
+  });
+
+  const displayDeliveryFee = deliveryCalc?.fee ?? vendor.deliveryFee;
+  const displayDistance = deliveryCalc?.distance ?? vendor.distance;
 
   const handleShare = async () => {
     try {
@@ -520,11 +551,11 @@ export default function VendorPageClient({ vendor }: { vendor: Vendor }) {
             </div>
           )}
 
-          {vendor.deliveryFee !== undefined && (
+          {displayDeliveryFee !== undefined && (
             <div className="flex items-center gap-1.5 shrink-0 px-4 border-r border-border">
               <Bike className="w-4 h-4 text-muted-foreground shrink-0" />
               <span className="text-sm text-foreground">
-                {vendor.deliveryFee === 0 ? "Free" : fmt(vendor.deliveryFee)}
+                {displayDeliveryFee === 0 ? "Free" : fmt(displayDeliveryFee)}
               </span>
             </div>
           )}
@@ -538,13 +569,13 @@ export default function VendorPageClient({ vendor }: { vendor: Vendor }) {
             </div>
           )}
 
-          {vendor.distance !== undefined && (
+          {displayDistance !== undefined && (
             <div className="flex items-center gap-1.5 shrink-0 pl-4">
               <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
               <span className="text-sm text-foreground">
-                {vendor.distance < 1
-                  ? `${(vendor.distance * 1000).toFixed(0)}m`
-                  : `${vendor.distance.toFixed(1)}km`}
+                {displayDistance < 1
+                  ? `${(displayDistance * 1000).toFixed(0)}m`
+                  : `${displayDistance.toFixed(1)}km`}
               </span>
             </div>
           )}

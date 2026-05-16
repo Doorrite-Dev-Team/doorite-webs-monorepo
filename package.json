@@ -15,7 +15,7 @@
   "private": true,
   "scripts": {
     "all": "turbo run dev",
-    "build": "turbo run build",
+    "build": "node api.js && turbo run build",
     "check-types": "turbo run check-types",
     "dev:rider": "turbo run dev --filter rider-ui",
     "dev:user": "turbo run dev --filter user-ui",
