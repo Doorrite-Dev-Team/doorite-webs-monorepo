@@ -10,7 +10,8 @@ import { api } from "@/actions/api";
 
 export function useExplore({
   userCoords,
-}: { userCoords?: { lat: number; long: number } | null } = {}) {
+  addressIndex,
+}: { userCoords?: { lat: number; long: number } | null; addressIndex?: number | null } = {}) {
   const [state, setParams] = useQueryStates(
     {
       q: parseAsString.withDefault(""),
@@ -33,17 +34,18 @@ export function useExplore({
       ...extra,
       lat: userCoords?.lat,
       lng: userCoords?.long,
+      addressIndex: addressIndex ?? undefined,
     };
 
     Object.entries(merged).forEach(([key, val]) => {
-      if (val && val !== "all" && val !== "recommended")
+      if (val !== undefined && val !== null && val !== "" && val !== "all" && val !== "recommended")
         params.append(key, String(val));
     });
     return params.toString();
   };
 
   const vendorsQuery = useQuery({
-    queryKey: ["vendors", state, userCoords],
+    queryKey: ["vendors", state, userCoords, addressIndex],
     queryFn: () => api.fetchVendors(getCleanParams({ limit: 12, q: "" })),
     enabled: !isProductSearch,
     staleTime: 60000,
@@ -51,7 +53,7 @@ export function useExplore({
   });
 
   const productsQuery = useQuery({
-    queryKey: ["product-search", debouncedQ, userCoords],
+    queryKey: ["product-search", debouncedQ, userCoords, addressIndex],
     queryFn: () => api.fetchProducts(getCleanParams({ q: debouncedQ })),
     enabled: isProductSearch,
     staleTime: 30000,
@@ -59,9 +61,9 @@ export function useExplore({
 
   const cuisinesQuery = useQuery({
     queryKey: ["cuisines"],
-    queryFn: api.getCuisines, // ← swap here
-    staleTime: Infinity, // static data, never refetch
-    gcTime: Infinity, // keep in cache forever
+    queryFn: api.getCuisines,
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 
   const hasActiveFilters = Object.entries(state).some(([k, v]) =>

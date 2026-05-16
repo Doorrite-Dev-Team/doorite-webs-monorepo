@@ -4,6 +4,8 @@ import { useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAtom } from "jotai";
+import { userAtom } from "@/store/userAtom";
 import {
   ChevronLeft,
   Heart,
@@ -35,6 +37,7 @@ import { cartAtom } from "@/store/cartAtom";
 import { CartService } from "@/services/cart-service";
 import { api } from "@/actions/api";
 import { cn } from "@repo/ui/lib/utils";
+import { getAddressIndex } from "@/libs/address-utils";
 // import RelatedProducts from "@/components/product/RelatedProducts";
 
 const fmt = (n: number) => `₦${n.toLocaleString("en-NG")}`;
@@ -386,6 +389,16 @@ function RelatedProductsSkeleton() {
 }
 
 export default function ProductPageClient({ product }: { product: Product }) {
+  const [userFromAtom] = useAtom(userAtom);
+  const [addressIndex] = useState(() => getAddressIndex());
+
+  const { data: userData } = useQuery({
+    queryKey: ["product-profile"],
+    queryFn: () => api.fetchProfile(),
+    staleTime: 60000,
+  });
+
+  const user = userData ?? userFromAtom;
   const setCart = useSetAtom(cartAtom);
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -408,6 +421,23 @@ export default function ProductPageClient({ product }: { product: Product }) {
       enabled: !!product.vendorId && !!product.id,
     },
   );
+
+  const { data: deliveryCalc } = useQuery({
+    queryKey: ["product-delivery-calc", product.vendorId, addressIndex],
+    queryFn: () => {
+      const addr = user?.address?.[addressIndex ?? 0];
+      if (!addr?.coordinates) throw new Error("No address coordinates");
+      return api.fetchDeliveryCalculation({
+        vendorId: product.vendorId,
+        lat: addr.coordinates.lat,
+        lng: addr.coordinates.long,
+      });
+    },
+    enabled: addressIndex !== null && !!user?.address?.[addressIndex ?? 0]?.coordinates,
+    staleTime: 30000,
+  });
+
+  const displayDeliveryFee = deliveryCalc?.fee ?? product.vendor.deliveryFee;
 
   const stats = product.stats ?? reviewsData?.stats;
   const reviews = reviewsData?.reviews ?? product.reviews ?? [];
@@ -623,12 +653,12 @@ export default function ProductPageClient({ product }: { product: Product }) {
                       {product.vendor.avrgPreparationTime}
                     </span>
                   )}
-                  {product.vendor.deliveryFee !== undefined && (
+                  {displayDeliveryFee !== undefined && (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Bike className="w-3 h-3" />
-                      {product.vendor.deliveryFee === 0
+                      {displayDeliveryFee === 0
                         ? "Free delivery"
-                        : fmt(product.vendor.deliveryFee)}
+                        : fmt(displayDeliveryFee)}
                     </span>
                   )}
                 </div>
