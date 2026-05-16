@@ -15,6 +15,7 @@ import { Button } from "@repo/ui/components/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import SavedAddressPicker from "@/components/explore/SavedAddressPicker";
 import { cn } from "@repo/ui/lib/utils";
+import { getAddressIndex, setAddressIndex, clearAddressIndex } from "@/libs/address-utils";
 
 const SESSION_LOCATION_KEY = "session_location_data";
 
@@ -23,17 +24,7 @@ type LocationData =
   | { type: "address"; address: string; coords: { lat: number; long: number } }
   | { type: "denied" };
 
-interface ExplorePageClientProps {
-  initialVendors?: Vendor[];
-  initialTotal?: number;
-  initialMessage?: string;
-}
-
-export default function ExplorePageClient({
-  initialVendors = [],
-  initialTotal = 0,
-  initialMessage,
-}: ExplorePageClientProps) {
+export default function ExplorePageClient() {
   const [user] = useAtom(userAtom);
   const [userCoords, setUserCoords] = useState<{
     lat: number;
@@ -42,6 +33,7 @@ export default function ExplorePageClient({
   const [showLocationConsent, setShowLocationConsent] = useState(false);
   const [showAddressPicker, setShowAddressPicker] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [addressIndex, setAddressIndexState] = useState<number | null>(() => getAddressIndex());
 
   const {
     state,
@@ -55,7 +47,7 @@ export default function ExplorePageClient({
     clearFilters,
     handleQuickFilterToggle,
     handlePageChange,
-  } = useExplore({ userCoords });
+  } = useExplore({ userCoords, addressIndex });
 
   // Initialize location
   useEffect(() => {
@@ -90,6 +82,8 @@ export default function ExplorePageClient({
     sessionStorage.setItem(SESSION_LOCATION_KEY, JSON.stringify(data));
     setUserCoords(coords);
     setShowLocationConsent(false);
+    clearAddressIndex();
+    setAddressIndexState(null);
   };
 
   const handleLocationDeny = () => {
@@ -113,6 +107,16 @@ export default function ExplorePageClient({
     sessionStorage.setItem(SESSION_LOCATION_KEY, JSON.stringify(data));
     setUserCoords(coords);
     setShowAddressPicker(false);
+
+    const idx = user?.address?.findIndex(
+      (a) =>
+        a.coordinates?.lat === coords.lat &&
+        a.coordinates?.long === coords.long,
+    );
+    if (idx !== undefined && idx >= 0) {
+      setAddressIndex(idx);
+      setAddressIndexState(idx);
+    }
   };
 
   if (isInitializing) {
@@ -138,7 +142,7 @@ export default function ExplorePageClient({
     );
   }
 
-  const vendors = vendorsQuery.data?.vendors || initialVendors;
+  const vendors = vendorsQuery.data?.vendors ?? [];
   const pagination = vendorsQuery.data?.pagination;
   const productResults = productsQuery.data?.groupedResults || [];
   const Cruisines = cuisinesQuery.data || [];
@@ -199,7 +203,7 @@ export default function ExplorePageClient({
           <p className="text-sm font-medium">
             {isProductSearch
               ? `${productsQuery.data?.pagination?.total || 0} products found`
-              : `${pagination?.total || initialTotal} vendors found`}
+              : `${pagination?.total || 0} vendors found`}
           </p>
           {hasActiveFilters && (
             <Button
@@ -266,7 +270,7 @@ export default function ExplorePageClient({
                 hasSearch={!!state.q}
                 searchTerm={state.q}
                 onClear={clearFilters}
-                message={vendorsQuery.data?.message || initialMessage}
+                message={vendorsQuery.data?.message}
               />
             </div>
           )}
