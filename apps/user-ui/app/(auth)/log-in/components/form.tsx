@@ -24,9 +24,10 @@ const LogingForm = () => {
   const [errorMessage, setErrorMessage] = useState<string>();
   const searchParams = useSearchParams();
 
-  const capiTal = (a: string) => a.charAt(0).toUpperCase() + a.slice(1);
-
   const setUser = useSetAtom(userAtom);
+
+  const capitalize = (str: string) =>
+    str.charAt(0).toUpperCase() + str.slice(1);
 
   const {
     register,
@@ -41,7 +42,7 @@ const LogingForm = () => {
       const res = await authService.login(data.email, data.password);
       console.log("Login response:", res);
 
-      if (!res.data || !res.data.user) {
+      if (!res.data?.user) {
         const msg = res?.message || "Invalid response from server.";
         setErrorMessage(msg);
         toast.error("Login Failed", { description: msg });
@@ -50,10 +51,10 @@ const LogingForm = () => {
 
       if (res.ok) {
         setUser(res.data.user);
-        const callback = capiTal(
-          (searchParams.get("callbackUrl") ?? "/home").slice(1),
+        const callback = searchParams.get("callbackUrl") ?? "/home";
+        toast.loading(
+          `Redirecting to ${capitalize(callback).replace(/^\/+/, "")} Page...`,
         );
-        toast.loading(`Redirecting to ${callback} Page...`);
         setTimeout(() => {
           window.location.href = callback;
           router.refresh();
@@ -62,10 +63,7 @@ const LogingForm = () => {
     } catch (error) {
       let errMsg = "Cannot login";
       if (isAxiosError(error)) {
-        errMsg =
-          (error.response?.data && error.response?.data.message) ||
-          error.message ||
-          errMsg;
+        errMsg = error.response?.data?.message || error.message || errMsg;
       } else if (error instanceof Error) {
         errMsg = error.message;
       }

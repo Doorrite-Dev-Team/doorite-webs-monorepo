@@ -108,10 +108,11 @@ export const api = {
     }
   },
 
-  fetchProduct: async (id: string) => {
+  fetchProduct: async (id: string, addressIndex?: number) => {
     try {
+      const params = addressIndex !== undefined ? `?addressIndex=${addressIndex}` : "";
       const { data }: SuccessResponse<{ product: Product }> =
-        await apiClient.get(`/products/${id}`, { withCredentials: true });
+        await apiClient.get(`/products/${id}${params}`, { withCredentials: true });
       return data.product;
     } catch (error) {
       if (typeof window !== "undefined")
@@ -147,10 +148,11 @@ export const api = {
     }
   },
 
-  fetchVendor: async (id: string) => {
+  fetchVendor: async (id: string, addressIndex?: number) => {
     try {
+      const params = addressIndex !== undefined ? `?addressIndex=${addressIndex}` : "";
       const { data }: SuccessResponse<{ vendor: Vendor }> = await apiClient.get(
-        `/vendors/${id}`,
+        `/vendors/${id}${params}`,
       );
 
       return data.vendor;
